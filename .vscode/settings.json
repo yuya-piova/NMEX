@@ -1,0 +1,10 @@
+{
+  "editor.formatOnSave": true,
+  "prettier.useTabs": false,
+  "javascript.format.enable": false,
+  "prettier.tabWidth": 2,
+  "prettier.singleQuote": true,
+  "editor.unicodeHighlight.includeStrings": true,
+  "prettier.printWidth": 80,
+  "prettier.jsxSingleQuote": true
+}

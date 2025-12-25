@@ -1,0 +1,25 @@
+{
+  "name": "nmex",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "prettier": "^1.19.1"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "typeAcquisition": {
+    "include": [
+      "./nmexo/nmexog.js",
+      "./nmext/nmextg.js"
+    ]
+  }
+}

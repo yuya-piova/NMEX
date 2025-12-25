@@ -1,0 +1,59 @@
+{
+  "name": "Netzmenu",
+  "version": "2.0.0",
+  "manifest_version": 3,
+  "description": "Chrome",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://menu.edu-netz.com/*",
+        "https://menu2.edu-netz.com/*",
+        "https://api.atama.plus/*",
+        "https://portal.edu-netz.com/*",
+        "http://iptel.edu-netz.com/*",
+        "https://lms2.s-diverse.com/*"
+      ],
+      "css": ["jquery-ui.min.css", "nmexo/nmcsso.css", "nmext/nmcsst.css"],
+      "js": [
+        "jquery-3.4.1.min.js",
+        "jquery-ui.min.js",
+        "datepicker-ja.js",
+        "jquery-barcode.js",
+        "jsrender.js",
+        "jquery-ui.multidatespicker.js",
+        "fullcalendar-6.1.8.min.js",
+        "encoding.min.js",
+        "libraries/localforage.min.js",
+        "libraries/chart.umd.js",
+        "nmex-longconst.js",
+        "nmexg.js",
+        "nmexo/nmexog.js",
+        "nmext/nmextg.js",
+        "nmexo/nmexof.js",
+        "nmext/nmextf.js",
+        "nmexo/nmexo.js",
+        "nmext/nmext.js",
+        "nmexo/nmexop.js",
+        "nmext/nmextp.js",
+        "nmext/nmextd.js",
+        "checker.js",
+        "nmexo/closer.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true,
+      "content_security_policy": {
+        "extension_pages": " script-src 'self' allow-scripts; script-src 'self' 'unsafe-eval'; object-src 'self' 'unsafe-eval';",
+        "sandbox": "sandbox allow-scripts; script-src 'self' 'unsafe-eval';"
+      }
+    }
+  ],
+  "action": {
+    "default_icon": "icon19.png",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["notifications", "tabs", "nativeMessaging", "contextMenus", "downloads", "input"],
+  "host_permissions": ["https://script.google.com/", "https://www.drk7.jp/"]
+}

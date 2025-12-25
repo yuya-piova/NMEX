@@ -1,0 +1,152 @@
+.opopups {
+  padding: 0.5em 1em;
+  margin: 0.5em 0;
+  max-width: 100%;
+  background: white;
+  border-top: solid 5px #5d627b;
+  border-left: solid 1px #f2f2f2;
+  color: #5d627b;
+  box-shadow: 5px 5px 2px rgba(0, 0, 0, 0.3);
+  float: left;
+  &:empty {
+    display: none;
+  }
+  & input,
+  & button {
+    margin: 0.1em;
+    height: 1.5rem;
+  }
+  & hr {
+    border: 0.5px dashed #999;
+  }
+  & .onetzpicker {
+    position: absolute;
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0);
+  }
+}
+
+.onetzpicker span.opopups {
+  margin-left: 0.2em;
+}
+.tablercheck {
+  width: 15px;
+  height: 15px;
+}
+.copythrough {
+  -ms-user-select: none; /* IE 10+ */
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.totext {
+  font-size: 1em;
+  color: inherit;
+
+  background: none;
+  border: none;
+  margin: none;
+  padding: none;
+}
+.shorttd {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
+}
+
+@media print {
+  .noprint {
+    display: none;
+  }
+}
+
+.calcbtn {
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  margin: 5px;
+  display: inline-block;
+}
+.calcbtn div {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  background: #ddeeff;
+  text-align: center;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 9px;
+  -webkit-border-radius: 9px;
+  -moz-border-radius: 9px;
+  box-shadow: 3px 3px 2px 0px #bbbbbb;
+}
+.rsbtn {
+  background-color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #8f8f8f;
+  display: inline-block;
+  cursor: pointer;
+  color: #7a7a7a;
+  font-family: Verdana;
+  font-size: 1rem;
+  line-height: 1.4rem;
+  text-decoration: none;
+  height: 1.4rem;
+}
+.rsbtn:hover {
+  color: #124d77;
+}
+
+.stlistmemo {
+  width: 90%;
+  padding-left: 5px;
+  margin-left: 5px;
+  border-radius: 3px;
+  border: solid 1px gray;
+  line-height: 1.1rem;
+}
+
+.flex_tenpodata {
+  display: flex;
+  flex-direction: row;
+}
+.popmenubutton {
+  position: fixed;
+  right: 20px;
+  top: 20px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(181, 198, 226, 0.2);
+  border: none;
+  outline: none;
+  z-index: 100;
+}
+
+.shsido {
+  user-select: none;
+}
+.booths {
+  width: 5em;
+  height: 2em;
+}
+
+.schedule_ng {
+  background-color: #ff9999;
+}
+
+.inputselectchange {
+  background-color: #ff6666;
+}
+
+.seisekiinputed {
+  background-color: #d0d0d0;
+}
+
+.seisekirequired {
+  background-color: #ffd0d0;
+}
