@@ -4149,19 +4149,6 @@ function table2arrayspecial(tableobject) {
   return kekka;
 }
 
-//選択解除
-function deSelect() {
-  var selection;
-  if (window.getSelection) {
-    selection = window.getSelection();
-    selection.collapse(document.body, 0);
-  } else {
-    selection = document.selection.createRange();
-    selection.setEndPoint('EndToStart', selection);
-    selection.select();
-  }
-}
-
 /*
  *日付の差分日数を返却します。
  */
@@ -4671,20 +4658,7 @@ function netzencodeURIComponent(text) {
   );
 }
 
-/**
- *
- * @param {boolean} off
- */
-function overridedialog(off = false) {
-  if (off == false)
-    window.onbeforeunload = function(e) {
-      e.returnValue = 'このページを離れてもよろしいですか？';
-    };
-  else
-    window.onbeforeunload = function(e) {
-      e.returnValue = true;
-    };
-}
+
 /**
  *
  * @param {string} student_cd

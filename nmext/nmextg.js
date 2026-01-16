@@ -811,29 +811,6 @@ class ExTextArea {
     return str.replace(regexp_url, regexp_makeLink);
   }
 }
-/**
- * 任意の文字列をクリップボードにコピー
- * @param {string} text [クリップボードに入れたいテキスト]
- */
-function clipper(text) {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.left = '-9999px';
-  document.body.appendChild(ta);
-  ta.select();
-  document.execCommand('copy');
-  ta.remove();
-}
-$.fn.clipper = function() {
-  //選択可能なオブジェクトをコピー
-  var element = $(this)[0];
-  var range = document.createRange();
-  //取得した要素の内側を範囲とする
-  range.selectNodeContents(element);
-  //範囲を選択状態にする
-  window.getSelection().addRange(range);
-  const result = document.execCommand('copy');
-};
 
 function NXsetValues(selectorValuePairs) {
   if (!Array.isArray(selectorValuePairs)) {
