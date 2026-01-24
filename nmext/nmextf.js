@@ -4208,7 +4208,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
             // ボタンエリアの作成
             const $buttonArea = $('<div>', { style: 'margin-bottom: 10px;width:100%;' });
             const $clearBtn = $('<button>', {
-              class: 'pxdb_btn offout', // 既存のスタイルクラスを想定
+              class: 'nx offsecondary',
               text: '一括クリア',
               on: {
                 click: () => clearAll()
