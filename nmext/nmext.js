@@ -354,7 +354,7 @@ $(function() {
             .analyze('校舎', ['合計(月謝発生生徒数)_1', 'sum', shido_ng])
             .transpose();
           storedNXT.merge(parsedNXT, true);
-          localStorage.setItem('studentCountNXT', JSON.stringify(storedNXT.export('object')));
+          localStorage.setItem('studentCountNXT', JSON.stringify(storedNXT.toObject()));
 
           console.log('storedNXT', storedNXT);
         }
@@ -384,8 +384,8 @@ $(function() {
                       const nxtable = $NX(table)
                         .makeNXTable()
                         .transpose()
-                        .appendColumnEx(['ユニット', '年月'], () => [tenpo_cd, yyyymm], 0)
-                        .deleteColumn('title');
+                        .appendColumn(['ユニット', '年月'], () => [tenpo_cd, yyyymm], 0)
+                        .deleteColumns('title');
                       resultNXT.merge(nxtable, true);
                     });
                   }
@@ -629,7 +629,7 @@ $(function() {
             click: () => {
               const table = $('table');
               const NXTable = $NX(table).makeNXTable();
-              LF_MendanAverage.setItem(new ExDate().as('yyyymmdd_HHMM'), NXTable.export('object'));
+              LF_MendanAverage.setItem(new ExDate().as('yyyymmdd_HHMM'), NXTable.toObject());
               refleshSelect();
             }
           }
@@ -640,7 +640,7 @@ $(function() {
             change: async function() {
               if ($(this).val() == '') return false;
               const savedTable = await LF_MendanAverage.getItem($(this).val());
-              savedTablesDiv2.html('').append(new NXTable(savedTable).export('table', { class: 'pxdb_table singleCaption' }));
+              savedTablesDiv2.html('').append(new NXTable(savedTable).toTable({ class: 'pxdb_table singleCaption' }));
             }
           }
         }).appendTo(savedTablesDiv);

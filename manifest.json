@@ -28,6 +28,7 @@
         "nmex-longconst.js",
         "core/ExDate.js",
         "core/SnapData.js",
+        "core/NXTable.js",
         "core/utils.js",
         "nmexg.js",
         "nmexo/nmexog.js",

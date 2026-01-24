@@ -2509,16 +2509,6 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                 addClass: 'noselectable half',
                 reloadTarget: 'getTodayApplication'
               })
-            },
-            OnBoard: {
-              order: 15,
-              class: new pxdbItembox({
-                header: true,
-                headerTxt: 'On Board',
-                bodyScrollY: true,
-                addClass: 'noselectable',
-                reloadTarget: 'getNotify'
-              })
             }
           },
           HeadItem: {
@@ -2743,10 +2733,10 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
               .appendColumn('平均科目数', rows => Math.round((rows[4] / rows[2]) * 10) / 10, 4)
               .appendColumn('平均科目数（高１・２）', rows => Math.round((rows[7] / rows[6]) * 10) / 10, '生徒数（高１・２）')
               .appendColumn('平均科目数（高３）', rows => Math.round((rows[10] / rows[9]) * 10) / 10, '生徒数（高３）')
-              .deleteColumn('科目数（高１・２）')
-              .deleteColumn('科目数（高３）');
+              .deleteColumns('科目数（高１・２）')
+              .deleteColumns('科目数（高３）');
             $countListWrap
-              .appendToBody(countByUnitNXT.export('table', { class: 'pxdb_innerTable right withFooter minusRed offout dblcopytable' }))
+              .appendToBody(countByUnitNXT.toTable({ class: 'pxdb_innerTable right withFooter minusRed offout dblcopytable' }))
               .box.appendTo($pageDiverse);
           },
           getMarathon: async function() {
@@ -2779,7 +2769,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                 .makeNXTable()
                 .sort('実施年数')
                 .deleteColumns('フリガナ', '学年', '学校名', '最新の実施結果_2', '最新の実施結果_3', '最新の実施結果_4');
-              $marathonWrap.appendToBody(NXTable.export('table', { class: 'pxdb_innerTable offout dblcopytable' })).box.appendTo($marathonPage);
+              $marathonWrap.appendToBody(NXTable.toTable({ class: 'pxdb_innerTable offout dblcopytable' })).box.appendTo($marathonPage);
             });
           },
           getNoreport: async function() {
@@ -3604,7 +3594,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
             const hiroshimaList = new NXBase().rawNXT
               .filterByCondition(['unitcd', 'b34', false], ['closed', ''], ['realbase', 'TRUE'])
               .pickColumns(['basecd', 'basename'])
-              .export('array');
+              .toObjectArray();
 
             const ManageDiv = $('<div>', { class: 'pxdb_manage' }).appendTo(_UI.page.Management);
             const ManageHead = $('<div>', { class: 'pxdb_manage_head' }).appendTo(ManageDiv);
@@ -3698,7 +3688,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                   const url = `${NX.CONST.host}/s/schedule_input_check.aspx?tenpo_cd=c3400&input_cb=1&input1_dt=${NX.VAR.koshu_kikan['開始']}&input2_dt=${NX.VAR.koshu_kikan['終了']}`;
                   const snap = await SnapData.quickFetch({ url, noCache: true, force: true });
                   const nxtable = snap.getAsNXTable();
-                  const resultArray = nxtable.analyze('校舎', ['校舎', 'count'], ['校舎', 'count', null, ['入力ＣＨ', '']]).export('array');
+                  const resultArray = nxtable.analyze('校舎', ['校舎', 'count'], ['校舎', 'count', null, ['入力ＣＨ', '']]).toObjectArray();
                   //prettier-ignore
                   resultArray.forEach(elem => {
                     ManageBodyInner.append(
@@ -3972,13 +3962,13 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                     const nxtable = $NX(table)
                       .makeNXTable()
                       .transpose()
-                      .appendColumnEx(['ユニット', '年月'], () => [tenpo_cd, yyyymm], 0)
-                      .deleteColumn('title');
+                      .appendColumn(['ユニット', '年月'], () => [tenpo_cd, yyyymm], 0)
+                      .deleteColumns('title');
                     resultNXT.merge(nxtable, true);
                   });
                 }
               }
-              localStorage.setItem('salesData', JSON.stringify({ date: new ExDate().getTime(), nxtable: resultNXT.export('object') }));
+              localStorage.setItem('salesData', JSON.stringify({ date: new ExDate().getTime(), nxtable: resultNXT.toObject() }));
               return resultNXT;
             }
             async function loadData() {
@@ -4113,7 +4103,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                     onClick: async function() {
                       const data = await LFMendanLogNXT.getItem(key);
                       const nxtable = new NXTable(data.raw);
-                      $view.html(nxtable.export('table', { class: 'pxdb_table' }));
+                      $view.html(nxtable.toTable({ class: 'pxdb_table' }));
                     }
                   }).getNode()
                 )
@@ -4128,7 +4118,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                     onClick: async function() {
                       const data = await LFMendanLogNXT.getItem(key);
                       const nxtable = new NXTable(data.average);
-                      $view.html(nxtable.export('table', { class: 'pxdb_table' }));
+                      $view.html(nxtable.toTable({ class: 'pxdb_table' }));
                     }
                   }).getNode()
                 )
@@ -4143,7 +4133,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                     onClick: async function() {
                       const data = await LFMendanLogNXT.getItem(key);
                       const nxtable = new NXTable(data.summary);
-                      $view.html(nxtable.export('table', { class: 'pxdb_table' }));
+                      $view.html(nxtable.toTable({ class: 'pxdb_table' }));
                     }
                   }).getNode()
                 )

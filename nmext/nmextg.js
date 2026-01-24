@@ -360,7 +360,7 @@ class NXDatabase {
   makeData(shapingFunc, ...conditions) {
     if (typeof shapingFunc !== 'function') throw new Error('NXDatabase: shapingFunc must be a function.');
     const filteredNXTtable = this.rawNXT.filterByCondition(conditions);
-    return filteredNXTtable.export('objectArray').map(elem => shapingFunc(elem));
+    return filteredNXTtable.toObjectArray().map(elem => shapingFunc(elem));
   }
 }
 /**
@@ -438,7 +438,7 @@ class memberInfoClass {
   saveTable(tenpo_cd, table) {
     const NXTable = $NX(table).makeNXTable();
     if (this.parseFunction) this.parseFunction(NXTable);
-    this.storeData[tenpo_cd] = NXTable.export('object');
+    this.storeData[tenpo_cd] = NXTable.toObject();
     localStorage.setItem(this.storeName, JSON.stringify(this.storeData));
     return this;
   }

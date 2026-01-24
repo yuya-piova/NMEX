@@ -1,5 +1,3 @@
-
-
 /**
  * Retrieves text content from <td> elements inside a given target element.
  *
@@ -75,8 +73,6 @@ function findTdToArray(target, ...eqs) {
 $.fn.findTdToArray = function(...eqs) {
   return findTdToArray($(this), ...eqs);
 };
-
-
 
 /**
  * 指定された文字列の間にある部分文字列を取得します。
@@ -327,7 +323,8 @@ class FaIcon {
   }
 }
 
-class NXTable {
+//core/NXTable.jsに移行した。しばらく様子を見て問題なければ削除
+class NXTable_old {
   /**
    * Create an NXTable.
    * @param {...*} args - Either an object with 'head' and 'body' properties or two arrays (head, body).
