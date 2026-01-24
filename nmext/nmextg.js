@@ -1399,7 +1399,7 @@ class SchoolInfoGetter {
 /**
  * Class representing SnapData for managing local storage and fetching data.
  */
-class SnapData {
+class SnapData_old {
   /**
    * Creates an instance of SnapData.
    * @param {Object} options - Configuration options.
@@ -1575,7 +1575,8 @@ class SnapLog {
       const localforagedata = await _this.store.getItem(isMatched);
       _this.data = new NXTable(localforagedata);
     } else {
-      _this.data = await new SnapData({ url: _this.options.url, nosave: true }).exportNXTable({ omitSubrow: _this.options.omitSubrow });
+      const snap = await new SnapData.quickFetch({ url: _this.options.url, noCache: true });
+      _this.data = snap.getAsNXTable({ omitSubrow: _this.options.omitSubrow });
       _this.store.setItem(`${new ExDate().as('yymmdd_HHMM')}`, _this.data);
     }
     return this;
@@ -1587,6 +1588,16 @@ class SnapLog {
     return this.store;
   }
 }
+
+const getDashSnap = async (path, key, expireMin = 60, isForce = false) => {
+  const snap = new SnapData({
+    url: `${NX.CONST.host}${path}`,
+    storeName: 'DashBoard',
+    key,
+    expire: 1000 * 60 * expireMin
+  });
+  return await snap.fetch(isForce);
+};
 class EventCalendar {
   constructor() {
     this.data;
@@ -1714,30 +1725,28 @@ class AjaxstudentInfoClass {
     if (!from || !to) return false;
     caption = caption ? `_${caption}` : '';
     const url = `${NX.CONST.host}/k/kaiyaku_list_body.aspx?tenpo_cd=&disp_cb=3&input_dt1=${from}&input_dt2=${to}&kaiyaku_cb=&status_cb=7&end_dt=&sort_cb=1`;
-    const CancelTable = await new SnapData('SnapData', `CancelInBase${caption}`, url, {
-      storeName: 'DashBoard',
-      expire: 5 * 60 * 60 * 1000
-    }).exportNXTable();
-    return CancelTable.analyze('教室', ['区分', 'count', 'count'])
+    const snap = await new SnapData.quickFetch({ url, storeName: 'DashBoard', key: `CancelInBase${caption}`, expire: 5 * 60 * 60 * 1000 });
+    const cancelNXT = snap.getAsNXTable();
+    return cancelNXT
+      .analyze('教室', ['区分', 'count', 'count'])
       .replace('教室', cell => new NXBase(cell).getCd())
       .export('dictionary');
   }
   async NoteInBase() {
     const rtn = {};
-    const NoteDataTable = await new SnapData('SnapData', 'NoteInBase', `${NX.CONST.host}/s/student_renraku_shukei.aspx?tenpo_cd=`, {
-      storeName: 'DashBoard',
-      expire: 60 * 60 * 1000
-    }).exportDOMs('tr:gt(0)');
-    NoteDataTable.each(function() {
-      const $tr = $(this);
-      const basecd = new NXBase($tr.findTdGetTxt(0)).getCd();
+    const url = `${NX.CONST.host}/s/student_renraku_shukei.aspx?tenpo_cd=`;
+    const snap = await new SnapData.quickFetch({ url, storeName: 'DashBoard', key: 'NoteInBase', expire: 60 * 60 * 1000 });
+    const $trs = snap.getAsJQuery('tr:gt(0)');
+    $trs.each(function() {
+      const texts = $(this).findTdGetTxt();
+      const basecd = new NXBase(texts[0]).getCd();
       if (basecd) {
         //prettier-ignore
         rtn[basecd] = {
-            past: $tr.findTdGetTxt(3),
-            today: $tr.findTdGetTxt(4),
-            total: $tr.findTdGetTxt(7),
-            compensation: $tr.findTdGetTxt(8),
+            past: texts[3],
+            today: texts[4],
+            total: texts[7],
+            compensation: texts[8],
           }
       }
     });
@@ -1878,7 +1887,8 @@ class AjaxstudentInfoClass {
       return false;
     }
     const url = `${NX.CONST.host}/student_list_body.aspx?select_cd=${student_cds}&cd_flg=1&mynetz_flg=1&ch_flg=1&course_ng=2024/06&naisen_flg=1&student_kt_flg=1&gakkou_flg=1&tanto_flg=1&tel_flg=1&keitai_tel_flg=1&seibetsu_flg=1&mail_flg=1&course_flg=1&contents_flg=1&next_shido_flg=1`;
-    return await new SnapData({ url: url, nosave: true }).exportNXTable();
+    const snap = await new SnapData.quickFetch({ url, noCache: true });
+    return snap.getAsNXTable();
   }
   async profile(student_cd) {
     if (!this.cdTest(student_cd)) return null;

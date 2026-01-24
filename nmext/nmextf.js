@@ -2418,14 +2418,11 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
           },
           page: {
             Dashboard: $('<div class="pxdb_main" page="Dashboard" order="1"></div>'),
-            /*Students: $('<div class="unshown pxdb_main" page="Students" order="2"></div>'),*/
-            Seasonal: $('<div class="unshown pxdb_main" page="Seasonal" order="3"></div>'),
             Unit: $('<div class="unshown pxdb_main" page="Unit" order="4"></div>'),
             Management: $('<div class="unshown pxdb_main" page="Management" order="7"></div>'),
             Tasks: $('<div class="unshown pxdb_main" page="Tasks" order="8"></div>'),
             AsCoach: $('<div class="unshown pxdb_main" page="AsCoach" order="9"></div>'),
             SeasonalLog: $('<div class="unshown pxdb_main" page="SeasonalLog" order="11"></div>'),
-            /*Renewal: $('<div class="unshown pxdb_main" page="Renewal" order="12"></div>'),*/
             Diverse: $('<div class="unshown pxdb_main" page="Diverse" order="12" />'),
             Marathon: $('<div class="unshown pxdb_main" page="Marathon" order="13" />'),
             Sales: $('<div class="unshown pxdb_main" page="Sales" order="14"></div>'),
@@ -2513,16 +2510,6 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                 reloadTarget: 'getTodayApplication'
               })
             },
-            Ranking: {
-              order: 13,
-              class: new pxdbItembox({
-                header: true,
-                headerTxt: 'General Cont.',
-                bodyScrollY: true,
-                addClass: 'noselectable half',
-                reloadTarget: 'getRanking'
-              })
-            },
             OnBoard: {
               order: 15,
               class: new pxdbItembox({
@@ -2554,13 +2541,10 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
             _UI.DashItem.MyUnit.class.resetBody();
 
             //開校状況取得
-            const openDOM = await new SnapData({
-              url: `${NX.CONST.host}/tenpo.aspx`,
-              nosave: true,
-              force: true
-            }).exportTable();
-            openDOM.find('tr:eq(0)').remove(); //先頭に不要な列あり
-            const openNXTable = $NX(openDOM).makeNXTable();
+            const openSnap = await SnapData.quickFetch({ url: `${NX.CONST.host}/tenpo.aspx`, noCache: true, force: true });
+            const $openTable = openSnap.getAsJQuery('table');
+            $openTable.find('tr:eq(0)').remove(); //先頭に不要な列あり
+            const openNXTable = $NX($openTable).makeNXTable();
 
             //table作成処理
             const table = $('<table>', { class: 'pxdb_innerTable' });
@@ -2619,53 +2603,21 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
               $('<td class="spacer">').appendTo(tr);
             });
           },
-          getRanking: async function(options = { force: false }) {
-            return;
-            //初期化
-            _UI.DashItem.Ranking.class.resetBody();
-            //URLは後の処理のため、tenpo_cdを一番最後に
-            const url = `${NX.CONST.host}/k/keiyaku_list_body.aspx?tenpo_cb=1&cancel_cb=1&gakunen_cb=&kiteigessya_cb=&nyukai_cb=&keiyaku_cb=1&kanri_cb=1&week_vl=4&sort_cb=1&tax_cb=0&input_dt1=${_this.const.biggOfMonth}&input_dt2=${_this.const.today}&tenpo_cd=`;
-            const contractNXT = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'getRanking',
-              url: url,
-              expire: 5 * 60 * 1000,
-              force: options.force
-            }).exportNXTable();
-            const rankingNXTable = contractNXT.createRanking('教室').appendColumn('ユニット', row => new NXBase(row[1]).getUnitName(), 1);
-            const resultTable = $('<table class="pxdb_innerTable">');
-            _UI.DashItem.Ranking.class.appendToBody(resultTable);
-            rankingNXTable.body.forEach(([rank, base, unit, count]) => {
-              if (base == '合計') return true;
-              const tenpo_cd = new NXBase(base).getCd();
-              const isTetraNumber = $NX(tenpo_cd).isTetraNumber();
-              const contextlink = isTetraNumber ? 'contextlink' : '';
-              const contexturl = isTetraNumber ? `${url}${tenpo_cd}` : '';
-              $(
-                `<tr class="${contextlink}" url="${contexturl}"><td>${rank}</td><td><span class="pxdb_chip">${base}</span></td><td>${unit}</td><td>${count}件</td></tr>`
-              ).appendTo(resultTable);
-            });
-          },
-          getTodayApplication: async function(option = { force: false }) {
+          getTodayApplication: async function(options = { force: false }) {
             //初期化
             _UI.DashItem.Application.class.resetBody();
-            const url = `${NX.CONST.host}/k/keiyaku_list_body.aspx?tenpo_cb=1&cancel_cb=1&gakunen_cb=&kiteigessya_cb=&nyukai_cb=&keiyaku_cb=1&kanri_cb=1&week_vl=4&sort_cb=1&tax_cb=0&input_dt1=${_this.const.today}&input_dt2=${_this.const.today}&tenpo_cd=${_this.profile.myarea}`;
-            const todayapplyTable = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'getTodayApplication',
-              url: url,
-              expire: 5 * 60 * 1000,
-              force: option.force
-            }).exportTable();
+            const path = `/k/keiyaku_list_body.aspx?tenpo_cb=1&cancel_cb=1&gakunen_cb=&kiteigessya_cb=&nyukai_cb=&keiyaku_cb=1&kanri_cb=1&week_vl=4&sort_cb=1&tax_cb=0&input_dt1=${_this.const.today}&input_dt2=${_this.const.today}&tenpo_cd=${_this.profile.myarea}`;
+            const snap = await getDashSnap(path, 'getTodayApplication', 5, options.force);
+            const $table = snap.getAsJQuery('table');
             const result = $('<table>', { class: 'pxdb_innerTable' });
             _UI.DashItem.Application.class.appendToBody(result);
-            todayapplyTable.find('tr:gt(0)').each(function() {
+            $table.find('tr:gt(0)').each(function() {
               const $this = $(this);
               const [base, inCharge, genre, course] = $this.findTdToArray(0, 5, 7, 17);
               const dat = { base, inCharge, genre, course };
               if (dat.genre == 'コース変更' || dat.base == '合計') return true;
               $(
-                `<tr class="contextlink" url="${url}"><td><span class="pxdb_chip">${dat.base}</span></td><td>${dat.inCharge}</td><td>${dat.course}</td></tr>`
+                `<tr class="contextlink" url="${NX.CONST.host}${path}"><td><span class="pxdb_chip">${dat.base}</span></td><td>${dat.inCharge}</td><td>${dat.course}</td></tr>`
               ).appendTo(result);
             });
           },
@@ -2685,24 +2637,17 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
               sort_cb: 1,
               tax_cb: 0
             };
-            const url = `${NX.CONST.host}/k/keiyaku_list_body.aspx?${$.param(param)}`;
-            const table = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'getContract',
-              url: url,
-              expire: 5 * 60 * 1000,
-              force: options.force
-            }).exportTable();
-            const countThisMonth = table.find('input[name=b_keiyaku]').length;
+            const path = `/k/keiyaku_list_body.aspx?${$.param(param)}`;
+            const snap = await getDashSnap(path, 'getContract', 5, options.force);
+            const count = snap.getAsJQuery('table input[name=b_keiyaku]').length;
             _UI.DashItem.Contract.class
               .resetBody()
-              .appendNumber(countThisMonth, {
+              .appendNumber(count, {
                 title: `Base:${param.tenpo_cd} Period:${param.input_dt1}～${param.input_dt2}`,
                 class: 'contextlink',
-                url
+                url: `${NX.CONST.host}${path}`
               })
-              //.setProgBar(0, Math.floor((countThisMonth / 30) * 100), '', '');
-              .setFooter(new PX_ProgBar(0, Math.floor((countThisMonth / 30) * 100), '', '').getNode());
+              .setFooter(new PX_ProgBar(0, Math.floor((count / 30) * 100), '', '').getNode());
           },
           getCancel: async function(options = { force: false }) {
             const param = {
@@ -2715,19 +2660,13 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
               end_dt: '',
               sort_cb: 1
             };
-            const url = `${NX.CONST.host}/k/kaiyaku_list_body.aspx?${$.param(param)}`;
-            const table = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'getCancel',
-              url: url,
-              expire: 24 * 60 * 60 * 1000,
-              force: options.force
-            }).exportTable();
-            const countThisMonth = table.find('input[name=b_kaiyaku]').length;
-            _UI.DashItem.Cancel.class.resetBody().appendNumber(countThisMonth, {
+            const path = `/k/kaiyaku_list_body.aspx?${$.param(param)}`;
+            const snap = await getDashSnap(path, 'getCancel', 60 * 24, options.force);
+            const count = snap.getAsJQuery('table input[name=b_kaiyaku]').length;
+            _UI.DashItem.Cancel.class.resetBody().appendNumber(count, {
               title: `Base:${param.tenpo_cd} Period:${param.input_dt1}～${param.input_dt2}`,
               class: 'contextlink offwarning',
-              url
+              url: `${NX.CONST.host}${path}`
             });
           },
           getDiverse: async function(options = { force: false }) {
@@ -2735,31 +2674,26 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
             const params = {
               tenpo_cd: targetBase_cd,
               gakunen_cb: '',
-              shido_ng: '2025/09', //new ExDate().aftermonths(1).as('yyyy/mm'),　一時的に９月
+              shido_ng: new ExDate().aftermonths(1).as('yyyy/mm'),
               contents_id: 10,
               contents_kamoku_id: '',
               moshikomi_id: '',
               cb: 1
             };
             //同一nameのchackbox要素が、、、、
-            const url = `${NX.CONST.host}/text/contents_list.aspx?&kamoku_cb=1&kamoku_cb=2&kamoku_cb=3&kamoku_cb=4&${$.param(params)}`;
-            const table = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'getDiverse',
-              url: url,
-              expire: 6 * 60 * 60 * 1000,
-              force: options.force
-            }).exportTable();
-            const countThisMonth = table.find('input[name=b_keiyaku]').length;
+            const path = `/text/contents_list.aspx?&kamoku_cb=1&kamoku_cb=2&kamoku_cb=3&kamoku_cb=4&${$.param(params)}`;
+            const snap = await getDashSnap(path, 'getDiverse', 6 * 60, options.force);
+            const table = snap.getAsJQuery('table');
+            const count = table.find('input[name=b_keiyaku]').length;
             _UI.DashItem.Diverse.class
               .resetBody()
-              .appendNumber(countThisMonth, {
+              .appendNumber(count, {
                 title: `Base:${targetBase_cd} Period:${new ExDate().aftermonths(1).as('yyyy/mm')}`,
                 class: 'contextlink',
-                url: url
+                url: `${NX.CONST.host}${path}`
               })
               .resetFooter()
-              .appendToFooter(new PX_ProgBar(0, Math.floor((countThisMonth / 500) * 100), '', '１０月目標５００件').getNode());
+              .appendToFooter(new PX_ProgBar(0, Math.floor((count / 500) * 100), '', '１０月目標５００件').getNode());
 
             const $pageDiverse = _UI.page.Diverse;
             $pageDiverse.html('');
@@ -2814,42 +2748,6 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
             $countListWrap
               .appendToBody(countByUnitNXT.export('table', { class: 'pxdb_innerTable right withFooter minusRed offout dblcopytable' }))
               .box.appendTo($pageDiverse);
-
-            //夏期Diverse枠外CH
-            const outsideParams = {
-              input_dt1: NX.DT.today.slash,
-              input_dt2: new ExDate().aftermonths(1).as('yyyy/mm/dd'),
-              tenpo_cd: ''
-            };
-            const $outsideFrameWrap = new pxdbItembox({
-              header: true,
-              headerTxt: `Outside Frame ${new ExDate(outsideParams.input_dt1).as('m/d')}～${new ExDate(outsideParams.input_dt2).as('m/d')}`,
-              bodyScrollY: true,
-              footer: true,
-              reloadTarget: 'getDiverse'
-            });
-            const outsideFrameUrl = `${NX.CONST.host}/kanren/enshu_check_list.aspx?${$.param(outsideParams)}`;
-            const outsideNXT = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'getDiverseOutsideFrame',
-              url: outsideFrameUrl,
-              expire: 24 * 60 * 60 * 1000,
-              force: options.force
-            }).exportNXTable();
-            const analyzedOutsideNXT = outsideNXT
-              .analyze('指導校舎', ['指導校舎', 'count', '枠外数', [3, 'Diverse', false]])
-              .analyze('head', ['指導校舎'])
-              .filter('枠外数', cell => cell != 0);
-            const showOutsideBtn = $('<button>', {
-              text: '一覧',
-              type: 'button',
-              class: 'nx offwarning',
-              on: { click: () => window.open(`${outsideFrameUrl}&mode=onlyDiverse`) }
-            });
-            $outsideFrameWrap
-              .appendToBody(analyzedOutsideNXT.export('table', { class: 'pxdb_innerTable offout dblcopytable' }))
-              .appendToFooter(showOutsideBtn)
-              .box.appendTo($pageDiverse);
           },
           getMarathon: async function() {
             const $marathonPage = _UI.page.Marathon;
@@ -2891,17 +2789,13 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
               to_dt: NX.DT.yesterday.slash, //～昨日
               shido_cb_flg: 1
             };
-            const reportUrl = `${NX.CONST.host}/kanren/tenpo_shido_kiroku_list.aspx?${$.param(param)}`;
-            const reportTable = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'getNoreport',
-              url: reportUrl,
-              expire: 24 * 60 * 60 * 1000
-            }).exportNXTable();
-            const result = reportTable.countifs(['指導記録', '未入力']);
-            if (result > 0) _this.notify(`指導報告未入力(${param.tenpo_cd})：${result}件`, 'fa-quote-left', reportUrl);
+            const path = `/kanren/tenpo_shido_kiroku_list.aspx?${$.param(param)}`;
+            const snap = await getDashSnap(path, 'getNoReport', 24 * 60);
+            const nxt = snap.getAsNXTable();
+            const result = nxt.countifs(['指導記録', '未入力']);
+            if (result > 0) _this.notify(`指導報告未入力(${param.tenpo_cd})：${result}件`, 'fa-quote-left', `${NX.CONST.host}${path}`);
           },
-          getLecture: async function(option = { force: false }) {
+          getLecture: async function(options = { force: false }) {
             const param = {
               nendo: NX.VAR.nendo,
               season_cb: 'a',
@@ -2912,17 +2806,12 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
               shingaku_id: '',
               id_flg: 1
             };
-            const lect25SaUrl = `${NX.CONST.host}/shingaku/kouza_list.aspx?${$.param(param)}`;
-            const lect24SaNXT = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'getLecture25Sa',
-              url: lect25SaUrl,
-              expire: 60 * 60 * 1000,
-              force: option.force
-            }).exportNXTable();
+            const path = `/shingaku/kouza_list.aspx?${$.param(param)}`;
+            const snap = await getDashSnap(path, 'getLecture', 6 * 60, options.force);
+            const nxt = snap.getAsNXTable();
             const result = {
-              SaJH3H: lect24SaNXT.xlookup('【広島】市内六校合格講座', '講座名', '受講者数'),
-              SaJH3L: lect24SaNXT.xlookup('【広島】公立高校合格講座', '講座名', '受講者数')
+              SaJH3H: nxt.xlookup('【広島】市内六校合格講座', '講座名', '受講者数'),
+              SaJH3L: nxt.xlookup('【広島】公立高校合格講座', '講座名', '受講者数')
             };
 
             _UI.DashItem.GroupOriginal.class
@@ -2938,539 +2827,6 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                 url: `${NX.CONST.host}/shingaku/kouza_jyuko_list.aspx?shingaku_id=59099`
               });
           },
-          /*
-          getRenewal: async function(options = {}) {
-            const { force = false } = options;
-            const _class = this;
-            _UI.page.Renewal.html('');
-            const urlJH3 = `${NX.CONST.host}/s/teian_list_body.aspx?nendo_season_cb=20254&tenpo_cd=&tanto_cb=1&tanto_cd=&gakunen_cb=3a&kado_flg=1&input_dt1=&input_dt2=&menu_cb=&next_dt1=&next_dt2=&mendan_status_cb=&kaiyaku_flg=1&gen_course_flg=1&course_ng=2025%2F04&mikomi_flg=1&mendan_aite_flg=1&mendan_tanto_flg=1&sort_cb=4&cb=&shukei_cb=0&shibo_cb_flg=1`;
-            const renewalJH3SL = await new SnapLog({ url: urlJH3, storeName: 'getRenewal', omitSubrow: true }).fetch();
-            const renewalJH3LF = renewalJH3SL.getForage();
-            const urlES6 = `${NX.CONST.host}/s/teian_list_body.aspx?nendo_season_cb=20254&tenpo_cd=&tanto_cb=1&tanto_cd=&gakunen_cb=66&kado_flg=1&input_dt1=&input_dt2=&menu_cb=&next_dt1=&next_dt2=&mendan_status_cb=&kaiyaku_flg=1&gen_course_flg=1&course_ng=2025%2F04&mikomi_flg=1&mendan_aite_flg=1&mendan_tanto_flg=1&sort_cb=4&cb=&shukei_cb=0`;
-            const renewalES6SL = await new SnapLog({ url: urlES6, storeName: 'getRenewalES6', omitSubrow: true }).fetch();
-            const renewalES6LF = renewalES6SL.getForage();
-
-            const listWrapR_ES6 = $('<div class="pxdb_roundtable_radiusWrapper noselectable" style="height:30vh"></div>').appendTo(_UI.page.Renewal);
-            const listWrapS_ES6 = $('<div class="pxdb_roundtable_scrollWrapper"></div>').appendTo(listWrapR_ES6);
-            const $listTable_ES6 = $('<table>', { class: 'pxdb_roundtable widthauto' }).appendTo(listWrapS_ES6);
-            const listWrapR_JH3 = $('<div class="pxdb_roundtable_radiusWrapper noselectable" style="height:30vh"></div>').appendTo(_UI.page.Renewal);
-            const listWrapS_JH3 = $('<div class="pxdb_roundtable_scrollWrapper"></div>').appendTo(listWrapR_JH3);
-            const $listTable_JH3 = $('<table>', { class: 'pxdb_roundtable widthauto' }).appendTo(listWrapS_JH3);
-            const $view = $('<div style="width:100%;overflow:auto"></div>').appendTo(_UI.page.Renewal);
-            (await renewalES6LF.keys()).forEach(function(key) {
-              const $tr = $(`<tr data-key="${key}"></tr>`).prependTo($listTable_ES6);
-              $tr.append('<td><input type="checkbox" /></td>', `<td>${key}</td>`);
-              const act = $('<td></td>')
-                .append(
-                  new FaIcon({
-                    name: 'fa-solid fa-table',
-                    wrapper: true,
-                    addClass: 'offsecondary',
-                    attr: {
-                      'data-key': key,
-                      title: '小６教室別'
-                    },
-                    onClick: async function() {
-                      const data = await renewalES6LF.getItem(key);
-                      const nxtable = new NXTable(data);
-                      $view.html(ES6ByBase(nxtable).export('table', { class: 'pxdb_table' }));
-                    }
-                  }).getNode()
-                )
-                .append(
-                  new FaIcon({
-                    name: 'fa-solid fa-magnifying-glass-chart',
-                    wrapper: true,
-                    addClass: 'offsecondary',
-                    attr: {
-                      'data-key': key,
-                      title: '小６ユニット別'
-                    },
-                    onClick: async function() {
-                      const data = await renewalES6LF.getItem(key);
-                      const nxtable = new NXTable(data);
-                      $view.html(ES6ByUnit(ES6ByBase(nxtable)).export('table', { class: 'pxdb_table' }));
-                    }
-                  }).getNode()
-                )
-                .append(
-                  new FaIcon({
-                    name: 'fa-solid fa-trash-can',
-                    addClass: 'offdanger',
-                    wrapper: true,
-                    attr: {
-                      title: '削除',
-                      'data-key': key
-                    },
-                    onClick: async function() {
-                      await renewalES6LF.removeItem(key);
-                      _class.getRenewal();
-                    }
-                  }).getNode()
-                )
-                .appendTo($tr);
-            });
-            $listTable_ES6.prepend('<tr><td></td><td>小６</td><td>act</td></tr>');
-            (await renewalJH3LF.keys()).forEach(function(key) {
-              const $tr = $(`<tr data-key="${key}"></tr>`).prependTo($listTable_JH3);
-              $tr.append('<td><input type="checkbox" /></td>', `<td>${key}</td>`);
-              const act = $('<td></td>')
-                .append(
-                  new FaIcon({
-                    name: 'fa-solid fa-table',
-                    wrapper: true,
-                    addClass: 'offprimary',
-                    attr: {
-                      'data-key': key,
-                      title: '中３教室別'
-                    },
-                    onClick: async function() {
-                      const data = await renewalJH3LF.getItem(key);
-                      const nxtable = new NXTable(data);
-                      $view.html(JH3ByBase(nxtable).export('table', { class: 'pxdb_table' }));
-                    }
-                  }).getNode()
-                )
-                .append(
-                  new FaIcon({
-                    name: 'fa-solid fa-magnifying-glass-chart',
-                    wrapper: true,
-                    addClass: 'offprimary',
-                    attr: {
-                      'data-key': key,
-                      title: '中３ユニット別'
-                    },
-                    onClick: async function() {
-                      const data = await renewalJH3LF.getItem(key);
-                      const nxtable = new NXTable(data);
-                      console.log('rawNXT', nxtable);
-                      $view.html(JH3ByUnit(JH3ByBase(nxtable)).export('table', { class: 'pxdb_table' }));
-                    }
-                  }).getNode()
-                )
-                .append(
-                  new FaIcon({
-                    name: 'fa-solid fa-trash-can',
-                    addClass: 'offdanger',
-                    wrapper: true,
-                    attr: {
-                      title: '削除',
-                      'data-key': key
-                    },
-                    onClick: async function() {
-                      await renewalJH3LF.removeItem(key);
-                      _class.getRenewal();
-                    }
-                  }).getNode()
-                )
-                .appendTo($tr);
-            });
-            $listTable_JH3.prepend('<tr><td></td><td>中３</td><td>act</td></tr>');
-            function ES6ByBase(rawNXT) {
-              return rawNXT
-                .clone()
-                .analyze(
-                  '教室',
-                  ['教室', 'count', '対象'],
-                  ['面談予定', 'count', '組済', ['面談予定', '/', false]],
-                  ['状態', 'count', '決着', ['状態', '完了']],
-                  ['状態', 'count', '継続', ['状態', '完了'], ['状態／コース', '_', false]],
-                  ['状態', 'count', '保留', ['状態', '保留']]
-                )
-                .appendColumn('ユニット', row => new NXBase(row[0]).getUnitName(), 0);
-            }
-            function ES6ByUnit(byBaseNXT) {
-              return byBaseNXT
-                .clone()
-                .analyze(
-                  'ユニット',
-                  ['対象', 'sum', '対象'],
-                  ['組済', 'sum', '組済'],
-                  ['決着', 'sum', '決着'],
-                  ['継続', 'sum', '継続'],
-                  ['保留', 'sum', '保留']
-                );
-            }
-            function JH3ByBase(rawNXT) {
-              return rawNXT
-                .clone()
-                .analyze(
-                  '教室',
-                  ['教室', 'count', '対象数'],
-                  ['面談予定', 'count', '組済', ['面談予定', '/', false]],
-                  ['面談予定', 'count', '未組完了', ['面談予定', '日程未定'], ['状態', '完了']],
-                  ['面談予定', 'count', '完了', ['面談予定', '/', false], ['状態', '完了']],
-                  ['面談予定', 'count', '継続', ['面談予定', '/', false], ['状態', '完了'], ['状態／コース', '40', false]],
-                  ['面談予定', 'count', 'A', ['状態', ['未組', '', '面談待', '日程調整', '保留']], ['その他見込', 'A']],
-                  ['面談予定', 'count', 'B', ['状態', ['未組', '', '面談待', '日程調整', '保留']], ['その他見込', 'B']]
-                )
-                .appendColumn('未組', row => row[1] - row[2] - row[3], 3)
-                .appendColumn('未決着', row => row[1] - row[3] - row[5], 6)
-                .appendColumn('ユニット', row => new NXBase(row[0]).getUnitName(), 0);
-              return rawNXT
-                .clone()
-                .replace('志望', cell => {
-                  return (
-                    {
-                      私立推薦: '私立専願',
-                      私立特殊: '私立専願',
-                      私立一般: '私立一般',
-                      国公立推薦: '国公立推薦',
-                      国公立特殊: '国公立推薦',
-                      国公立一般: '国公立一般'
-                    }[cell] || cell
-                  );
-                })
-                .analyze(
-                  '教室',
-                  ['教室', 'count', '対象数'],
-                  ['面談予定', 'count', '私立推薦専願（対象）', ['志望', '私立専願']],
-                  ['面談予定', 'count', '私立推薦専願（組済）', ['面談予定', '/', false], ['志望', '私立専願']],
-                  ['面談予定', 'count', '私立推薦専願（未組完了）', ['面談予定', '日程未定'], ['志望', '私立専願'], ['状態', '完了']],
-                  ['面談予定', 'count', '私立推薦専願（完了）', ['面談予定', '/', false], ['志望', '私立専願'], ['状態', '完了']],
-                  [
-                    '面談予定',
-                    'count',
-                    '私立推薦専願（継続）',
-                    ['面談予定', '/', false],
-                    ['志望', '私立専願'],
-                    ['状態', '完了'],
-                    ['状態／コース', '40', false]
-                  ],
-                  ['面談予定', 'count', '未決着A', ['状態', ['未組', '', '面談待', '日程調整', '保留']], ['その他見込', 'A']],
-                  ['面談予定', 'count', '未決着B', ['状態', ['未組', '', '面談待', '日程調整', '保留']], ['その他見込', 'B']]
-                )
-                .appendColumn('ユニット', row => new NXBase(row[0]).getUnitName(), 0);
-            }
-            function JH3ByUnit(byBaseNXT) {
-              return byBaseNXT
-                .clone()
-                .analyze(
-                  'ユニット',
-                  ['対象数', 'sum', '対象数'],
-                  ['組済', 'sum', '組済'],
-                  ['未組完了', 'sum', '未組完了'],
-                  ['未組', 'sum', '未組'],
-                  ['完了', 'sum', '完了'],
-                  ['継続', 'sum', '継続'],
-                  ['未決着', 'sum', '未決着'],
-                  ['A', 'sum', 'A'],
-                  ['B', 'sum', 'B']
-                );
-              return byBaseNXT
-                .clone()
-                .analyze(
-                  'ユニット',
-                  ['対象数', 'sum', '対象数'],
-                  ['私立推薦専願（対象）', 'sum', '私立推薦専願（対象）'],
-                  ['私立推薦専願（組済）', 'sum', '私立推薦専願（組済）'],
-                  ['私立推薦専願（未組完了）', 'sum', '私立推薦専願（未組完了）'],
-                  ['私立推薦専願（完了）', 'sum', '私立推薦専願（完了）'],
-                  ['私立推薦専願（継続）', 'sum', '私立推薦専願（継続）'],
-                  ['未定（対象）', 'sum', '未定（対象）'],
-                  ['未定（組済）', 'sum', '未定（組済）'],
-                  ['未定（未組完了）', 'sum', '未定（未組完了）'],
-                  ['未定（完了）', 'sum', '未定（完了）'],
-                  ['未定（継続）', 'sum', '未定（継続）'],
-                  ['未決着A', 'sum', '未決着A'],
-                  ['未決着B', 'sum', '未決着B']
-                );
-            }
-          },
-          */
-          getSeasonal: async function(options = { force: false }) {
-            //return;
-            const _this = this;
-            const $seasonalPage = _UI.page.Seasonal;
-            const LF_MendanNXTable = localforage.createInstance({
-              name: 'SnapData',
-              storeName: 'MendanNxTable'
-            });
-            //初期化
-            $seasonalPage.html('');
-            const query = options.tenpo_cd == undefined ? 'a5031' : options.tenpo_cd;
-            let nxtable;
-            //コントローラー作成
-            const stickyItem = $('<div>', { class: 'pxdb_stickyItem' }).appendTo($seasonalPage);
-            stickyItem.append('<span>Region</span>');
-            const blockSelector = $(
-              '<select class="pxdb_select"><option value="a5031">中四国</option><option value="a5011">関東</option><option value="a5021">福岡</option><option value="a5022">九州西</option><option value="a5023">九州東</option><option value="a7011">NALUオンライン</option><option value="">全社</option><option value="c3400">広島県校舎</option></select>'
-            )
-              .appendTo(stickyItem)
-              .on('change', async function() {
-                _this.getSeasonal({ tenpo_cd: $(this).val() });
-              })
-              .val(query);
-            if (typeof query != 'object') blockSelector.find(`option[value="${query}"]`).attr('selected', true);
-            stickyItem.append('<span class="widthLeftBorder">Log</span>');
-            $('<button>', {
-              text: '保存',
-              class: 'nx',
-              on: {
-                click: () => {
-                  LF_MendanNXTable.setItem(
-                    `${blockSelector.find('option:selected').text()}_${new ExDate().as('yymmdd_HHMM')}`,
-                    nxtable.export('object')
-                  );
-                  PX_Toast('保存しました');
-                }
-              }
-            }).appendTo(stickyItem);
-            const savedDataSelector = $('<select class="pxdb_select"><option value="" selected>ーーー</option></select>')
-              .appendTo(stickyItem)
-              .on('change', async function() {
-                const dataid = $(this).val();
-                if (dataid == '') return false;
-                const tenpo_cd = await LF_MendanNXTable.getItem($(this).val());
-                _this.getSeasonal({ tenpo_cd, dataid });
-              });
-            const StoredKeys = await LF_MendanNXTable.keys();
-            StoredKeys.forEach(key => {
-              $(`<option value="${key}">${key}</option>`).appendTo(savedDataSelector);
-            });
-            savedDataSelector.val(options.dataid);
-            stickyItem
-              .append('<div class="fg-10"></div>')
-              .append('<span class="fa-icon-wrap min round reloadbtn" target="getSeasonal"><i class="fa-solid fa-rotate"></i></span>');
-
-            //データ生成
-            if (typeof query === 'object') {
-              nxtable = new NXTable(query.head, query.body);
-            } else {
-              const isAllregion = query == '';
-              const params = {
-                nendo_season_cb: 20253,
-                tenpo_cd: query,
-                tanto_cb: 2,
-                tanto_cd: '',
-                gakunen_cb: '',
-                input_dt1: '05/02',
-                input_dt2: NX.DT.today.md,
-                next_dt1: '',
-                next_dt2: '',
-                menu_cb: '',
-                mendan_status_cb: '',
-                course_ng: '',
-                mikomi_flg: 1,
-                kakutei_flg: 1,
-                kado_flg: 1,
-                sort_cb: 4,
-                cb: '',
-                shukei_cb: 0,
-                shukei1_cb: 0
-              };
-              const allUrl = `${NX.CONST.host}/s/teian_list_body.aspx?${$.param(params)}`;
-              const allResData = await new SnapData({
-                storeName: 'MendanList',
-                key: `${query}_allRes`,
-                url: allUrl,
-                nosave: isAllregion,
-                expire: 30 * 60 * 1000,
-                force: options.force,
-                static: options.force ? false : true
-              }).exportTable();
-              nxtable = $NX(allResData).makeNXTable({ omitSubrow: true });
-            }
-            //データ描画
-            $seasonalPage
-              .append('<div class="pxdbItembox spacer"></div>')
-              .append('<h2>確定ベース</h2>')
-              .append('<div class="pxdbItembox spacer"></div>')
-              .append('<h3>確定差（社員別）</h3>');
-            //社員別確定結果
-            nxtable
-              .clone()
-              .replace('面談予定_1', cell => new NXEmp().findInclude('name', cell).getName() || '')
-              .analyze(
-                '面談予定_1',
-                ['教室', 'count', '対象数'],
-                ['状態', 'count', '完了数', ['状態', '完了']],
-                ['状態', 'count', '申込数', ['状態', '完了'], ['講習確定', ',', false]],
-                ['講習見込', 'sum', '見込（完了分）', ['状態', '完了']],
-                ['講習確定', 'sum', '確定（完了分）', ['状態', '完了']]
-              )
-              .appendColumn('見込差', row => parseFloat(row[5]) - parseFloat(row[4]))
-              .makeTotalRow()
-              .appendColumn('申込率', row => ((parseFloat(row[3]) / parseFloat(row[2])) * 100).toFixed(1) + '%')
-              .replace('見込（完了分）', cell => cell.toLocaleString())
-              .replace('確定（完了分）', cell => cell.toLocaleString())
-              .replace('見込差', cell => cell.toLocaleString())
-              .export('table', { class: 'pxdb_table withFooter singleCaption dblcopytable maxWidth5' })
-              .appendTo($seasonalPage);
-            //教室別確定結果
-            $seasonalPage.append('<h3>確定差（学年別）</h3>');
-            nxtable
-              .clone()
-              .analyze(
-                '学年',
-                ['教室', 'count', '対象数'],
-                ['状態', 'count', '完了数', ['状態', '完了']],
-                ['状態', 'count', '申込数', ['状態', '完了'], ['講習確定', ',', false]],
-                ['講習見込', 'sum', '見込（完了分）', ['状態', '完了']],
-                ['講習確定', 'sum', '確定（完了分）', ['状態', '完了']],
-                ['講習確定', 'average', '確定平均（完了分）', ['状態', '完了'], ['講習確定', ',', false]]
-              )
-              .appendColumn('見込差', row => parseFloat(row[5]) - parseFloat(row[4]), 5)
-              .sort('学年', 1, gradeSort)
-              .makeTotalRow()
-              .appendColumn('申込率', row => ((parseFloat(row[3]) / parseFloat(row[2])) * 100).toFixed(1) + '%')
-              .appendColumn('基準単価', row => NX.SPRING.BASENUMBER.price[row[0]] || '', 7)
-              .appendColumn('基準申込率', row => NX.SPRING.BASENUMBER.rate[row[0]] || '', 9)
-              .appendColumn('現在インパクト', row => calcNowInpact(row))
-              .replace('見込（完了分）', cell => cell.toLocaleString())
-              .replace('確定（完了分）', cell => cell.toLocaleString())
-              .replace('確定平均（完了分）', cell => Math.floor(cell).toLocaleString())
-              .replace('基準単価', cell => cell.toLocaleString())
-              .replace('見込差', cell => cell.toLocaleString())
-              .export('table', { class: 'pxdb_table withFooter singleCaption dblcopytable maxWidth5' })
-              .appendTo($seasonalPage);
-            $seasonalPage
-              .append('<h2>確定保留申込無ベース</h2>')
-              .append('<div class="pxdbItembox spacer"></div>')
-              .append('<h3>確定保留差（担当者別）</h3>');
-            //見込み差を計算するヘルパー
-            function helper_mikomisa(row) {
-              return parseFloat(row[4]) + parseFloat(row[3]) - parseFloat(row[2]) - parseFloat(row[1]);
-            }
-            //インパクトを計算するヘルパー
-            function calcNowInpact(row) {
-              return Math.round(
-                (parseFloat(row[1]) * (parseFloat(row[7]) * parseFloat(row[9]) - parseFloat(row[8]) * parseFloat(row[10]))) / 100
-              ).toLocaleString();
-            }
-            //
-            function gradeSort(a, b) {
-              return LCT.STUDENT.gradeTable[a] - LCT.STUDENT.gradeTable[b];
-            }
-            nxtable
-              .clone()
-              .replace('面談予定_1', cell => new NXEmp().findInclude('name', cell).getName() || '')
-              .analyze(
-                '面談予定_1',
-                ['講習見込', 'sum', '見込（完了）', ['状態', '完了']],
-                ['講習見込', 'sum', '見込（保留）', ['状態', '保留']],
-                ['講習確定', 'sum', '確定（完了）', ['状態', '完了']],
-                ['見込加算額', 'sum', '提案書（保留）', ['状態', '保留']]
-              )
-              .appendColumn('見込差', row => helper_mikomisa(row))
-              .makeTotalRow()
-              .replace('見込（完了）', cell => cell.toLocaleString())
-              .replace('見込（保留）', cell => cell.toLocaleString())
-              .replace('確定（完了）', cell => cell.toLocaleString())
-              .replace('提案書（保留）', cell => cell.toLocaleString())
-              .replace('見込差', cell => cell.toLocaleString())
-              .export('table', { class: 'pxdb_table withFooter singleCaption dblcopytable maxWidth5' })
-              .appendTo($seasonalPage);
-            $seasonalPage.append('<h3>確定保留差（学年別）</h3>');
-            nxtable
-              .clone()
-              .analyze(
-                '学年',
-                ['講習見込', 'sum', '見込（完了）', ['状態', '完了']],
-                ['講習見込', 'sum', '見込（保留）', ['状態', '保留']],
-                ['講習見込', 'sum', '見込（申込無）', ['状態', '申込無']],
-                ['講習確定', 'sum', '確定（完了）', ['状態', '完了']],
-                ['見込加算額', 'sum', '提案書（保留）', ['状態', '保留']]
-              )
-              .appendColumn('見込差', row => helper_mikomisa(row))
-              .makeTotalRow()
-              .replace('見込（完了）', cell => cell.toLocaleString())
-              .replace('見込（保留）', cell => cell.toLocaleString())
-              .replace('確定（完了）', cell => cell.toLocaleString())
-              .replace('提案書（保留）', cell => cell.toLocaleString())
-              .replace('見込差', cell => cell.toLocaleString())
-              .export('table', { class: 'pxdb_table withFooter singleCaption dblcopytable' })
-              .appendTo($seasonalPage);
-            $('<p>ー</p>').appendTo($seasonalPage);
-
-            const personalProspectConst = {
-              nendo_season_cb: 20253,
-              tenpo_cd: 'a5031'
-            };
-            const personalProspectSL = await new SnapLog({
-              url: `${NX.CONST.host}/s/koshu_personal_shukei.aspx?${$.param(personalProspectConst)}`,
-              storeName: 'personalProspect'
-            }).fetch();
-            const personalProspectLF = personalProspectSL.getForage();
-            const goalNXT = new NXTable(NX.SUMMER.GOALNXT);
-
-            //個人積上を表示
-            $seasonalPage.append('<h1>個人積上</h1>');
-            const prospectKeys = await personalProspectLF.keys();
-            const lastKey = prospectKeys.at(-1);
-            const lastAchievedata = await personalProspectLF.getItem(lastKey);
-            const lastAchieveNXT = new NXTable(lastAchievedata);
-            const prospectNXT = lastAchieveNXT
-              .clone()
-              .filter('担当者名', cell => cell != '担当者名')
-              .pickColumns(['担当者名', '目標']);
-            //for...ofは中のawaitを待って次のループに進み、その後の処理も終わってから実行される
-            for (const key of prospectKeys) {
-              const data = await personalProspectLF.getItem(key);
-              const nxtable = new NXTable(data);
-              const headText = key.split('_')[0];
-              prospectNXT.appendColumnEx([`${headText}見込`, `${headText}達成率`], row => {
-                const value = nxtable.xlookup(row[0], '担当者名', '最終見込');
-                const rate = Math.round(($NX(value).moneylocaleToInt() / $NX(row[1]).moneylocaleToInt()) * 100, 0);
-                return [value, rate + '%'];
-              });
-            }
-            $seasonalPage.append(prospectNXT.export('table', { class: 'pxdb_table right' }));
-            //個人目標達成率を表示
-            $seasonalPage.append('<h1>個人目標達成率</h1>');
-            const achieveNXT = lastAchieveNXT
-              .clone()
-              .filter('担当者名', cell => cell != '担当者名')
-              .pickColumns(['担当者名', '目標']);
-            achieveNXT.appendColumnEx(['実績', '達成率'], row => {
-              const value = lastAchieveNXT.xlookup(row[0], '担当者名', '実績');
-              const rate = Math.round(($NX(value).moneylocaleToInt() / $NX(row[1]).moneylocaleToInt()) * 100, 0);
-              return [value, rate + '%'];
-            });
-            $seasonalPage.append(achieveNXT.export('table', { class: 'pxdb_table right' }));
-          },
-          /*
-          getStudents: async function(option = { force: false }) {
-            //初期化
-            _UI.page.Students.html('');
-            const monthlyTable = $('<table>', { class: 'pxdb_table' }).appendTo(_UI.page.Students);
-            const headTr = $('<tr><td>教室名</td></tr>').appendTo(monthlyTable);
-            const initialMonth = '2025-04-01';
-            const BaseStudents = JSON.parse(localStorage.getItem('BaseStudents')) || {};
-            renderMonthlyTable(initialMonth);
-            async function getData(date) {
-              const BaseStudents = JSON.parse(localStorage.getItem('BaseStudents')) || {};
-              const ymString = new ExDate(date).as('yyyy/mm');
-              BaseStudents[parseInt(new ExDate(date).as('yyyymm'))] = await ASI.studentsInBase(ymString);
-              localStorage.setItem('BaseStudents', JSON.stringify(BaseStudents));
-              PX_Toast(`データ取得完了：${ymString}`);
-              renderMonthlyTable(initialMonth);
-            }
-            function renderMonthlyTable(initialMonth) {
-              monthlyTable.find('tr:gt(0)').remove();
-              headTr.html('<td>教室名</td>');
-              initialMonth = initialMonth || new ExDate().setDateTry(null, null, 1).as('yyyy-mm-dd');
-              for (let i = 0; i < 12; i++) {
-                const date = new ExDate(initialMonth).aftermonths(i);
-                $(`<td month="${date}" class="getCountData">${date.as('yy/mm')}</td>`).appendTo(headTr);
-              }
-              hiroshimalist.forEach(elem => {
-                const tr = $(`<tr tenpo="${elem[0]}"><td>${elem[1]}</td></tr>`).appendTo(monthlyTable);
-                for (let i = 0; i < 12; i++) {
-                  const date = new ExDate(initialMonth).aftermonths(i);
-                  $(
-                    `<td month="${date}" tenpo="${elem[0]}" title="${elem[1]}-${date.as('yyyy/mm')}">${BaseStudents?.[parseInt(date.as('yyyymm'))]?.[
-                      elem[0]
-                    ]?.count || ''}</td>`
-                  ).appendTo(tr);
-                }
-              });
-            }
-            $(document).on('dblclick', '.getCountData', function() {
-              getData($(this).attr('month'));
-            });
-          },
-          */
           getNotify: async function(options = { force: false }) {
             const url_indexinfo = `${NX.CONST.host}/index_info.aspx`;
             const ajx_indexinfo = await $.get(url_indexinfo);
@@ -3498,38 +2854,29 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                   .appendTo(_UI.HeadItem.notify);
               }
             }
-            const cancelInPendingUrl = `${NX.CONST.host}/k/kaiyaku_list_body.aspx?tenpo_cd=${_this.profile.nowgroup}&disp_cb=0&input_dt1=&input_dt2=&kaiyaku_cb=&status_cb=3&end_dt=&sort_cb=1`;
-            const cancelInPending = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'cancelInPending',
-              url: cancelInPendingUrl,
-              expire: 5 * 60 * 1000,
-              force: options.force
-            }).exportData();
-
-            const cancelInPendingCount = $(cancelInPending).find('input[value=承認]').length;
-            if (cancelInPendingCount > 0)
+            //解約未承認通知
+            const cancelPath = `/k/kaiyaku_list_body.aspx?tenpo_cd=${_this.profile.nowgroup}&disp_cb=0&input_dt1=&input_dt2=&kaiyaku_cb=&status_cb=3&end_dt=&sort_cb=1`;
+            const cancelSnap = await getDashSnap(cancelPath, 'cancelInPending', 5);
+            const cancelCount = cancelSnap.getAsJQuery('table input[value=承認]').length;
+            if (cancelCount > 0)
               new FaIcon({
                 name: `fa-solid fa-lg fa-user-large-slash`,
                 addClass: 'contextlink',
                 wrapper: true,
                 attr: {
-                  title: `解約未承認（${cancelInPendingCount}件）`,
-                  url: cancelInPendingUrl,
+                  title: `解約未承認（${cancelCount}件）`,
+                  url: `${NX.CONST.host}${cancelPath}`,
                   target: '_blank'
                 }
               })
                 .getNode()
                 .appendTo(_UI.HeadItem.notify);
-            const noCoachUrl = `${NX.CONST.host}/s/student_tanto_list.aspx?tenpo_cd=a5031&tanto_cb=0`; //${_this.profile.nowgroup}
-            const noCoach = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'noCoach',
-              url: noCoachUrl,
-              expire: 5 * 60 * 1000,
-              force: options.force
-            }).exportData();
-            const noCoachCount = $(noCoach).find('table input[type=checkbox]').length;
+
+            //担任未設定通知
+            //現状中四国ブロックにしている
+            const coachPath = `/s/student_tanto_list.aspx?tanto_cb=0&tenpo_cd=a5031`;
+            const coachSnap = await getDashSnap(coachPath, 'noCoach', 5);
+            const noCoachCount = coachSnap.getAsJQuery('table input[type=checkbox]').length;
             if (noCoachCount > 0)
               new FaIcon({
                 name: `fa-solid fa-lg fa-user-tag`,
@@ -3537,165 +2884,127 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                 wrapper: true,
                 attr: {
                   title: `担任未設定（${noCoachCount}件）`,
-                  url: noCoachUrl,
+                  url: `${NX.CONST.host}${coachPath}`,
                   target: '_blank'
                 }
               })
                 .getNode()
                 .appendTo(_UI.HeadItem.notify);
-            const surveyUrl = `${NX.CONST.host}/s/shokai_survey_list.aspx?tenpo_cd=${_this.profile.nowgroup}&jyotai_cb=1`;
-            const survey = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'noCoach',
-              url: surveyUrl,
-              expire: 5 * 60 * 1000,
-              force: options.force
-            }).exportData();
-            const surveyCount = $(survey)
-              .find('table')
-              .find('input[type=button][value="開く"]').length;
-            if (surveyCount > 0)
-              new FaIcon({
-                name: `fa-solid fa-lg fa-clipboard-list`,
-                addClass: 'contextlink',
-                wrapper: true,
-                attr: {
-                  title: `初回アンケート未対応（${surveyCount}件）`,
-                  url: surveyUrl,
-                  target: '_blank'
-                }
-              })
-                .getNode()
-                .appendTo(_UI.HeadItem.notify);
-
-            _UI.DashItem.OnBoard.class.resetBody();
-            const onBoardUrl = `${NX.CONST.host}/s/student_meeting_list.aspx?keiyaku_tanto_flg=1&profile_flg=1&survey_flg=1&tenpo_cd=${_this.profile.nowgroup}`;
-            const onBoardTable = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'onBoard',
-              url: onBoardUrl,
-              expire: 24 * 60 * 60 * 1000,
-              force: options.force
-            }).exportTable();
-            console.log('onBoardTable', onBoardTable);
-
-            $(onBoardTable)
-              .find('tr')
-              .eq(0)
-              .remove();
-
-            const onBoardNXT = $NX(onBoardTable).makeNXTable();
-            _UI.DashItem.OnBoard.class.appendToBody(onBoardNXT.export('table'));
           },
           getMyTask: async function(options = { force: false }) {
             //初期化
             _UI.DashItem.MyTask.class.resetBody();
-            const mytaskUrl = `${NX.CONST.host}/todo/todo_list.aspx?tanto_cd=${_this.profile.mynumber}&base_dt=`;
-            const mytaskTable = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'mytask',
-              url: mytaskUrl,
-              expire: 60 * 60 * 1000,
-              force: options.force
-            }).exportTable();
-            const table = $('<table>', { class: 'pxdb_innerTable offout' });
-            _UI.DashItem.MyTask.class.appendToBody(table);
-            const appendFaicon = new FaIcon({
-              name: 'fa-solid fa-square-plus fa-lg',
-              addClass: 'offout',
-              wrapper: true,
-              attr: {
-                title: '新規タスク追加'
-              },
-              onClick: () => window.open(`${NX.CONST.host}/todo/todo_input.aspx`, '_blank')
-            });
-            _UI.DashItem.MyTask.class.setFooter(appendFaicon.getNode());
-
-            //Dashboard追加処理
             const studentInfo = new studentInfoClass();
-            $(mytaskTable)
-              .find('tr:gt(0)')
-              .each(function() {
-                //idを持つtrのみ
-                if (!/td\d+/.test($(this).attr('id'))) return true;
+
+            //１．ダッシュボード bodyを作成
+            // ---データの抽出---
+            const myTaskPath = `/todo/todo_list.aspx?tanto_cd=${_this.profile.mynumber}&base_dt=`;
+            const myTaskSnap = await getDashSnap(myTaskPath, 'mytask', 60, options.force);
+
+            const taskList = myTaskSnap
+              .getAsJQuery('table tr:not(:first-child)')
+              .map(function() {
                 const $tr = $(this);
-                const taskId = $tr.attr('id').replace('td', '');
+                const trId = $tr.attr('id') || '';
+                //idがなければ弾く
+                if (!/td\d+/.test(trId)) return null;
+
+                const taskId = trId.replace('td', '');
                 const due = new ExDate('20' + $tr.findTdGetTxt(8));
-                const url = {
-                  rireki: `${NX.CONST.host}/todo/todo_rireki_input.aspx?id=${taskId}`,
-                  detail: `${NX.CONST.host}/todo/todo_input.aspx?id=${taskId}`
-                };
-                const targetName = $tr
-                  .findTdGetTxt(2)
-                  .replace('校舎：', '')
-                  .replace('生徒：', '');
-                const taskName = $tr
-                  .find('td:eq(3)')
-                  .find('a')
-                  .text();
+                const targetName = $tr.findTdGetTxt(2).replace(/校舎：|生徒：/g, '');
+                const taskName = $tr.find('td:eq(3) a').text();
+                const progress = $tr.findTdGetTxt(6);
                 const student_cd = studentInfo.search(['生徒名', targetName])?.['生徒NO'];
-                const doneIcon = new FaIcon({
-                  name: 'fa-regular fa-square',
-                  attr: { title: '完了にする' },
-                  onClick: function() {
-                    chrome.runtime.sendMessage({
-                      opennetzbackEx: `${NX.CONST.host}/todo/todo_input.aspx?setState=F&doSave=true&id=${taskId}`
-                    });
-                    PX_Toast('タスクを完了にしました');
-                    $(this)
-                      .parents('tr')
-                      .remove();
-                  }
-                });
-                const editIcon = new FaIcon({
+
+                return { taskId, due, targetName, taskName, progress, student_cd };
+              })
+              .get()
+              .filter(t => t !== null);
+
+            // ---データのソート---
+            taskList.sort((a, b) => a.due.getTime() - b.due.getTime());
+
+            // ---UIの構築---
+            const $table = $('<table>', { class: 'pxdb_innerTable offout' });
+            _UI.DashItem.MyTask.class.appendToBody($table);
+
+            taskList.forEach(task => {
+              const $row = createTaskRow(task);
+              $table.append($row);
+            });
+
+            //２．ダッシュボード footer作成
+            _UI.DashItem.MyTask.class.setFooter(
+              new FaIcon({
+                name: 'fa-solid fa-square-plus fa-lg',
+                addClass: 'offout',
+                wrapper: true,
+                attr: {
+                  title: '新規タスク追加'
+                },
+                onClick: () => window.open(`${NX.CONST.host}/todo/todo_input.aspx`, '_blank')
+              }).getNode()
+            );
+
+            /**
+             * タスク1行分のDOMを生成する
+             */
+            function createTaskRow(task) {
+              const { taskId, due, targetName, taskName, progress, student_cd } = task;
+
+              // アイコンの準備
+              const doneIcon = new FaIcon({
+                name: 'fa-regular fa-square',
+                attr: { title: '完了にする' },
+                onClick: function() {
+                  chrome.runtime.sendMessage({
+                    opennetzbackEx: `${NX.CONST.host}/todo/todo_input.aspx?setState=F&doSave=true&id=${taskId}`
+                  });
+                  PX_Toast('タスクを完了にしました');
+                  $(this)
+                    .closest('tr')
+                    .remove();
+                }
+              });
+
+              const renrakuHtml = student_cd
+                ? new FaIcon({
+                    name: 'fa-solid fa-envelope',
+                    addClass: 'contextlink',
+                    attr: {
+                      title: '生徒連絡事項を開く',
+                      url: `${NX.CONST.host}/s/student_renraku_list.aspx?student_cd=${student_cd}`
+                    }
+                  }).getHtml()
+                : '';
+
+              const isOverdue = due.compare(new Date()).backward;
+
+              // 行の組み立て（テンプレートリテラルで視覚的に）
+              const $tr = $(`
+                  <tr class="contextlink" url="${NX.CONST.host}/todo/todo_rireki_input.aspx?id=${taskId}">
+                      <td class="icon-col"></td>
+                      <td>${targetName} ${taskName} ${renrakuHtml}</td>
+                      <td><span class="pxdbsmall colorScheme ${isOverdue ? 'offdanger' : 'offout'}">${due.as('m月d日')}</span></td>
+                      <td style="width:2rem;text-align:right">${progress}%</td>
+                      <td class="edit-col"></td>
+                  </tr>
+              `);
+
+              $tr.find('.icon-col').append(doneIcon.getNode());
+              $tr.find('.edit-col').append(
+                new FaIcon({
                   name: 'fa-solid fa-pen-to-square',
                   attr: { title: '詳細情報' },
-                  onClick: () => window.open(url.detail)
-                });
-                const faIcon = !student_cd
-                  ? ''
-                  : new FaIcon({
-                      name: 'fa-solid fa-envelope',
-                      addClass: 'contextlink',
-                      attr: {
-                        title: '生徒連絡事項を開く',
-                        url: `${NX.CONST.host}/s/student_renraku_list.aspx?student_cd=${student_cd}`
-                      }
-                    }).getHtml();
+                  onClick: e => {
+                    e.stopPropagation();
+                    window.open(`${NX.CONST.host}/todo/todo_input.aspx?id=${taskId}`);
+                  }
+                }).getNode()
+              );
 
-                const rtn = $('<tr>', {
-                  order: due.getTime(),
-                  class: 'contextlink',
-                  url: `${NX.CONST.host}/todo/todo_rireki_input.aspx?id=${taskId}`
-                }).appendTo(table);
-                $('<td>')
-                  .append(doneIcon.getNode())
-                  .appendTo(rtn);
-                rtn.append(`<td>${targetName}${taskName}${faIcon}</td>`);
-                $('<td>')
-                  .append(
-                    `<span style="text-align:left" class="pxdbsmall colorScheme ${
-                      due.compare(new ExDate()).backward ? 'offdanger' : 'offout'
-                    }">${due.as('m月d日')}</span>`
-                  )
-                  .appendTo(rtn);
-                rtn.append(`<td style="width:2rem;text-align:right">${$(this).findTdGetTxt(6)}%</td>`);
-                $('<td>')
-                  .append(editIcon.getNode())
-                  .appendTo(rtn);
-                /*
-                const tr = $(`<tr class="contextlink dbllink" order="${due.getTime()}" contexturl="${contexturl}" dblurl="${dblurl}"></tr>`).appendTo(
-                  table
-                );
-                */
-              });
-            //期日順にソート
-            $(table)
-              .find('tr')
-              .sort(function(a, b) {
-                return parseInt($(a).attr('order')) > parseInt($(b).attr('order')) ? 1 : -1;
-              })
-              .appendTo(table);
+              return $tr;
+            }
 
             //Tasksページ
             const $taskPage = _UI.page.Tasks;
@@ -3709,197 +3018,28 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
               footer: true,
               footerAlignment: 'right'
             });
+            // --- 過去データ抽出 ---
+            const undonePath = `/todo/todo_tenpo_list.aspx?tenpo_cd=a5031&personal_flg=1&student_flg=1&teacher_flg=1&tenpo_flg=1&instruction_id=&jyotai_cb=1&category_cb=&progress_vl1=0&progress_vl2=100&base_dt=&taio_dt=&sort_cb=1`;
+            const undoneSnap = await getDashSnap(undonePath, 'undone', 5, options.force);
+            const undoneList = extractTaskInfo(undoneSnap.getAsJQuery('table'));
 
+            // --- 過去データ描画 ---
             const $dateErrorTable = $('<table>', { class: 'pxdb_innerTable' });
+            undoneList.forEach(item => {
+              const $row = createUndoneRow(item, 'past');
+              if ($row) $dateErrorTable.append($row);
+            });
 
-            const undoneURL = `${NX.CONST.host}/todo/todo_tenpo_list.aspx?tenpo_cd=a5031&personal_flg=1&student_flg=1&teacher_flg=1&tenpo_flg=1&instruction_id=&jyotai_cb=1&category_cb=&progress_vl1=0&progress_vl2=100&base_dt=&taio_dt=&sort_cb=1`;
-            const undoneData = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'undoneTask',
-              url: undoneURL,
-              expire: 5 * 60 * 1000,
-              force: options.force
-            }).exportData();
+            // --- 本日時点データ抽出 ---
+            const todayPath = `/todo/todo_tenpo_list.aspx?tenpo_cd=a5031&personal_flg=1&student_flg=1&teacher_flg=1&tenpo_flg=1&instruction_id=&jyotai_cb=&category_cb=&progress_vl1=0&progress_vl2=100&base_dt=${NX.DT.today.slash}&taio_dt=&sort_cb=1`;
+            const todaySnap = await getDashSnap(todayPath, 'todayTask', 5, options.force);
+            const todayErrorList = extractTaskInfo(todaySnap.getAsJQuery('table'));
 
-            $(undoneData)
-              .find('table:has("input[type=button]") > tbody > tr:gt(0)')
-              .each(function() {
-                const $tr = $(this);
-                const trid = $tr.attr('id');
-                if (!trid || trid.includes('-')) return true;
-                const texts = $tr.findTdGetTxt();
-                const range = texts[7] || '';
-                const isIncorrectrange = range.startsWith('～') || range.endsWith('～') || range == '';
-                const isPast = new ExDate('20' + texts[8] || '').getTime() < new Date().getTime();
-                const isNeedfollow = (texts[3] || '').includes('１対１指導要フォロー');
-                if (isIncorrectrange || isPast || isNeedfollow) {
-                  const taskID = trid.replace('td', '');
-                  const setRangeIcon = new FaIcon({
-                    name: 'fa-solid fa-calendar-days',
-                    attr: { title: '期間の適正化' },
-                    onClick: function() {
-                      chrome.runtime.sendMessage({
-                        opennetzbackEx: `${NX.CONST.host}/todo/todo_input.aspx?doAction=autoClose&id=${taskID}`
-                      });
-                      PX_Toast('タスク期限を適正化しました');
-                      $(this)
-                        .parents('tr')
-                        .remove();
-                    }
-                  });
-                  const cancelIcon = new FaIcon({
-                    name: 'fa-solid fa-ban',
-                    attr: { title: '中止にする' },
-                    onClick: function() {
-                      chrome.runtime.sendMessage({
-                        opennetzbackEx: `${NX.CONST.host}/todo/todo_input.aspx?setState=C&doSave=true&id=${taskID}`
-                      });
-                      PX_Toast('中止にしました');
-                      $(this)
-                        .parents('tr')
-                        .remove();
-                    }
-                  });
-                  const doneIcon = new FaIcon({
-                    name: 'fa-regular fa-square',
-                    attr: { title: '完了にする' },
-                    onClick: function() {
-                      chrome.runtime.sendMessage({
-                        opennetzbackEx: `${NX.CONST.host}/todo/todo_input.aspx?setState=F&doSave=true&id=${taskID}`
-                      });
-                      PX_Toast('完了にしました');
-                      $(this)
-                        .parents('tr')
-                        .remove();
-                    }
-                  });
-                  const editIcon = new FaIcon({
-                    name: 'fa-solid fa-pen-to-square',
-                    attr: { title: '詳細情報' },
-                    onClick: () => window.open(`${NX.CONST.host}/todo/todo_input.aspx?id=${taskID}`)
-                  });
-
-                  const tr = $(`<tr data-id="${taskID}">`);
-                  if (isIncorrectrange) tr.attr('isIncorrectrange', true);
-                  if (isPast) tr.attr('isPast', true);
-                  if (isNeedfollow) tr.attr('isNeedfollow', true);
-                  $('<td>')
-                    .append(doneIcon.getNode())
-                    .appendTo(tr);
-                  tr.append(`<td>${texts[1] + ' ' + texts[3] || ''}</td>`)
-                    .append(`<td class="${isNeedfollow ? 'red' : ''}">${texts[5] || ''}</td>`)
-                    .append(`<td class="${isIncorrectrange ? 'red' : ''}">${texts[7] === '' ? '×' : texts[7] || ''}</td>`)
-                    .append(`<td class="${isPast ? 'red' : ''}">${texts[8] || ''}</td>`)
-                    .appendTo($dateErrorTable);
-                  $('<td>')
-                    .append(setRangeIcon.getNode())
-                    .appendTo(tr);
-                  $('<td>')
-                    .append(cancelIcon.getNode())
-                    .appendTo(tr);
-                  $('<td>')
-                    .append(editIcon.getNode())
-                    .appendTo(tr);
-                }
-              });
-
-            const todayURL = `${
-              NX.CONST.host
-            }/todo/todo_tenpo_list.aspx?tenpo_cd=a5031&personal_flg=1&student_flg=1&teacher_flg=1&tenpo_flg=1&instruction_id=&jyotai_cb=&category_cb=&progress_vl1=0&progress_vl2=100&base_dt=${new ExDate().as(
-              'yyyy/mm/dd'
-            )}&taio_dt=&sort_cb=1`;
-            const todayData = await new SnapData({
-              storeName: 'DashBoard',
-              key: 'todayTask',
-              url: todayURL,
-              expire: 5 * 60 * 1000,
-              force: options.force
-            }).exportData();
-
-            $(todayData)
-              .find('table:has("input[type=button]") > tbody > tr:gt(0)')
-              .each(function() {
-                const $tr = $(this);
-                const trid = $tr.attr('id');
-                if (!trid || trid.includes('-')) return true;
-                const texts = $tr.findTdGetTxt();
-                const state = texts[5];
-                const multiIncludes = (target, querys) => querys.some(equery => target.includes(equery));
-                const isEnded = multiIncludes(state, ['削除', '完了', '中止']);
-                const range = texts[7] || '';
-                const isIncorrectrange = range.startsWith('～') || range.endsWith('～') || range == '';
-                const isPast = new ExDate('20' + texts[8] || '').getTime() < new Date().getTime();
-                const isNeedfollow = (texts[3] || '').includes('１対１指導要フォロー');
-                if (isEnded && isIncorrectrange) {
-                  const taskID = trid.replace('td', '');
-                  const setRangeIcon = new FaIcon({
-                    name: 'fa-solid fa-calendar-days',
-                    attr: { title: '期間の適正化' },
-                    onClick: function() {
-                      chrome.runtime.sendMessage({
-                        opennetzbackEx: `${NX.CONST.host}/todo/todo_input.aspx?doAction=autoClose&id=${taskID}`
-                      });
-                      PX_Toast('タスク期限を適正化しました');
-                      $(this)
-                        .parents('tr')
-                        .remove();
-                    }
-                  });
-                  const cancelIcon = new FaIcon({
-                    name: 'fa-solid fa-ban',
-                    attr: { title: '中止にする' },
-                    onClick: function() {
-                      chrome.runtime.sendMessage({
-                        opennetzbackEx: `${NX.CONST.host}/todo/todo_input.aspx?setState=C&doSave=true&id=${taskID}`
-                      });
-                      PX_Toast('中止にしました');
-                      $(this)
-                        .parents('tr')
-                        .remove();
-                    }
-                  });
-                  const doneIcon = new FaIcon({
-                    name: 'fa-regular fa-square',
-                    attr: { title: '完了にする' },
-                    onClick: function() {
-                      chrome.runtime.sendMessage({
-                        opennetzbackEx: `${NX.CONST.host}/todo/todo_input.aspx?setState=F&doSave=true&id=${taskID}`
-                      });
-                      PX_Toast('完了にしました');
-                      $(this)
-                        .parents('tr')
-                        .remove();
-                    }
-                  });
-                  const editIcon = new FaIcon({
-                    name: 'fa-solid fa-pen-to-square',
-                    attr: { title: '詳細情報' },
-                    onClick: () => window.open(`${NX.CONST.host}/todo/todo_input.aspx?id=${taskID}`)
-                  });
-
-                  const tr = $(`<tr data-id="${taskID}">`);
-                  if (isIncorrectrange) tr.attr('isIncorrectrange', true);
-                  if (isPast) tr.attr('isPast', true);
-                  if (isNeedfollow) tr.attr('isNeedfollow', true);
-                  $('<td>')
-                    .append(doneIcon.getNode())
-                    .appendTo(tr);
-                  tr.append(`<td class="${isNeedfollow ? 'red' : ''}">${texts[1] + ' ' + texts[3] || ''}</td>`)
-                    .append(`<td>${texts[5] || ''}</td>`)
-                    .append(`<td class="${isIncorrectrange ? 'red' : ''}">${texts[7] === '' ? '×' : texts[7] || ''}</td>`)
-                    .append(`<td class="${isPast ? 'red' : ''}">${texts[8] || ''}</td>`)
-                    .appendTo($dateErrorTable);
-                  $('<td>')
-                    .append(setRangeIcon.getNode())
-                    .appendTo(tr);
-                  $('<td>')
-                    .append(cancelIcon.getNode())
-                    .appendTo(tr);
-                  $('<td>')
-                    .append(editIcon.getNode())
-                    .appendTo(tr);
-                }
-              });
+            // --- 本日データ描画 ---
+            todayErrorList.forEach(item => {
+              const $row = createUndoneRow(item, 'today');
+              if ($row) $dateErrorTable.append($row);
+            });
 
             $errorTaskListWrap.appendToBody($dateErrorTable);
 
@@ -3907,6 +3047,106 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
 
             $errorTaskListWrap.box.appendTo($taskPage);
 
+            // 生のtableからタスク情報を引き出す共通関数
+            function extractTaskInfo($table) {
+              return $table
+                .filter(function() {
+                  //tableが入れ子になっているので、outerにtableを持たないもののみに
+                  return $(this).parents('table').length === 0;
+                })
+                .children('tbody')
+                .children('tr:not(:first-child)')
+                .map(function() {
+                  const $tr = $(this);
+                  const trId = $tr.attr('id');
+
+                  if (!trId || trId.includes('-')) return null;
+
+                  const taskId = trId.replace('td', '');
+                  const texts = $tr.findTdGetTxt();
+                  return {
+                    taskId,
+                    taskName: `${texts[1] || ''} ${texts[3] || ''}`,
+                    state: texts[5] || '',
+                    range: texts[7] || '',
+                    due: texts[8] || ''
+                  };
+                })
+                .get()
+                .filter(t => t !== null);
+            }
+
+            function multiIncludes(target, querys) {
+              querys.some(equery => target.includes(equery));
+            }
+
+            // タスクリストから、DOMを生成する共通関数
+            function createUndoneRow(undone, pattern = 'past') {
+              const { taskId, taskName, state, range, due } = undone;
+              const displayRange = range === '' ? '×' : range;
+              const isIncorrectRange = range.startsWith('～') || range.endsWith('～') || range == '';
+              const isPast = new ExDate('20' + due).getTime() < new Date().getTime();
+              const isNeedfollow = taskName.includes('１対１指導要フォロー');
+              const isEnded = multiIncludes(state, ['削除', '完了', '中止']);
+
+              //エラーがなければ除去 エラー条件の分岐
+              switch (pattern) {
+                case 'today':
+                  if (!isEnded || !isIncorrectRange) return false;
+                  break;
+                case 'past':
+                  if (!isIncorrectRange && !isPast && !isNeedfollow) return false;
+                  break;
+              }
+
+              //アイコンの作成
+              const createIcon = (name, title, actionUrl, toast) =>
+                new FaIcon({
+                  name,
+                  attr: { title },
+                  onClick: function() {
+                    chrome.runtime.sendMessage({ opennetzbackEx: `${NX.CONST.host}/todo/todo_input.aspx?id=${taskId}${actionUrl}` });
+                    PX_Toast(toast);
+                    $(this)
+                      .closest('tr')
+                      .remove();
+                  }
+                });
+
+              const doneIcon = createIcon('fa-regular fa-square', '完了にする', '&setState=F&doSave=true', '完了にしました');
+              const setRangeIcon = createIcon('fa-solid fa-calendar-days', '期間の適正化', '&doAction=autoClose', 'タスク期限を適正化しました');
+              const cancelIcon = createIcon('fa-solid fa-ban', '中止にする', '&setState=C&doSave=true', '中止にしました');
+              const editIcon = new FaIcon({
+                name: 'fa-solid fa-pen-to-square',
+                attr: { title: '詳細情報' },
+                onClick: () => window.open(`${NX.CONST.host}/todo/todo_input.aspx?id=${taskId}`)
+              });
+
+              // 行の組み立て
+              const $tr = $(`
+                <tr data-id="${taskId}">
+                  <td class="done-col"></td>
+                  <td class="${isNeedfollow ? 'red' : ''}">${taskName}</td>
+                  <td>${state}</td>
+                  <td class="${isIncorrectRange ? 'red' : ''}">${displayRange}</td>
+                  <td class="${isPast ? 'red' : ''}">${due}</td>
+                  <td class="setrange-col"></td>
+                  <td class="cancel-col"></td>
+                  <td class="edit-col"></td>
+                `);
+              //一括処理用にtrにエラー条件を付与
+              if (isIncorrectRange) $tr.attr('isIncorrectrange', true);
+              if (isPast) $tr.attr('isPast', true);
+              if (isNeedfollow) $tr.attr('isNeedfollow', true);
+
+              //アイコンを設置
+              $tr.find('.done-col').append(doneIcon.getNode());
+              $tr.find('.setrange-col').append(setRangeIcon.getNode());
+              $tr.find('.cancel-col').append(cancelIcon.getNode());
+              $tr.find('.edit-col').append(editIcon.getNode());
+
+              return $tr;
+            }
             function setFooterBtn($errorTaskListWrap) {
               $errorTaskListWrap.resetFooter();
               if ($dateErrorTable.find('tr[isNeedfollow=true]').length > 0) {
@@ -4280,16 +3520,15 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                     [SOM, this.LFData],
                     [LSOM, this.LLFData]
                   ].map(async ([dt, LFData]) => {
-                    const feeTable = await new SnapData({
-                      url: `${NX.CONST.host}/u/gessya_tenpo.aspx?gakunen_cb=&hyoji_cb=1&tenpo_cd=${tenpo_cd}&shido_ng=${ymsl(dt)}`,
-                      nosave: true
-                    }).exportTable();
+                    const url = `${NX.CONST.host}/u/gessya_tenpo.aspx?gakunen_cb=&hyoji_cb=1&tenpo_cd=${tenpo_cd}&shido_ng=${ymsl(dt)}`;
+                    const feeSnap = SnapData.quickFetch({ url, noCache: true });
+                    const $feeTable = feeSnap.getAsJQuery('table');
                     //headerが２行でじゃまなので２行目を消す
-                    feeTable
+                    $feeTable
                       .find('tr')
                       .eq(1)
                       .remove();
-                    const feeNXT = $NX(feeTable).makeNXTable();
+                    const feeNXT = $NX($feeTable).makeNXTable();
                     LFData.Students = parseInt(feeNXT.xlookup('合計', '校舎', '合計(月謝発生生徒数)_1'));
                     LFData.Fee = $NX(feeNXT.xlookup('合計', '校舎', '合計(月謝発生生徒数)')).moneylocaleToInt();
                     LFData.FeeAv = $NX(feeNXT.xlookup('合計', '校舎', '合計(月謝発生生徒数)_2')).moneylocaleToInt();
@@ -4316,11 +3555,9 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                       input_dt2: sl(dt2),
                       tenpo_cd: tenpo_cd
                     };
-                    const contractUrl = `${NX.CONST.host}/k/keiyaku_list_body.aspx?${$.param(params)}`;
-                    const contractNXT = await new SnapData({
-                      url: contractUrl,
-                      nosave: true
-                    }).exportNXTable();
+                    const url = `${NX.CONST.host}/k/keiyaku_list_body.aspx?${$.param(params)}`;
+                    const contractSnap = await SnapData.quickFetch({ url, noCache: true });
+                    const contractNXT = contractSnap.getAsNXTable();
                     LFData.Cont = contractNXT.countifs(['契約日', ['/'], false]);
                     LFData.ContRel = contractNXT.countifs(['区分', '紹介']) + contractNXT.countifs(['区分', '兄弟']);
                   })
@@ -4332,10 +3569,9 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                     [NSOM, this.LFData],
                     [LNSOM, this.LLFData]
                   ].map(async ([dt, LFData]) => {
-                    const rescissionNXT = await new SnapData({
-                      url: `${NX.CONST.host}/k/kaiyaku_list_body.aspx?end_dt=${ymsl(dt)}&tenpo_cd=${tenpo_cd}&kaiyaku_cb=1&status_cb=7`,
-                      nosave: true
-                    }).exportNXTable();
+                    const url = `${NX.CONST.host}/k/kaiyaku_list_body.aspx?end_dt=${ymsl(dt)}&tenpo_cd=${tenpo_cd}&kaiyaku_cb=1&status_cb=7`;
+                    const rescissionSnap = await SnapData.quickFetch({ url, noCache: true });
+                    const rescissionNXT = rescissionSnap.getAsNXTable();
                     LFData.Resci = rescissionNXT.countifs(['区分', '解約']) - rescissionNXT.countifs(['区分', '解約'], ['解約理由', '未入金']);
                   })
                 );
@@ -4346,47 +3582,12 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                     [SOM, EOM, this.LFData],
                     [LSOM, LEOM, this.LLFData]
                   ].map(async ([dt1, dt2, LFData]) => {
-                    const inquireNXT = await new SnapData({
-                      url: `${NX.CONST.host}/toiawase_list_body.aspx?input_dt1=${sl(dt1)}&input_dt2=${sl(dt2)}&tenpo_cd=${tenpo_cd}&test_cb=2`,
-                      nosave: true
-                    }).exportNXTable();
+                    const url = `${NX.CONST.host}/toiawase_list_body.aspx?input_dt1=${sl(dt1)}&input_dt2=${sl(dt2)}&tenpo_cd=${tenpo_cd}&test_cb=2`;
+                    const inquireSnap = await SnapData.quickFetch({ url, noCache: true });
+                    const inquireNXT = inquireSnap.getAsNXTable();
                     LFData.Inq = inquireNXT.countifs(['問合日', ['/'], false]);
                   })
                 );
-                //案件化率契約率取得
-                await Promise.all(
-                  [
-                    [SOM, EOM, this.LFData],
-                    [LSOM, LEOM, this.LLFData]
-                  ].map(async ([dt1, dt2, LFData]) => {
-                    const inqAnalyzeRaw = await new SnapData({
-                      url: `${NX.CONST.host}/toiawase_shukei.aspx?input_dt1=${sl(dt1)}&input_dt2=${sl(dt2)}&tenpo_cd=${tenpo_cd}`,
-                      nosave: true
-                    }).fetchData();
-                    const inqAnalyzeNXT = $NX($(inqAnalyzeRaw.data.replace(/<!--[\s\S]*?-->/g, ''))[13]).makeNXTable();
-                    LFData.Inq_onBoardRate = inqAnalyzeNXT.xlookup('合計', '教室', '案件率');
-                    LFData.Inq_contractRate = inqAnalyzeNXT.xlookup('合計', '教室', '通契率');
-                  })
-                );
-                //生徒比率取得
-                const stuRatioUrl = `${NX.CONST.host}/student_list_body.aspx?tenpo_cd=${tenpo_cd}&student_cd=&student_kt=&tanto_cb=&jyotai_cb=%2B&gakunen_cb=&menu_cb=5&sort=2&nalu_jyotai_cb=all&gakkou_flg=1&seibetsu_flg=1&shido_flg=1&row_vl=1000`;
-                const stuRatioNXT = await new SnapData({ url: stuRatioUrl, nosave: true }).exportNXTable();
-                const stuRatioAnalyNXT = stuRatioNXT.analyze('学年', ['学年', 'count', 'stuCount']).makeTotalRow();
-                const stuRatioTotal = stuRatioAnalyNXT.xlookup('合計', '学年', 'stuCount');
-                this.LFData.stuRatio = stuRatioAnalyNXT
-                  .appendColumn('stuRatio', elm => Math.floor((elm[1] / stuRatioTotal) * 1000) / 10)
-                  .export('objectArray');
-
-                this.LF.setItem(String(yyyymm), this.LFData);
-                this.LF.setItem(LSOM.as('yyyymm'), this.LLFData);
-                return this;
-
-                function sl(ExDate) {
-                  return ExDate.as('yyyy/mm/dd');
-                }
-                function ymsl(ExDate) {
-                  return ExDate.as('yyyy/mm');
-                }
               }
             }
             const UDM = new DBunitdataManager(_UI.page.Unit);
@@ -4495,7 +3696,8 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                 click: async () => {
                   ManageBodyInner.html('');
                   const url = `${NX.CONST.host}/s/schedule_input_check.aspx?tenpo_cd=c3400&input_cb=1&input1_dt=${NX.VAR.koshu_kikan['開始']}&input2_dt=${NX.VAR.koshu_kikan['終了']}`;
-                  const nxtable = await new SnapData({ url: url, nosave: true, expire: null, force: true }).exportNXTable();
+                  const snap = await SnapData.quickFetch({ url, noCache: true, force: true });
+                  const nxtable = snap.getAsNXTable();
                   const resultArray = nxtable.analyze('校舎', ['校舎', 'count'], ['校舎', 'count', null, ['入力ＣＨ', '']]).export('array');
                   //prettier-ignore
                   resultArray.forEach(elem => {
@@ -4527,9 +3729,8 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                     course_ng: '2025/10'
                   };
                   const nextUrl = `${NX.CONST.host}/s/teian_list_body.aspx?${$.param(nextParams)}&${commomParam}`;
-                  const nextNXT = await new SnapData({ url: nextUrl + '&tenpo_cd=a5031', nosave: true, expire: null, force: true }).exportNXTable({
-                    omitSubrow: true
-                  });
+                  const nextSnap = await SnapData.quickFetch({ url: nextUrl + '&tenpo_cd=a5031', noCache: true, force: true });
+                  const nextNXT = nextSnap.getAsNXTable({ omitSubrow: true });
                   const nextArray = nextNXT
                     .analyze(
                       '教室',
@@ -4548,11 +3749,8 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
                     course_ng: '2025/10'
                   };
                   const mendanUrl = `${NX.CONST.host}/s/teian_list_body.aspx?${$.param(mendanParams)}&${commomParam}`;
-                  const mendanNXT = await new SnapData({ url: mendanUrl + '&tenpo_cd=a5031', nosave: true, expire: null, force: true }).exportNXTable(
-                    {
-                      omitSubrow: true
-                    }
-                  );
+                  const mendanSnap = await SnapData.quickFetch({ url: mendanUrl + '&tenpo_cd=a5031', noCache: true, force: true });
+                  const mendanNXT = mendanSnap.getAsNXTable({ omitSubrow: true });
                   const mendanArray = mendanNXT
                     .analyze(
                       '教室',
@@ -4629,24 +3827,17 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
               ['3406', '古江'],
               ['3416', '広島駅前']
             ].forEach(async function([tenpo_cd, basename]) {
-              const boothUrl = `${NX.CONST.host}/gapp/student_list_ajax.aspx?tenpo_cd=${tenpo_cd}&sort_cb=3`;
-              const boothTableRaw = await new SnapData({
-                storeName: 'DashBoard',
-                key: `booth_${tenpo_cd}`,
-                url: boothUrl,
-                expire: 5 * 60 * 60 * 1000,
-                force: options.force
-              }).fetchData();
-              //ajax用でhtmlとして不完全なのでhtmlをJQueryで掴むために構築して上げる必要がある
-              const boothTable = $(`<html>`).html(boothTableRaw.data);
-              const furikaeUrl = `${NX.CONST.host}/tehai/shido_furikae_list_body.aspx?kekka_cb=01&tenpo_cd=${tenpo_cd}`;
-              const furikaeTable = await new SnapData({
-                storeName: 'DashBoard',
-                key: `furikae_${tenpo_cd}`,
-                url: furikaeUrl,
-                expire: 5 * 60 * 60 * 1000,
-                force: options.force
-              }).exportTable();
+              //ブースを取得
+              const boothPath = `/gapp/student_list_ajax.aspx?tenpo_cd=${tenpo_cd}&sort_cb=3`;
+              const boothSnap = await getDashSnap(boothPath, `booth_${tenpo_cd}`, 5, options.force);
+              const boothRaw = boothSnap.getAsRawString();
+              // --- ajax用でhtmlとして不完全なのでhtmlをJQueryで掴むために構築して上げる必要がある ---
+              const boothTable = $(`<html>`).html(boothRaw);
+
+              //振替を取得
+              const furikaePath = `/tehai/shido_furikae_list_body.aspx?kekka_cb=01&tenpo_cd=${tenpo_cd}`;
+              const furikaeSnap = await getDashSnap(furikaePath, `furikae_${tenpo_cd}`, 5, options.force);
+              const furikaeTable = furikaeSnap.getAsJQuery('table');
 
               boothTable.find('tr:gt(0)').each(function() {
                 const $tr = $(this);
@@ -5024,45 +4215,106 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
           },
           makeFunction: function() {
             _UI.page.Function.html('');
+            // ボタンエリアの作成
+            const $buttonArea = $('<div>', { style: 'margin-bottom: 10px;width:100%;' });
+            const $clearBtn = $('<button>', {
+              class: 'pxdb_btn offout', // 既存のスタイルクラスを想定
+              text: '一括クリア',
+              on: {
+                click: () => clearAll()
+              }
+            });
+            $buttonArea.append('<h2>CSV Convert</h2>', $clearBtn);
+
+            // 共通のスタイル
+            const taStyle = 'width:31%; margin-right:1%; box-sizing:border-box; vertical-align:top;';
+
             const $textareaCSV = $('<textarea>', {
               class: 'nx',
-              style: 'width:40%',
-              rows: '4',
-              placeholder: 'CSV | RightClick to Convert',
-              contextmenu: event => {
-                event.preventDefault();
-                CSVToNXT();
-              }
+              style: taStyle,
+              rows: '8',
+              placeholder: 'Excel / TSV',
+              on: { input: () => updateFromCSV() }
             });
+
             const $textareaNXT = $('<textarea>', {
               class: 'nx',
-              style: 'width:40%',
-              rows: '4',
-              placeholder: 'NXTable | RightClick to Convert',
-              on: {
-                contextmenu: event => {
-                  event.preventDefault();
-                  NXTToCSV();
-                }
-              }
+              style: taStyle,
+              rows: '8',
+              placeholder: 'NXTable (JSON)',
+              on: { input: () => updateFromNXT() }
             });
-            _UI.page.Function.append($textareaCSV, $textareaNXT);
-            function CSVToNXT() {
-              const rows = $textareaCSV
-                .val()
+
+            const $textareaMD = $('<textarea>', {
+              class: 'nx',
+              style: taStyle,
+              rows: '8',
+              placeholder: 'Markdown',
+              on: { input: () => updateFromMD() }
+            });
+
+            _UI.page.Function.append($buttonArea, $textareaCSV, $textareaNXT, $textareaMD);
+
+            // --- 同期用関数 ---
+
+            function updateFromCSV() {
+              const raw = $textareaCSV.val();
+              if (!raw.trim()) {
+                clearAll();
+                return;
+              }
+              const rows = raw
                 .trim()
                 .split('\n')
-                .map(row => row.split('\t'));
-
-              $textareaNXT.val(JSON.stringify({ head: rows[0], body: rows.slice(1) }));
+                .map(r => r.split('\t'));
+              reflect(rows, [$textareaNXT, $textareaMD]);
             }
-            function NXTToCSV() {
-              try {
-                const data = JSON.parse($textareaNXT.val());
-                $textareaCSV.val([data.head, ...data.body].map(row => row.join('\t')).join('\n'));
-              } catch (error) {
-                alert('Invalid JSON format in NXTable textarea.');
+
+            function updateFromNXT() {
+              const raw = $textareaNXT.val();
+              if (!raw.trim()) {
+                clearAll();
+                return;
               }
+              try {
+                const rows = NMEX_Utils.nxtableToArray(raw);
+                reflect(rows, [$textareaCSV, $textareaMD]);
+              } catch (e) {
+                /* パースエラー時は何もしない */
+              }
+            }
+
+            function updateFromMD() {
+              const raw = $textareaMD.val();
+              if (!raw.trim()) {
+                clearAll();
+                return;
+              }
+              const rows = NMEX_Utils.markdownTableToArray(raw);
+              if (rows.length > 0) {
+                reflect(rows, [$textareaCSV, $textareaNXT]);
+              }
+            }
+            function clearAll() {
+              $textareaCSV.val('');
+              $textareaNXT.val('');
+              $textareaMD.val('');
+            }
+            /**
+             * 取得した二次元配列を各テキストエリアに反映させる
+             * @param {string[][]} rows
+             * @param {jQuery[]} targets
+             */
+            function reflect(rows, targets) {
+              targets.forEach($target => {
+                if ($target === $textareaCSV) {
+                  $target.val(rows.map(r => r.join('\t')).join('\n'));
+                } else if ($target === $textareaNXT) {
+                  $target.val(JSON.stringify({ head: rows[0], body: rows.slice(1) }, null, 2));
+                } else if ($target === $textareaMD) {
+                  $target.val(NMEX_Utils.arrayToMarkdownTable(rows));
+                }
+              });
             }
           }
         };

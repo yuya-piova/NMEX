@@ -1,3 +1,54 @@
+const NMEX_Utils = {
+  /**
+   * 二次元配列をMarkdownテーブル形式の文字列に変換する
+   * @param {string[][]} rows - [ヘッダー配列, 行1配列, 行2配列...]
+   * @returns {string} Markdown文字列
+   */
+  arrayToMarkdownTable: rows => {
+    if (!rows || rows.length === 0) return '';
+
+    const head = rows[0];
+    const body = rows.slice(1);
+
+    // ヘッダー行の作成
+    const headerLine = `| ${head.join(' | ')} |`;
+
+    // セパレーター行 (|---|---|...) の作成
+    //const separatorLine = `| ${head.map(() => '---').join(' | ')} |`;
+
+    // ボディ行の作成
+    const bodyLines = body.map(row => `| ${row.map(cell => String(cell).replace(/\n/g, '<br>')).join(' | ')} |`).join('\n');
+
+    return `${headerLine}\n${separatorLine}\n${bodyLines}`;
+  },
+  /**
+   * Markdownテーブル文字列を二次元配列に変換する
+   * @param {string} mdString
+   * @returns {string[][]}
+   */
+  markdownTableToArray: mdString => {
+    return mdString
+      .trim()
+      .split('\n')
+      .filter(row => row.includes('|') && !row.includes('---')) // セパレーター行を除外
+      .map(row => {
+        // 両端の | を除外してから分割し、各セルをトリミング
+        const cells = row.replace(/^\||\|$/g, '').split('|');
+        return cells.map(cell => cell.trim().replace(/<br>/g, '\n'));
+      });
+  },
+
+  /**
+   * NXTable形式(JSON)を二次元配列に変換する
+   * @param {string} jsonString
+   * @returns {string[][]}
+   */
+  nxtableToArray: jsonString => {
+    const data = JSON.parse(jsonString);
+    return [data.head, ...data.body];
+  }
+};
+
 /**
  * Dispatches a native DOM event on a specific element.
  *
