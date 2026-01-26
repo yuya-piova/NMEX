@@ -29,6 +29,7 @@
         "core/ExDate.js",
         "core/SnapData.js",
         "core/NXTable.js",
+        "core/FaIcon.js",
         "core/utils.js",
         "nmexg.js",
         "nmexo/nmexog.js",

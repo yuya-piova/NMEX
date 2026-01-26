@@ -288,7 +288,7 @@ $.fn.netzpicker = function(arg) {
 /**
  * Class representing a Font Awesome icon element, optionally wrapped and configurable.
  */
-class FaIcon {
+class FaIcon_old {
   /**
    * Create a Font Awesome icon.
    * @param {Object} [options={}] - Configuration options for the icon.
