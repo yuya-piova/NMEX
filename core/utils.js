@@ -19,7 +19,7 @@ const NMEX_Utils = {
     // ボディ行の作成
     const bodyLines = body.map(row => `| ${row.map(cell => String(cell).replace(/\n/g, '<br>')).join(' | ')} |`).join('\n');
 
-    return `${headerLine}\n${separatorLine}\n${bodyLines}`;
+    return `${headerLine}\n${bodyLines}`; //\n${separatorLine}
   },
   /**
    * Markdownテーブル文字列を二次元配列に変換する
