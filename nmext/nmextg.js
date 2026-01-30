@@ -10,6 +10,7 @@
 
 console.log('nmextg');
 loadScript('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css', 'css');
+
 function $NX(...arg) {
   return new $NXClass(arg);
 }

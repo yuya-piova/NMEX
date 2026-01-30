@@ -43,13 +43,12 @@ class FaIcon {
     const i = document.createElement('i');
 
     // クラス設定
-    const classList = [this.config.icon, this.config.class].filter(Boolean).join(' ');
-    i.className = classList;
+    i.className = [this.config.icon, this.config.class].filter(Boolean).join(' ');
 
     // 基本スタイル設定
     if (this.config.color) i.style.color = this.config.color;
     if (this.config.size) i.style.fontSize = this.config.size;
-    if (this.config.click) i.style.cursor = 'pointer'; // クリック可能なら指カーソルに
+    if (this.config.click) i.style.cursor = 'pointer';
 
     // 追加スタイル適用
     Object.entries(this.config.style).forEach(([k, v]) => (i.style[k] = v));
