@@ -31,6 +31,7 @@
         "core/SnapData.js",
         "core/NXTable.js",
         "core/FaIcon.js",
+        "flux/loader.js",
         "nmexg.js",
         "nmexo/nmexog.js",
         "nmext/nmextg.js",
@@ -42,8 +43,7 @@
         "nmext/nmextp.js",
         "nmext/nmextd.js",
         "checker.js",
-        "nmexo/closer.js",
-        "flux/loader.js"
+        "nmexo/closer.js"
       ],
       "run_at": "document_idle",
       "all_frames": true,
@@ -55,7 +55,15 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["flux/*.js", "flux/core/*.js", "flux/widgets/*.js", "flux/widgets/features/*.js", "flux/actions/*.js"],
+      "resources": [
+        "flux/*.js",
+        "flux/core/*.js",
+        "flux/widgets/*.js",
+        "flux/widgets/features/*.js",
+        "flux/actions/*.js",
+        "flux/css/*.css",
+        "templates.html"
+      ],
       "matches": ["<all_urls>"]
     }
   ],

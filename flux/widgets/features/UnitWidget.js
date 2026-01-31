@@ -18,9 +18,22 @@ export class UnitWidget extends Widget {
              <span class="flux-unit-code">${u.code}</span>
              <span class="flux-unit-name">${u.name}</span>
           </div>
-          <a href="${u.openUrl}" target="_blank" class="flux-status-chip ${statusClass}">
-             ${u.status} ${u.pcCheck === '○' ? '<i class="fa-solid fa-check"></i>' : ''}
-          </a>
+          
+          <div class="flux-unit-actions">
+            <a href="${u.openUrl}" target="_blank" class="flux-status-chip ${statusClass}">
+               ${u.status} ${u.pcCheck === '○' ? '<i class="fa-solid fa-check"></i>' : ''}
+            </a>
+
+            ${
+              u.boothUrl
+                ? `
+            <a href="${u.boothUrl}" target="_blank" class="flux-icon-link" title="座席表を開く">
+               <i class="fa-solid fa-table"></i>
+            </a>
+            `
+                : ''
+            }
+          </div>
         </div>
       `;
       })

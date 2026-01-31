@@ -1,6 +1,11 @@
+console.log('Flux.js loaded');
+
 import { FluxCore } from './core/FluxCore.js';
 import { MenuWidget } from './widgets/MenuWidget.js';
 import { UnitWidget } from './widgets/features/UnitWidget.js';
+import { TaskWidget } from './widgets/features/TaskWidget.js';
+import { TaskPageWidget } from './widgets/pages/TaskPageWidget.js';
+import { AsCoachPageWidget } from './widgets/pages/AsCoachPageWidget.js';
 import { DashboardActions } from './actions/DashboardAction.js';
 
 export class Flux {
@@ -8,15 +13,18 @@ export class Flux {
     // 1. 初期状態の設定
     this.core = new FluxCore({
       currentPage: 'Dashboard',
-      unitStatus: []
-      // tasks: []
+      unitStatus: [],
+      tasks: [],
+      errorTasks: []
     });
 
     // 2. Widgetのインスタンス化
     this.widgets = {
       menu: new MenuWidget(this.core),
-      unit: new UnitWidget(this.core)
-      // task: new TaskWidget(this.core) // 後で作る
+      unit: new UnitWidget(this.core),
+      task: new TaskWidget(this.core),
+      taskPage: new TaskPageWidget(this.core),
+      asCoachPage: new AsCoachPageWidget(this.core)
     };
   }
 
@@ -33,14 +41,14 @@ export class Flux {
     // ページごとのコンテナを作成
     this.createPageContainer(contentArea, 'Dashboard');
     this.createPageContainer(contentArea, 'Unit');
-    this.createPageContainer(contentArea, 'Tasks');
+    this.createPageContainer(contentArea, 'Tasks', 'flux-page-fixed');
+    this.createPageContainer(contentArea, 'AsCoach', 'flux-page-fixed');
 
-    // Dashboardページに UnitWidget を配置してみる
+    // Dashboardページに Widget を配置
     this.widgets.unit.mount('#page-Dashboard');
-    // Unitページにも同じものを配置したい場合は、Mount先を変えるか、
-    // WidgetはDOM要素なので1箇所にしか存在できません。
-    // 複数の場所に同じWidgetを出したい場合はWidgetインスタンスを分ける必要がありますが、
-    // 今回は「Dashboard」ページに全情報を集約する設計とします。
+    this.widgets.task.mount('#page-Dashboard');
+    this.widgets.taskPage.mount('#page-Tasks');
+    this.widgets.asCoachPage.mount('#page-AsCoach');
 
     // 4. ページ切り替え監視
     this.core.subscribe(state => {
@@ -49,6 +57,9 @@ export class Flux {
 
     // 5. 初期データ取得
     this.core.dispatch(DashboardActions.fetchUnitStatus);
+    this.core.dispatch(DashboardActions.fetchTasks);
+    this.core.dispatch(DashboardActions.fetchErrorTasks);
+    this.core.dispatch(DashboardActions.fetchAsCoachData);
   }
 
   createLayout() {
@@ -62,19 +73,21 @@ export class Flux {
         <main id="flux-content"></main>
       </div>
     `;
-    document.body.classList.add('pxdb_body');
 
     // CSSの適用 (manifest.jsonでCSSファイルを読み込むのが正攻法ですが、JSで当てる場合)
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = chrome.runtime.getURL('flux/css/flux.css');
     document.head.appendChild(link);
+
+    document.title = 'Flux';
   }
 
-  createPageContainer(parent, pageName) {
+  createPageContainer(parent, pageName, extraClass = '') {
     const div = document.createElement('div');
     div.id = `page-${pageName}`;
-    div.className = 'flux-page'; // CSSで制御用
+    div.className = `flux-page ${extraClass}`;
+
     // 初期はDashboard以外非表示
     if (pageName !== 'Dashboard') div.style.display = 'none';
     parent.appendChild(div);

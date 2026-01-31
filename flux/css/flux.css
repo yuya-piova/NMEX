@@ -1,4 +1,36 @@
-/* 基本レイアウト */
+@charset "UTF-8";
+
+/* ==========================================================================
+   1. Global & Reset
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* スクロールバーのカスタマイズ (Chrome/Edge用) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+body {
+  margin: 0;
+}
+
+/* ==========================================================================
+   2. Main Layout (App Shell)
+   ========================================================================== */
 .flux-layout {
   display: grid;
   grid-template-rows: 60px 1fr;
@@ -6,7 +38,7 @@
   grid-template-areas: 'header header' 'sidebar content';
   height: 100vh;
   background-color: #f4f7f9;
-  font-family: sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Arial, sans-serif;
   color: #333;
 }
 
@@ -17,51 +49,248 @@
   padding: 0 20px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  z-index: 20;
 }
+
 #flux-sidebar {
   grid-area: sidebar;
   background: #2c3e50;
   color: #fff;
   padding-top: 10px;
-}
-#flux-content {
-  grid-area: content;
-  padding: 20px;
   overflow-y: auto;
 }
 
-/* ページ切り替え用コンテナ */
+#flux-content {
+  grid-area: content;
+  padding: 20px;
+  overflow: hidden; /* ★overflow-y: auto; */
+  display: flex; /* ★追加 */
+  flex-direction: column; /* ★追加 */
+
+  position: relative;
+}
+
+.flux-brand {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #0056b3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ==========================================================================
+   3. Sidebar Menu
+   ========================================================================== */
+.flux-menu-item {
+  padding: 15px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #bdc3c7;
+  transition: all 0.2s;
+  border-left: 4px solid transparent;
+  text-decoration: none;
+}
+
+.flux-menu-item:hover,
+.flux-menu-item.active {
+  background: #34495e;
+  color: #fff;
+}
+
+.flux-menu-item.active {
+  border-left-color: #f0ad4e;
+}
+
+.flux-menu-icon {
+  width: 24px;
+  text-align: center;
+}
+
+/* ==========================================================================
+   4. Page Containers
+   ========================================================================== */
+/* 通常ページ (カード型ダッシュボードなど) */
+.flux-page {
+  /* ★追加: ここでスクロールを担当する */
+  flex: 1; /* 親の余白一杯に広がる */
+  overflow-y: auto; /* 中身が多いときはここでスクロール */
+  min-height: 0; /* Flex子要素の最小サイズ潰れ防止 */
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  align-content: start;
+
+  /* height: 100%; は削除して flex: 1 に任せる */
+}
+/*
 .flux-page {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
   align-content: start;
-}
-
-/* メニュー */
-.flux-menu-item {
-  padding: 15px 20px;
-  cursor: pointer;
-  display: flex;
-  gap: 10px;
-  color: #bdc3c7;
-  transition: 0.2s;
-}
-.flux-menu-item:hover,
-.flux-menu-item.active {
-  background: #34495e;
-  color: #fff;
-  border-left: 4px solid #f0ad4e;
-}
-.flux-menu-icon {
-  width: 20px;
-  text-align: center;
-}
-
-/* Widget Card */
-.flux-widget {
   height: 100%;
 }
+  */
+
+/* 固定ページ (Tasks, AsCoachなど、画面いっぱいに広げて内部スクロールするページ) */
+.flux-page-fixed {
+  /* ★修正: height: 100% ではなく flex で埋める */
+  flex: 1;
+  min-height: 0; /* 重要 */
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden; /* 親スクロール防止 */
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border: none;
+}
+
+/*
+.flux-page-fixed {
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border: none;
+}
+*/
+
+/* ページ内ヘッダー (Page Title & Actions) */
+.flux-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0; /* 固定ページ内で縮まないようにする */
+}
+
+.flux-page-title {
+  font-size: 1.4rem;
+  margin: 0;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.flux-page-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ==========================================================================
+   5. Components: Buttons & Icons
+   ========================================================================== */
+/* アイコンボタン (丸型) */
+.flux-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.flux-btn-icon:hover {
+  color: #0056b3;
+  background-color: #f0f8ff;
+}
+
+/* 通常ボタン */
+.flux-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.flux-btn-secondary {
+  background-color: #6c757d;
+}
+.flux-btn-secondary:hover {
+  background-color: #5a6268;
+}
+.flux-btn-danger {
+  background-color: #dc3545;
+}
+.flux-btn-danger:hover {
+  background-color: #c82333;
+}
+.flux-btn-warning {
+  background-color: #ffc107;
+  color: #333;
+}
+.flux-btn-warning:hover {
+  background-color: #e0a800;
+}
+
+/* チェックボタン (タスク用) */
+.flux-btn-check {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #ccc;
+  font-size: 1.2rem;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+}
+.flux-btn-check:hover {
+  color: #28a745;
+}
+
+/* リンクアイコン */
+.flux-icon-link {
+  color: #999;
+  font-size: 1rem;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.flux-icon-link:hover {
+  background-color: #f0f0f0;
+  color: #0056b3;
+}
+
+/* テキストリンク */
+.flux-link {
+  color: #333;
+  text-decoration: none;
+}
+.flux-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   6. Components: Widget Card (Dashboard)
+   ========================================================================== */
 .flux-card {
   background: #fff;
   border-radius: 8px;
@@ -70,30 +299,56 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
+
 .flux-card-header {
-  padding: 15px;
+  padding: 12px 15px;
   border-bottom: 1px solid #eee;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: #fff;
 }
+
 .flux-card-header h3 {
   margin: 0;
   font-size: 1rem;
   color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+
+.flux-header-actions {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
 .flux-card-body {
   padding: 0;
   flex-grow: 1;
-  overflow-y: auto;
-}
-
-/* Unit List */
-.flux-unit-list {
+  overflow: hidden; /* 中身のスクロールは子要素に任せる */
   display: flex;
   flex-direction: column;
 }
+
+.flux-empty-state {
+  padding: 20px;
+  text-align: center;
+  color: #aaa;
+}
+
+/* ==========================================================================
+   7. Feature: Unit Widget (Dashboard)
+   ========================================================================== */
+.flux-unit-list {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
 .flux-unit-row {
   display: flex;
   justify-content: space-between;
@@ -101,21 +356,30 @@
   border-bottom: 1px solid #f9f9f9;
   align-items: center;
 }
+
 .flux-unit-info {
   display: flex;
   flex-direction: column;
 }
+
 .flux-unit-code {
   font-size: 0.8rem;
   color: #999;
   font-family: monospace;
 }
+
 .flux-unit-name {
   font-weight: bold;
   font-size: 0.95rem;
 }
 
-/* Status Chips */
+.flux-unit-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ステータスチップ */
 .flux-status-chip {
   padding: 4px 10px;
   border-radius: 12px;
@@ -143,29 +407,248 @@
   color: #c62828;
 }
 
-.flux-btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #999;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
+/* ==========================================================================
+   8. Feature: Task Widget (Dashboard Card)
+   ========================================================================== */
+.flux-task-list {
   display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.flux-btn-icon:hover {
-  color: #0056b3;
-  background-color: #f0f8ff;
+  flex-direction: column;
+  max-height: 400px; /* カード内での高さ制限 */
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
-/* ブランドロゴ */
-.flux-brand {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #0056b3;
+.flux-task-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 10px 15px;
+  border-bottom: 1px solid #f0f0f0;
+  gap: 10px;
+  transition: background 0.2s;
+}
+.flux-task-row:hover {
+  background-color: #fafafa;
+}
+
+.flux-task-main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.flux-task-title {
+  font-size: 0.95rem;
+  line-height: 1.4;
   display: flex;
   align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.flux-task-meta {
+  font-size: 0.8rem;
+  display: flex;
   gap: 10px;
+  color: #888;
+}
+
+.flux-text-danger {
+  color: #dc3545;
+  font-weight: bold;
+}
+.flux-text-muted {
+  color: #888;
+}
+
+/* ==========================================================================
+   9. Feature: Full Size Table (Tasks Page)
+   ========================================================================== */
+/* 固定ページ内でのコンテナ調整 */
+.flux-page-fixed .flux-table-container {
+  flex: 1 1 0; /* 残りの高さを埋める */
+  min-height: 0; /* Flexアイテム縮小許可 */
+  overflow-y: auto; /* 内部スクロール */
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-bottom: 1px; /* 下端調整 */
+}
+
+.flux-table-full {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.flux-table-full th,
+.flux-table-full td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle; /* 上下中央揃え */
+}
+
+/* 固定ヘッダー */
+.flux-page-fixed .flux-table-full thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #555;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.flux-table-full tbody tr:hover {
+  background-color: #f1f8ff;
+}
+
+/* アクション・アイコン列の調整 */
+.flux-cell-icon,
+.flux-cell-action {
+  display: flex;
+  gap: 5px;
+  align-items: center; /* ボタンの上下中央揃え */
+  min-height: 24px;
+}
+
+/* タスク名省略表示 (2列目) */
+.flux-table-full td:nth-child(2) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 400px; /* 画面幅に応じて調整 */
+}
+
+/* 期間・期限列 (4,5列目) 改行禁止 */
+.flux-table-full td:nth-child(4),
+.flux-table-full td:nth-child(5) {
+  white-space: nowrap;
+}
+
+/* 行ごとの状態色 */
+.flux-row-error-follow td {
+  color: #d63384;
+}
+
+/* ==========================================================================
+   10. Feature: AsCoach Grid (AsCoach Page)
+   ========================================================================== */
+/* 固定ページ内でのグリッドコンテナ調整 */
+.flux-page-fixed .flux-coach-grid {
+  flex: 1 1 0; /* 残りの高さを埋める */
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  height: auto !important;
+  padding-bottom: 0;
+  margin-bottom: 1px;
+}
+
+.flux-page-fixed .flux-coach-column {
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  overflow: hidden;
+}
+
+.flux-coach-header {
+  padding: 12px 15px;
+  font-weight: bold;
+  color: #555;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  flex-shrink: 0;
+}
+.header-waiting {
+  border-top: 3px solid #6c757d;
+}
+.header-going {
+  border-top: 3px solid #28a745;
+  background-color: #f0fff4;
+}
+.header-gone {
+  border-top: 3px solid #17a2b8;
+}
+
+.badge {
+  background: #eee;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+}
+
+/* カラム内リスト (スクロール対象) */
+.flux-page-fixed .flux-coach-list {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px;
+  padding-bottom: 30px; /* 最後のカードが隠れないように余白 */
+  background-color: #f9f9f9;
+}
+
+/* 個別カードスタイル */
+.flux-coach-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.flux-coach-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.flux-coach-row.main {
+  margin-top: 6px;
+}
+
+.shop-badge {
+  font-size: 0.7rem;
+  background: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #666;
+}
+.time-badge {
+  font-size: 0.8rem;
+  font-family: monospace;
+  color: #333;
+}
+
+.student-name {
+  font-weight: bold;
+  color: #0056b3;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+.student-name:hover {
+  text-decoration: underline;
+}
+
+.student-icons {
+  display: flex;
+  gap: 6px;
+}
+
+.flux-icon-orange {
+  color: #fd7e14;
+}
+.flux-icon-blue {
+  color: #007bff;
+}
+.flux-icon-green {
+  color: #28a745;
 }

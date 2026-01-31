@@ -1887,11 +1887,6 @@ $(function() {
         }
         break;
       }
-      // --- new DashBoard "FLUX" ---
-      case '/netz/netz1/s/student_inout_checklist.aspx':
-        //リセット処理
-        new Flux();
-        break;
       case '/netz/netz1/shingaku/kouza_list.aspx':
         popmenut_F2.setContentFunction(function() {
           //進学教室生徒一覧取得

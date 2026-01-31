@@ -6,6 +6,7 @@ export class MenuWidget extends Widget {
 
     const menuItems = [
       { id: 'Dashboard', icon: 'fa-gauge-high', label: 'Dashboard' },
+      { id: 'AsCoach', icon: 'fa-user-clock', label: 'AsCoach' },
       { id: 'Unit', icon: 'fa-shop', label: 'My Unit' },
       { id: 'Tasks', icon: 'fa-list-check', label: 'Tasks' }
     ];
