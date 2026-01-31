@@ -99,7 +99,7 @@ export class Flux {
       el.style.display = 'none';
     });
     const target = document.getElementById(`page-${pageName}`);
-    if (target) target.style.display = 'grid'; // または block
+    if (target) target.style.display = '';
 
     // ページタイトル変更などの処理もここで可能
   }

@@ -138,7 +138,7 @@ body {
   */
 
 /* 固定ページ (Tasks, AsCoachなど、画面いっぱいに広げて内部スクロールするページ) */
-.flux-page-fixed {
+.flux-page.flux-page-fixed {
   /* ★修正: height: 100% ではなく flex で埋める */
   flex: 1;
   min-height: 0; /* 重要 */
