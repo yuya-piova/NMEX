@@ -1890,9 +1890,7 @@ $(function() {
       // --- new DashBoard "FLUX" ---
       case '/netz/netz1/s/student_inout_checklist.aspx':
         //リセット処理
-        $('html').html('<body><div id="contents" style="width:100%;height:100%"></body>');
-        $('#contents').empty();
-        const app = new Flux('#contents');
+        new Flux();
         break;
       case '/netz/netz1/shingaku/kouza_list.aspx':
         popmenut_F2.setContentFunction(function() {
