@@ -2627,6 +2627,30 @@ $.fn.setshortcutkey = function(key, keyoption = {}) {
   return this;
 };
 
+$(document).on('dblclick', '.dblcopytable', function() {
+  const table = this;
+  showChoiceModal(
+    'Tableエクスポート　出力形式を選んでください',
+    [
+      { label: 'CSV', value: 'csv' },
+      { label: 'Markdown', value: 'markdown' },
+      { label: 'Cancel', value: 'cancel' }
+    ],
+    choice => {
+      switch (choice) {
+        case 'csv':
+          clipper(tableToCSV(table, '\t'));
+          PX_Toast('CSVコピー完了');
+          break;
+        case 'markdown':
+          clipper(tableToMarkdown(table));
+          PX_Toast('Markdownコピー完了');
+          break;
+      }
+    }
+  );
+});
+
 const parsedHost = document.domain != 'portal.edu-netz.com' ? document.domain : 'menu.edu-netz.com';
 const NX = {
   CONST: {

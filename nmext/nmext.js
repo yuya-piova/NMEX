@@ -376,9 +376,14 @@ $(function() {
           }).appendTo(this);
         });
         break;
-      case '/netz/netz1/toiawase_input.aspx':
+      case '/netz/netz1/toiawase_input.aspx': {
+        //Page Const
+        const student_cd = $('input[name=student_cd]').val();
+        const toi_id = $('input[name=toi_id]').val();
+
         //名前のスペースと電話番号整形
         FUNCTION_T.toiawase_input.namenoformatter();
+
         //生年月日を和暦入力
         $('#birthday_dt')
           .attr('autocomplete', 'off')
@@ -390,49 +395,22 @@ $(function() {
             );
             return false;
           });
+
         $('.shain_cd').each(function() {
           $(this).emppicker();
         });
-        popmenut_F8.setContentFunction(function() {
-          $('<button>', {
-            type: 'button',
-            text: '連絡事項',
-            class: 'nx',
-            on: {
-              click: () => {
-                const student_cd = $('input[name=student_cd]').val();
-                window.open(`${NX.CONST.host}/s/student_renraku_list.aspx?student_cd=${student_cd}`, '_blank');
-                popmenut_F8.closemenu();
-              }
-            }
-          }).appendTo(this);
-          $('<button>', {
-            type: 'button',
-            text: '指導予定',
-            class: 'nx',
-            on: {
-              click: () => {
-                const student_cd = $('input[name=student_cd]').val();
-                window.open(`${NX.CONST.host}/kanren/student_shido_yotei.aspx?student_cd=${student_cd}`, '_blank');
-                popmenut_F8.closemenu();
-              }
-            }
-          }).appendTo(this);
-          $('<button>', {
-            type: 'button',
+
+        //PopMenu
+        popmenu.appendItems([
+          { text: '連絡事項', handler: () => window.open(`${NX.CONST.host}/s/student_renraku_list.aspx?student_cd=${student_cd}`, '_blank') },
+          { text: '指導予定', handler: () => window.open(`${NX.CONST.host}/kanren/student_shido_yotei.aspx?student_cd=${student_cd}`, '_blank') },
+          {
             text: '新規用プロファイル',
-            class: 'nx offsecondary',
-            on: {
-              click: () => {
-                const student_cd = $('input[name=student_cd]').val();
-                const toi_id = $('input[name=toi_id]').val();
-                window.open(`${NX.CONST.host}/s/student_profile_nyukai_input.aspx?student_cd=${student_cd}&toi_id=${toi_id}`, '_blank');
-                popmenut_F8.closemenu();
-              }
-            }
-          }).appendTo(this);
-        });
+            handler: () => window.open(`${NX.CONST.host}/s/student_profile_nyukai_input.aspx?student_cd=${student_cd}&toi_id=${toi_id}`, '_blank')
+          }
+        ]);
         break;
+      }
       case '/netz/netz1/toiawase_input_save.aspx':
         $('input[name=b_close]').trigger('click');
         break;

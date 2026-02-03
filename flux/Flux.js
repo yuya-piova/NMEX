@@ -9,6 +9,8 @@ import { AsCoachPageWidget } from './widgets/pages/AsCoachPageWidget.js';
 import { ManagementPageWidget } from './widgets/pages/ManagementPageWidget.js';
 import { DashboardActions } from './actions/DashboardAction.js';
 import { NotificationWidget } from './widgets/features/NotificationWidget.js';
+import { StatsWidget } from './widgets/features/StatsWidget.js';
+import { BlockSalesPageWidget } from './widgets/pages/BlockSalesPageWidget.js';
 
 export class Flux {
   constructor() {
@@ -18,7 +20,10 @@ export class Flux {
       unitStatus: [],
       tasks: [],
       errorTasks: [],
-      notifications: []
+      notifications: [],
+      contractCount: '-',
+      cancelCount: '-',
+      blockSales: null
     });
 
     // 2. Widgetのインスタンス化
@@ -27,9 +32,11 @@ export class Flux {
       notification: new NotificationWidget(this.core),
       unit: new UnitWidget(this.core),
       task: new TaskWidget(this.core),
+      stats: new StatsWidget(this.core),
       taskPage: new TaskPageWidget(this.core),
       asCoachPage: new AsCoachPageWidget(this.core),
-      managementPage: new ManagementPageWidget(this.core)
+      managementPage: new ManagementPageWidget(this.core),
+      blockSalesPage: new BlockSalesPageWidget(this.core)
     };
   }
 
@@ -51,14 +58,17 @@ export class Flux {
     // 固定ページ系
     this.createPageContainer(contentArea, 'Tasks', 'flux-page-fixed');
     this.createPageContainer(contentArea, 'AsCoach', 'flux-page-fixed');
+    this.createPageContainer(contentArea, 'BlockSales', 'flux-page-fixed');
 
     // Dashboardページに Widget を配置
     this.widgets.notification.mount('#flux-header-right');
+    this.widgets.stats.mount('#page-Dashboard');
     this.widgets.unit.mount('#page-Dashboard');
     this.widgets.task.mount('#page-Dashboard');
     this.widgets.taskPage.mount('#page-Tasks');
     this.widgets.asCoachPage.mount('#page-AsCoach');
     this.widgets.managementPage.mount('#page-Management');
+    this.widgets.blockSalesPage.mount('#page-BlockSales');
 
     // 4. ページ切り替え監視
     this.core.subscribe(state => {
@@ -66,11 +76,14 @@ export class Flux {
     });
 
     // 5. 初期データ取得
+    this.core.dispatch(DashboardActions.fetchContracts);
+    this.core.dispatch(DashboardActions.fetchCancels);
     this.core.dispatch(DashboardActions.fetchNotifications);
     this.core.dispatch(DashboardActions.fetchUnitStatus);
     this.core.dispatch(DashboardActions.fetchTasks);
     this.core.dispatch(DashboardActions.fetchErrorTasks);
     this.core.dispatch(DashboardActions.fetchAsCoachData);
+    this.core.dispatch(DashboardActions.fetchBlockSales);
 
     //通知は１５分毎の定期実行
     setInterval(() => {

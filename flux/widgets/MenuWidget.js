@@ -8,6 +8,7 @@ export class MenuWidget extends Widget {
       { id: 'Dashboard', icon: 'fa-gauge-high', label: 'Dashboard' },
       { id: 'AsCoach', icon: 'fa-user-clock', label: 'AsCoach' },
       { id: 'Tasks', icon: 'fa-list-check', label: 'Tasks' },
+      { id: 'BlockSales', icon: 'fa-chart-simple', label: 'Block Sales' },
       { id: 'Management', icon: 'fa-briefcase', label: 'Management' }
     ];
 

@@ -643,5 +643,178 @@ export const DashboardActions = {
     } catch (e) {
       console.error('Notification Fetch Error:', e);
     }
+  },
+  /**
+   * 今月の契約数取得
+   */
+  async fetchContracts(commit, state) {
+    try {
+      const groupCd = 'a5031'; //myprofiles.getone({ mygroup: '' }) || 'a5031';
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      const formatDate = d => `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+
+      const params = {
+        tenpo_cd: groupCd,
+        input_dt1: formatDate(firstDay),
+        input_dt2: formatDate(today),
+        tenpo_cb: 1,
+        cancel_cb: 1,
+        keiyaku_cb: 1,
+        kanri_cb: 1,
+        week_vl: 4,
+        sort_cb: 1,
+        tax_cb: 0,
+        gakunen_cb: '',
+        kiteigessya_cb: '',
+        nyukai_cb: ''
+      };
+
+      const qs = Object.entries(params)
+        .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+        .join('&');
+      const url = `/k/keiyaku_list_body.aspx?${qs}`;
+      const fullUrl = `${NX.CONST.host}${url}`; // ★URL保存用
+
+      const snap = await SnapData.quickFetch({ url: fullUrl, noCache: true });
+      const count = snap.getAsJQuery('table input[name=b_keiyaku]').length;
+
+      // ★ URLもcommit
+      commit({
+        contractCount: count,
+        contractUrl: fullUrl
+      });
+    } catch (e) {
+      console.error('Fetch Contract Error:', e);
+      commit({ contractCount: '-' });
+    }
+  },
+
+  /**
+   * 今月の解約数取得
+   */
+  async fetchCancels(commit, state) {
+    try {
+      const groupCd = 'a5031'; //myprofiles.getone({ mygroup: '' }) || 'a5031';
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      const formatDate = d => `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+
+      const params = {
+        tenpo_cd: groupCd,
+        input_dt1: formatDate(firstDay),
+        input_dt2: formatDate(today),
+        disp_cb: 3,
+        kaiyaku_cb: 1,
+        status_cb: 7,
+        sort_cb: 1,
+        end_dt: ''
+      };
+
+      const qs = Object.entries(params)
+        .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+        .join('&');
+      const url = `/k/kaiyaku_list_body.aspx?${qs}`;
+      const fullUrl = `${NX.CONST.host}${url}`; // ★URL保存用
+
+      const snap = await SnapData.quickFetch({ url: fullUrl, noCache: true });
+      const count = snap.getAsJQuery('table input[name=b_kaiyaku]').length;
+
+      // ★ URLもcommit
+      commit({
+        cancelCount: count,
+        cancelUrl: fullUrl
+      });
+    } catch (e) {
+      console.error('Fetch Cancel Error:', e);
+      commit({ cancelCount: '-' });
+    }
+  },
+  /**
+   * ブロック売上データの取得
+   */
+  async fetchBlockSales(commit, state, { year, baseCd, force } = {}) {
+    const d = new Date();
+    year = year || d.getMonth() < 3 ? d.getFullYear() - 1 : d.getFullYear();
+    baseCd = baseCd || 'a5031';
+    const targetYear = parseInt(year);
+    // [キャッシュ確認]
+    // 強制更新(force)でなく、かつStateに同じ条件のデータがあれば、何もしない(return)
+    if (!force && state.blockSales && state.blockSales.year === targetYear && state.blockSales.baseCd === baseCd) {
+      console.log('BlockSales: Using State Cache');
+      return;
+    }
+
+    const months = [];
+    for (let m = 4; m <= 12; m++) months.push({ y: targetYear, m: m });
+    for (let m = 1; m <= 3; m++) months.push({ y: targetYear + 1, m: m });
+
+    const targets = ['入会金', '初回月謝', '月謝', '売上値引', '講習料', '模試教材売上', '合宿売上', 'その他', '合計'];
+
+    const dataMap = {};
+    targets.forEach(t => (dataMap[t] = {}));
+
+    if (typeof PX_Toast === 'function' && force) PX_Toast('データ取得中...', 'Processing');
+
+    try {
+      await Promise.all(
+        months.map(async ({ y, m }) => {
+          const mm = String(m).padStart(2, '0');
+          const url = `${NX.CONST.host}/u/yosandata.aspx?tenpo_cd=${baseCd}&shido_ng=${y}/${mm}`;
+
+          // SnapDataで取得 (forceならネットから、falseならローカルDBキャッシュから)
+          const snap = await SnapData.quickFetch({ url: url, force: force, storeName: `FluxSales_${baseCd}`, key: `${y}/${mm}` });
+
+          // ★NXTableで解析 (コード削減箇所)
+          const table = $NX(snap.getAsJQuery('table')).makeNXTable();
+          const records = table.toObjectArray(); // [{ "科目": "入会金", "現状売上": "10,000", ... }, ...]
+
+          records.forEach(row => {
+            // 1列目(科目名)を取得
+            // 項目名が"科目"でない場合も考慮し、Objectの1番目の値を取得
+            const name = Object.values(row)[0] || '';
+
+            let key = targets.find(t => name.includes(t) && t !== '合計');
+            if (!key && name === '合計') key = '合計';
+
+            if (key) {
+              // ヘッダー名に「現状売上」を含む列を探して値を取得
+              // (ヘッダーが変わっても "現状売上" という文字さえあれば動くようにfind)
+              const valKey = Object.keys(row).find(k => k.includes('現状売上')) || Object.keys(row)[2];
+              const valStr = (row[valKey] || '0').replace(/,/g, '');
+              dataMap[key][`${m}月`] = parseInt(valStr) || 0;
+            }
+          });
+        })
+      );
+
+      // 集計処理
+      const finalData = targets.map(key => {
+        const rowData = { category: key };
+        let rowTotal = 0;
+        months.forEach(({ m }) => {
+          const val = dataMap[key][`${m}月`] || 0;
+          rowData[`${m}月`] = val;
+          rowTotal += val;
+        });
+        rowData['total'] = rowTotal;
+        return rowData;
+      });
+
+      // State更新
+      commit({
+        blockSales: {
+          year: targetYear,
+          baseCd: baseCd,
+          data: finalData,
+          updatedAt: new Date().toLocaleTimeString()
+        }
+      });
+
+      if (typeof PX_Toast === 'function' && force) PX_Toast('データ取得完了');
+    } catch (e) {
+      console.error('Block Sales Fetch Error:', e);
+      if (typeof PX_Toast === 'function') PX_Toast('取得エラー', 'error');
+    }
   }
 };
