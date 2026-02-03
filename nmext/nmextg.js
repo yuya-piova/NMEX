@@ -1,5 +1,5 @@
-///<reference path="../jquery-3.4.1.min.js"/>
-///<reference path="../jquery-ui.min.js"/>
+///<reference path="../libraries/jquery-3.4.1.min.js"/>
+///<reference path="../libraries/jquery-ui.min.js"/>
 ///<reference path="../checker.js"/>
 ///<reference path="../dts/JQuery.d.ts"/>
 ///<reference path="../dts/jqueryui.d.ts"/>

@@ -1,5 +1,5 @@
-///<reference path="../jquery-3.4.1.min.js"/>
-///<reference path="../jquery-ui.min.js"/>
+///<reference path="../libraries/jquery-3.4.1.min.js"/>
+///<reference path="../libraries/jquery-ui.min.js"/>
 ///<reference path="../checker.js"/>
 ///<reference path="./closer.js"/>
 ///<reference path="../dts/JQuery.d.ts"/>
@@ -3461,6 +3461,8 @@ class NetzButtonsofshain extends NetzButtonsofBase {
     return url;
   }
 }
+
+//リファクタ済み　利用側を削除したらこれも削除
 class Popmenumaker {
   //Popmenuはトリガーボタンと一緒にここに保存
   //Popmenumaker = {
@@ -4657,7 +4659,6 @@ function netzencodeURIComponent(text) {
     })
   );
 }
-
 
 /**
  *

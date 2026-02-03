@@ -1,5 +1,5 @@
-///<reference path="../jquery-3.4.1.min.js"/>
-///<reference path="../jquery-ui.min.js"/>
+///<reference path="../libraries/jquery-3.4.1.min.js"/>
+///<reference path="../libraries/jquery-ui.min.js"/>
 ///<reference path="../checker.js"/>
 ///<reference path="../dts/JQuery.d.ts"/>
 ///<reference path="../dts/jqueryui.d.ts"/>
@@ -20,110 +20,53 @@ const popmenut_PB = new Popmenumaker('popmenut_PB', 19);
 
 const popmenut_Ins = new Popmenumaker('popmenut_Ins', 45);
 
-const popmenut_F2 = new Popmenumaker('popmenut_F2', 113);
-//F8はファンクションボタンとして使う
+//F8はpopmenu移行用の避難場所とする
 const popmenut_F8 = new Popmenumaker('popmenut_F8', 119);
-popmenut_F2.setContentFunction(function() {
-  const $studentTable = $('<table>', { style: 'width:100%' });
-  const selectedText = window.getSelection().toString();
-  if (selectedText != '') {
-    const student_cd = new studentInfoClass().search(['生徒名', selectedText])?.['生徒NO'];
-    if ($NX(student_cd).isHexaNumber()) {
-      appendStudentTR($studentTable, student_cd, 'Selected', selectedText);
-      $studentTable.appendTo(this);
-    }
-  }
-  if ($('input[name=student_cd]').length != 0) {
-    const student_cd = $('input[name=student_cd]')
-      .eq(0)
-      .val();
-    if ($NX(student_cd).isHexaNumber()) {
-      const student_nm = new studentInfoClass().search(['生徒NO', student_cd])?.['生徒名'];
-      appendStudentTR($studentTable, student_cd, 'FromPage', student_nm || student_cd);
-      $studentTable.appendTo(this);
-    }
-  }
-  function appendStudentTR($targetTable, student_cd, caption, selectedText = '') {
-    const $studentMemo = $('<input>', { type: 'text', class: 'nx', size: '20' });
-    const $linkButton = $('<button>', {
-      class: 'nx',
-      text: '連絡事項',
-      on: {
-        click: function() {
-          window.open(`${NX.CONST.host}/s/student_renraku_list.aspx?student_cd=${student_cd}`);
-        }
-      }
-    });
-    const $tr = $('<tr>').append(`<td>${caption}<td>`, `<td>${selectedText}</td>`);
-    $('<td>')
-      .append($linkButton)
-      .appendTo($tr);
-    $('<td>')
-      .append($studentMemo)
-      .appendTo($tr);
-    $targetTable.append($tr);
-    $studentMemo.netzmemorize(student_cd);
-  }
-  $('<br>').appendTo(this);
-  $('<button>', {
-    type: 'button',
-    text: 'BaseMan(b)',
-    on: {
-      click: function() {
-        new BaseMan().show();
-        popmenut_F2.closemenu();
-      }
-    }
-  })
-    .appendTo(this)
-    .setshortcutkey('b');
-  $('<button>', {
-    type: 'button',
-    text: 'PageNote(p)',
-    on: {
-      click: function() {
-        new PageNote();
-        popmenut_F2.closemenu();
-      }
-    }
-  })
-    .appendTo(this)
-    .setshortcutkey('p');
-  $('<button>', {
-    type: 'button',
-    text: '学習管理メニュー(F4)',
-    on: {
-      click: function() {
-        popmenut_F2.closemenu();
-        window.open(`${NX.CONST.host}/sso/mobilenetzmenu.aspx?app_name=forlecturer&page_kind=3&method_name=studymanagement`);
-      }
-    }
-  })
-    .appendTo(this)
-    .setshortcutkey('F4');
-  $('<button>', {
-    type: 'button',
-    text: 'タスク作成(t)',
-    on: {
-      click: function() {
-        popmenut_F2.closemenu();
-        window.open(`${NX.CONST.host}/todo/todo_input.aspx`);
-      }
-    }
-  })
-    .appendTo(this)
-    .setshortcutkey('t');
-  $('<button>', {
-    type: 'button',
-    text: 'tablerアイコン表示',
-    on: {
-      click: () => {
-        $('.netztablerbutton,.addbutton_nmex').toggleClass('unshown');
-      }
-    }
-  }).appendTo(this);
-  $('<br>').appendTo(this);
+
+const popmenu = new PopMenu({
+  id: 'tool-set',
+  keyCode: 113,
+  showFloatingButton: true
 });
+
+window.addEventListener('keydown', async e => {
+  if (e.keyCode === popmenu.keyCode) {
+    // 1. 前回の動的ボタンをクリア
+    popmenu.clearDynamic();
+
+    // 2. 選択テキストを取得
+    const selectedText = window
+      .getSelection()
+      .toString()
+      .trim();
+
+    if (selectedText !== '') {
+      // 3. StudentInfoを使って検索 (core/StudentInfo.js を使用)
+      // 事前に初期化済みの studentInfoManager インスタンスがあると想定
+      const students = new studentInfoClass().search(['生徒名', selectedText]); //studentInfoManager.search(selectedText);
+
+      if (students) {
+        //.length > 0
+        //const student = students[0]; // 最初の候補
+        const student_cd = students['生徒NO'];
+        const student_name = students['生徒名'];
+
+        // 4. 動的ボタンとして追加 (レイヤー色を 'page' = 紫に設定)
+        popmenu.appendDynamic(`連絡事項 (${student_name})`, {
+          type: 'page',
+          handler: () => {
+            window.open(`${NX.CONST.host}/s/student_renraku_list.aspx?student_cd=${student_cd}`);
+          }
+        });
+      }
+    }
+
+    // 5. メニューを表示
+    const pos = typeof getMousePosition === 'function' ? getMousePosition() : { x: e.pageX, y: e.pageY };
+    popmenu.show(pos.x, pos.y);
+  }
+});
+
 (function() {
   console.log('走る走るFUNCTION_Tたち');
   FUNCTION_T.general = {};
@@ -497,44 +440,6 @@ popmenut_F2.setContentFunction(function() {
     if (myprofiles.getone({ mynumber: '0' }) != '000231') return true;
     switch (location.pathname) {
       /* eslint-disable */
-      case '/netz/netz1/shingaku/kouza_select.aspx':
-        popmenut_F2.setContentFunction(function() {
-          $('<button>', {
-            text: '大学入試セミナー',
-            on: {
-              click: function() {
-                popmenut_F2.closemenu();
-                $('[name=tenpo_cd]').val('');
-                $('[name=season_cb]').val('c');
-                $('[name=b_reload]').trigger('click');
-              }
-            }
-          }).appendTo(this);
-        });
-        break;
-      case '/netz/netz1/text/contents_list.aspx':
-        popmenut_F2.setContentFunction(function() {
-          $('<button>', {
-            type: 'button',
-            text: '担任取得',
-            on: {
-              click: async () => {
-                const student_cds = $('tr:gt(0)')
-                  .map(function() {
-                    return $(this).findTdGetTxt(1);
-                  })
-                  .get();
-                const coachs = await new AjaxstudentInfoClass().coachs(student_cds);
-                $('tr:gt(0)').each(function() {
-                  const student_cd = $(this).findTdGetTxt(1);
-                  if (coachs[student_cd]) $(`<td>${coachs[student_cd]}</td>`).appendTo(this);
-                });
-                popmenut_F2.closemenu();
-              }
-            }
-          }).appendTo(this);
-        });
-        break;
       default:
         //nothing
         break;
@@ -654,7 +559,7 @@ popmenut_F2.setContentFunction(function() {
     if (top.frames.length != 0) $('select[name=menu_cb]', top.frames[0].document.body).netztracer($('select[name^=d]'));
   };
   FUNCTION_T.student_list_body.popmenu = function() {
-    popmenut_F2.setContentFunction(function() {
+    popmenut_F8.setContentFunction(function() {
       //モード切り替え
       const onoff = [
         { title: 'OFF', value: 0 },
@@ -740,25 +645,19 @@ popmenut_F2.setContentFunction(function() {
   };
   FUNCTION_T.yotei_input.togas = function() {
     if (myprofiles.getone({ myname: '' }) == '辰野　由弥') {
-      popmenut_F2.setContentFunction(function() {
-        $('<button>', {
-          type: 'button',
-          text: 'Google Calとoutlookに追加',
-          on: {
-            click: () => {
-              const startDate = new ExDate($('#input_dt').val() + ' ' + $('#s_tm').val());
-              const endDate = new ExDate($('#input_dt').val() + ' ' + $('#e_tm').val());
-              const duration = $('#e_tm').val() != '' ? (endDate.getTime() - startDate.getTime()) / (1000 * 60) : 30;
-              const startdt = `${startdt.as('yyyy-mm-dd')}T${$('#s_tm').val()}:00`;
-              const topic = `${$('[name=yotei_cb] option:selected').text()}:${$('#basho_nm').val()}`;
-              $.post(
-                'https://script.google.com/macros/s/AKfycbwwG54-D3VbMrrH9p31vQa44vk5MY7piaVhg0NYfoWdXWOCWLlQu3eXbPoVZ16hPd6u5A/exec',
-                { onlymakeschedule: 'true', topic, startdt, duration },
-                window.alert('POST完了')
-              );
-            }
-          }
-        }).appendTo(this);
+      popmenu.append('Google Calとoutlookに追加', {
+        handler: () => {
+          const startDate = new ExDate($('#input_dt').val() + ' ' + $('#s_tm').val());
+          const endDate = new ExDate($('#input_dt').val() + ' ' + $('#e_tm').val());
+          const duration = $('#e_tm').val() != '' ? (endDate.getTime() - startDate.getTime()) / (1000 * 60) : 30;
+          const startdt = `${startdt.as('yyyy-mm-dd')}T${$('#s_tm').val()}:00`;
+          const topic = `${$('[name=yotei_cb] option:selected').text()}:${$('#basho_nm').val()}`;
+          $.post(
+            'https://script.google.com/macros/s/AKfycbwwG54-D3VbMrrH9p31vQa44vk5MY7piaVhg0NYfoWdXWOCWLlQu3eXbPoVZ16hPd6u5A/exec',
+            { onlymakeschedule: 'true', topic, startdt, duration },
+            window.alert('POST完了')
+          );
+        }
       });
     }
   };
@@ -836,7 +735,7 @@ popmenut_F2.setContentFunction(function() {
   };
   FUNCTION_T.student_info_input = {};
   FUNCTION_T.student_info_input.F2menu = function() {
-    popmenut_F2.setContentFunction(function() {
+    popmenut_F8.setContentFunction(function() {
       $('<button>引継ぎ連絡事項（上に追加）</button>')
         .appendTo(this)
         .on('click', function() {
@@ -886,7 +785,7 @@ popmenut_F2.setContentFunction(function() {
     const iframe = new IframeMakerEx({ iframeName: 'shido_furikae_input', x: tableWidth + 20, y: 10, draggable: true, savePosition: false });
     const student_cd = $('input[name=student_cd]').val();
 
-    popmenut_F2.setContentFunction(function() {
+    popmenut_F8.setContentFunction(function() {
       iframe.makeButton(`${NX.CONST.host}/s/student_renraku_list.aspx`, '連絡事項', Object.assign({}, { student_cd })).appendTo(this);
       iframe.makeButton(`${NX.CONST.host}/kanren/student_shido_yotei.aspx`, '指導予定', Object.assign({}, { student_cd })).appendTo(this);
     });
@@ -897,7 +796,7 @@ popmenut_F2.setContentFunction(function() {
   };
   FUNCTION_T.shido_edit_list = {};
   FUNCTION_T.shido_edit_list.F2menu = function() {
-    popmenut_F2.setContentFunction(function() {
+    popmenut_F8.setContentFunction(function() {
       //自動ブース組による文字列修正
       $('<button>', {
         type: 'button',
@@ -917,7 +816,7 @@ popmenut_F2.setContentFunction(function() {
                 .valReplace(')', '）');
               if ($this.val() != beforeVal) $this.addClass('inputselectchange');
             });
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
           }
         }
       }).appendTo(this);
@@ -1382,11 +1281,11 @@ popmenut_F2.setContentFunction(function() {
       const mailBody = buildMailTemplate(type, param);
       mailTEXTAREA.val(mailBody);
       mailDIV.show().appendTo('body');
-      popmenut_F2.closemenu();
+      popmenut_F8.closemenu();
     }
 
     //メニュー内UI構築
-    popmenut_F2.setContentFunction(function() {
+    popmenut_F8.setContentFunction(function() {
       mailList.forEach(type => {
         $('<button>', {
           name: 'makemailbtn',
@@ -1436,7 +1335,7 @@ popmenut_F2.setContentFunction(function() {
         .on('click', () => {
           menlog.loadAll();
         });
-    popmenut_F2.setContentFunction(function() {
+    popmenut_F8.setContentFunction(function() {
       $('<button>', {
         type: 'button',
         text: 'ログ読み込み',
@@ -1444,7 +1343,7 @@ popmenut_F2.setContentFunction(function() {
         on: {
           click: () => {
             menlog.loadAll();
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
           }
         }
       }).appendTo(this);
@@ -1455,7 +1354,7 @@ popmenut_F2.setContentFunction(function() {
         on: {
           click: () => {
             menlog.delete();
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
           }
         }
       }).appendTo(this);
@@ -1473,7 +1372,7 @@ popmenut_F2.setContentFunction(function() {
                   .val()
               );
             });
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
           }
         }
       }).appendTo(this);
@@ -1559,7 +1458,7 @@ popmenut_F2.setContentFunction(function() {
   };
   FUNCTION_T.student_renraku_list.F2menu = function() {
     const student_cd = $('input[name=student_cd]').val() || getparameter('student_cd');
-    popmenut_F2.setContentFunction(function() {
+    popmenut_F8.setContentFunction(function() {
       $('<button>', {
         type: 'button',
         text: 'スケ（ブース形式）【講習】',
@@ -1571,7 +1470,7 @@ popmenut_F2.setContentFunction(function() {
               input2_dt: new ExDate().compare(NX.VAR.koshu_kikan['終了'])['forwarddate'].as('yyyy/mm/dd')
             };
             window.open(`${NX.CONST.host}/kanren/student_shift.aspx?${$.param(param)}`);
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
           }
         }
       }).appendTo(this);
@@ -1589,7 +1488,7 @@ popmenut_F2.setContentFunction(function() {
                 .as('yyyy/mm/dd')
             };
             window.open(`${NX.CONST.host}/kanren/student_shift.aspx?${$.param(param)}`);
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
           }
         }
       }).appendTo(this);
@@ -1599,7 +1498,7 @@ popmenut_F2.setContentFunction(function() {
         on: {
           click: () => {
             window.open(`${NX.CONST.host}/s/student_studyplan_list.aspx?student_cd=${student_cd}`);
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
           }
         }
       }).appendTo(this);
@@ -1722,7 +1621,7 @@ popmenut_F2.setContentFunction(function() {
   FUNCTION_T.student_mendan_input = {};
   FUNCTION_T.student_mendan_input.F2menu = function() {
     //GASでzoom会議室作成をする
-    popmenut_F2.setContentFunction(function() {
+    popmenut_F8.setContentFunction(function() {
       const student_cd = $('input[name=student_cd]').val();
       $('<button>', {
         type: 'button',
@@ -1818,7 +1717,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
               clip
             };
             window.open(`${NX.CONST.host}/s/student_mailsend_input.aspx?${$.param(param)}`);
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
           }
         }
       }).appendTo(this);
@@ -1870,7 +1769,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
             const iframe = new IframeMakerEx({ iframeName: 'yotei', x: 800, y: 10, draggable: true }).loadUrl(
               `${NX.CONST.host}/kanren/student_shido_yotei.aspx?student_cd=${student_cd}`
             );
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
           }
         }
       }).appendTo(this);
@@ -1879,7 +1778,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
 
   FUNCTION_T.teian_list_body = {};
   FUNCTION_T.teian_list_body.F2menu = function() {
-    popmenut_F2.setContentFunction(function() {
+    popmenut_F8.setContentFunction(function() {
       const listNXTable = $NX('table').makeNXTable({ omitSubrow: true });
       const sortByState = function(a, b) {
         const list = ['未組', '', '日程調整', '面談待', '保留', '完了', '申込無'];
@@ -1923,7 +1822,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
         return false;
       });
     }
-    popmenut_F2.setContentFunction(function() {
+    popmenut_F8.setContentFunction(function() {
       //メモの表示をトグル
       $('<button>', {
         type: 'button',
@@ -1951,7 +1850,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
           click: function() {
             const dataname = prompt('データ名を入力', 'mendandata');
             const eq = prompt('書き込みたいtdのeqは？', 10);
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
             if (!eq || !dataname) return false;
             const fullLength = $('tr:eq(1)').find('td').length;
             $('tr:gt(0)').each(function(e) {
@@ -1973,7 +1872,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
           click: function() {
             const dataname = prompt('データ名を入力', 'mendandata');
             const memoStr = prompt('メモを入力');
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
             if (!dataname) return false;
             const fullLength = $('tr:eq(1)').find('td').length;
             $('tr:gt(0)').each(function(e) {
@@ -1993,7 +1892,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
         text: '面談担当者一括設定',
         on: {
           click: () => {
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
             const teacher_cd = prompt('【社員cd】→年度→季節\n社員cdを入れてください');
             if (!teacher_cd) return false;
             const teacherName = new NXEmp(teacher_cd).getName();
@@ -2030,7 +1929,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
         text: '月謝固定',
         on: {
           click: () => {
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
             const pageNendoSeason = $('[name=nendo_season_cb]').val();
             const [suggestNendo = NX.VAR.nendo, suggestSeason_cb = NX.VAR.season_cb] = [pageNendoSeason.slice(0, 4), pageNendoSeason.slice(4)];
             const inputNendo = prompt('【年度】→季節\n年度を入力してください', suggestNendo);
@@ -2055,7 +1954,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
         text: '24高３年明け追加取得',
         on: {
           click: function() {
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
             const menSaver = new Saver('mendankanri');
             $('select').each(async function() {
               //prettier-ignore
@@ -2081,7 +1980,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
         text: '2502月謝取得',
         on: {
           click: function() {
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
             const menSaver = new Saver('mendankanri');
             $('select').each(async function() {
               //prettier-ignore
@@ -2099,7 +1998,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
         class: 'nx offajax',
         on: {
           click: function() {
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
             const menSaver = new Saver('mendankanri');
             $('select').each(async function() {
               //prettier-ignore
@@ -2115,7 +2014,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
             $('<button>', { type: 'button', class: 'nx offajax', text: '24高３規定取得' })
         .appendTo(this)
         .on('click', function() {
-          popmenut_F2.closemenu();
+          popmenut_F8.closemenu();
           const menSaver = new Saver('mendankanri');
           $('select').each(async function() {
             const student_cd = $(this)
@@ -2129,7 +2028,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
     $('<button>', { text: '23夏期講習売上取得' })
       .appendTo(this)
       .on('click', function() {
-        popmenut_F2.closemenu();
+        popmenut_F8.closemenu();
         const menSaver = new Saver('mendankanri');
         $('select').each(async function() {
           const student_cd = $(this)
@@ -2157,7 +2056,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
         ['現状ランク', 'nowRank']
       
       */
-      popmenut_F2.setContentFunction(function() {
+      popmenut_F8.setContentFunction(function() {
         const $isNotesShow_Btns = $('<div>', {
           class: 'nxChecks'
         }).appendTo(this);
@@ -2256,7 +2155,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
     });
   };
   FUNCTION_T.shido_yotei_input.F2menu = function() {
-    popmenut_F2.setContentFunction(function() {
+    popmenut_F8.setContentFunction(function() {
       $('<button>', {
         type: 'button',
         class: 'nx',
@@ -2270,7 +2169,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
               ['select[name=shido_cb]', '9'],
               ['[name=bikou_nm]', 'NALUトリセツ']
             ]);
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
           }
         }
       }).appendTo(this);
@@ -2286,7 +2185,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
               ['select[name=shido_cb]', '9'],
               ['[name=bikou_nm]', '1on1']
             ]);
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
           }
         }
       }).appendTo(this);
@@ -2304,7 +2203,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
               ['select[name=shido_cb]', '2'],
               ['[name=bikou_nm]', 'Diverse志望類題']
             ]);
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
           }
         }
       }).appendTo(this);
@@ -2327,7 +2226,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
   };
   FUNCTION_T.kouza_enshu_jyuko_list = {};
   FUNCTION_T.kouza_enshu_jyuko_list.F2menu = function() {
-    popmenut_F2.setContentFunction(function() {
+    popmenut_F8.setContentFunction(function() {
       const getdata = {};
       $('input[type=hidden]').each(function() {
         getdata[$(this).attr('name')] = $(this).val();
@@ -2360,13 +2259,13 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
   };
   FUNCTION_T.student_info_input = {};
   FUNCTION_T.student_info_input.template = function() {
-    popmenut_F2.setContentFunction(function() {
+    popmenut_F8.setContentFunction(function() {
       $('<button>', {
         text: '長期目標テンプレ',
         on: {
           click: () => {
             $('textarea[name=mokuhyo1_nm]').val(LCT.TEMPLATE.Student.future);
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
           }
         }
       }).appendTo(this);
@@ -2375,7 +2274,7 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
         on: {
           click: () => {
             $('textarea[name=student_info_detail_nm]').val(LCT.TEMPLATE.Student.kihoninfo);
-            popmenut_F2.closemenu();
+            popmenut_F8.closemenu();
           }
         }
       }).appendTo(this);
@@ -4557,64 +4456,53 @@ ${LCT.TEMPLATE.Mail.howtoZoom}
   };
 })(this);
 
-//Insertmenuの下側
 (function() {
-  popmenut_F2.setContentFunction(function() {
-    $('<button>', {
-      type: 'button',
-      text: '$("form").serialize()',
-      on: {
-        click: () => {
-          console.log('URL', location.href);
-          //prettier-ignore
-          console.log('form', $('form').serialize().toString())
-        }
-      }
-    }).appendTo(this);
-    $('<button>', {
-      type: 'button',
+  const popButtons = [
+    {
       text: '右クリtr削除モード',
-      on: {
-        click: () => {
-          $('tr').on('contextmenu', function() {
-            $(this).remove();
-            return false;
-          });
-          popmenut_F2.closemenu();
-        }
+      type: 'common',
+      handler: () =>
+        $('tr').on('contextmenu', function() {
+          $(this).remove();
+          return false;
+        })
+    },
+    {
+      text: '$("form").serialize()',
+      type: 'common',
+      handler: () => {
+        console.log('URL', location.href);
+        //prettier-ignore
+        console.log('form', $('form').serialize().toString());
       }
-    }).appendTo(this);
-    $('<button>', {
-      type: 'button',
-      text: '$("input,select").remove()',
-      on: {
-        click: () => {
-          $('input,select').remove();
-          popmenut_F2.closemenu();
-        }
+    },
+    { text: '$("input,select").remove()', type: 'common', handler: () => $('input,select').remove() },
+    { text: '$("br").remove()', type: 'common', handler: () => $('br').remove() },
+    { text: '$("table").netztabler()', type: 'common', handler: () => $('table').netztabler() },
+    '<hr>'
+  ];
+  const basemanButton = $('<button>', {
+    type: 'button',
+    text: 'BaseMan(b)'
+  }).setshortcutkey('b');
+  const pageNoteButton = $('<button>', {
+    type: 'button',
+    text: 'PageNote(p)',
+    on: {
+      click: function() {
+        new PageNote();
+        popmenut_F8.closemenu();
       }
-    }).appendTo(this);
-    $('<button>', {
-      type: 'button',
-      text: '$("br").remove()',
-      on: {
-        click: () => {
-          $('br').remove();
-          popmenut_F2.closemenu();
-        }
+    }
+  }).setshortcutkey('p');
+  const tablerButton = $('<button>', {
+    type: 'button',
+    text: 'tablerアイコン表示',
+    on: {
+      click: () => {
+        $('.netztablerbutton,.addbutton_nmex').toggleClass('unshown');
       }
-    }).appendTo(this);
-    $('<button>', {
-      type: 'button',
-      text: '$("table").netztabler()',
-      on: {
-        click: () => {
-          $('table').netztabler();
-          popmenut_F2.closemenu();
-        }
-      }
-    }).appendTo(this);
-
-    $('<hr>').appendTo(this);
+    }
   });
+  popmenu.append(basemanButton, { type: 'common', handler: () => new BaseMan().show() }).appendItems(popButtons);
 })(this);

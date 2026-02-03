@@ -10,14 +10,14 @@
 */
 //グローバル変数
 /**@type {Popmenumaker} */
-var popmenuo_F2 = new Popmenumaker('popmenuo_F2', 113);
+var popmenuo_F2 = new Popmenumaker('popmenuo_F2', 112); //113
 /**@type {Popmenumaker} */
 var popmenuo_ins = new Popmenumaker('popmenuo_ins', 45);
 /**@type {Popmenumaker} */
 var popmenuo_PB = new Popmenumaker('popmenuo_PB', 19);
 
 /**@type {Popmenumaker} */
-var popmenuo_F2_mode = new Popmenumaker('popmenuo_F2_mode', 113);
+var popmenuo_F2_mode = new Popmenumaker('popmenuo_F2_mode', 112); //113
 Popmenumaker.makeAndroidbutton(113);
 
 $(function() {
