@@ -547,5 +547,101 @@ export const DashboardActions = {
       console.error('Check Error:', e);
       commit({ managementResults: [{ title: 'Error', text: e.message, type: 'danger' }] });
     }
+  },
+  /**
+   * 通知の一括チェック (15分おきに実行予定)
+   */
+  async fetchNotifications(commit, state) {
+    const notifications = [];
+    const host = NX.CONST.host;
+
+    try {
+      // 1. index_info.aspx のチェック (複数の一括通知)
+      //    (連絡事項、トーク、ワークフロー、予定など)
+      const indexInfoSnap = await SnapData.quickFetch({ url: `${host}/index_info.aspx`, noCache: true });
+      const indexInfoHtml = indexInfoSnap.getAsRawString(); // または .result など
+
+      // チェック定義リスト (拡張性確保)
+      const indexChecks = [
+        { key: '未処理の生徒連絡事項', icon: 'fa-solid fa-envelope', url: '/s/student_renraku.aspx', type: 'warning' },
+        {
+          key: '未確認の講師トーク',
+          icon: 'fa-solid fa-chalkboard-user',
+          url: '/talk/talkmenu.aspx?talk_type=lecturer&midoku_flg=1&condition_type=tenpo',
+          type: 'info'
+        },
+        { key: 'ワークフロー', icon: 'fa-solid fa-ticket', url: '/sso/mobilenetzmenu.aspx?page_kind=1&app_name=workflow', type: 'warning' },
+        {
+          key: '未確認の生徒トーク',
+          icon: 'fa-solid fa-comments',
+          url: '/talk/talkmenu.aspx?talk_type=student&midoku_flg=1&condition_type=tenpo',
+          type: 'info'
+        },
+        { key: '未確認の予定', icon: 'fa-solid fa-calendar-days', url: '/schedule/yotei_list.aspx?ch_flg=1', type: 'info' }
+      ];
+
+      indexChecks.forEach(check => {
+        if (indexInfoHtml.includes(check.key)) {
+          notifications.push({
+            id: check.key,
+            label: check.key,
+            icon: check.icon,
+            url: `${host}${check.url}`,
+            type: check.type,
+            count: '!' // 件数が不明なものは ! マーク等
+          });
+        }
+      });
+
+      // 2. 解約未承認チェック
+      const myGroup = myprofiles.getone({ mygroup: '' }) || 'a5031'; // デフォルト値注意
+      const cancelUrl = `/k/kaiyaku_list_body.aspx?tenpo_cd=${myGroup}&disp_cb=0&input_dt1=&input_dt2=&kaiyaku_cb=&status_cb=3&end_dt=&sort_cb=1`;
+      const cancelSnap = await SnapData.quickFetch({
+        url: `${host}${cancelUrl}`,
+        noCache: false,
+        expiration: 30,
+        storeName: 'FluxData',
+        key: 'notifyCanceled'
+      });
+      const cancelCount = cancelSnap.getAsJQuery('table input[value=承認]').length;
+
+      if (cancelCount > 0) {
+        notifications.push({
+          id: 'cancel',
+          label: `解約未承認 (${cancelCount}件)`,
+          icon: 'fa-solid fa-user-large-slash',
+          url: `${host}${cancelUrl}`,
+          type: 'danger',
+          count: cancelCount
+        });
+      }
+
+      // 3. 担任未設定チェック
+      //    中四国ブロック全体(a5031)などでチェック
+      const coachUrl = `/s/student_tanto_list.aspx?tanto_cb=0&tenpo_cd=a5031`;
+      const coachSnap = await SnapData.quickFetch({
+        url: `${host}${coachUrl}`,
+        noCache: false,
+        expiration: 15,
+        storeName: 'FluxData',
+        key: 'notifyNoCoach'
+      });
+      const noCoachCount = coachSnap.getAsJQuery('table input[type=checkbox]').length;
+
+      if (noCoachCount > 0) {
+        notifications.push({
+          id: 'nocoach',
+          label: `担任未設定 (${noCoachCount}件)`,
+          icon: 'fa-solid fa-user-tag',
+          url: `${host}${coachUrl}`,
+          type: 'warning',
+          count: noCoachCount
+        });
+      }
+
+      commit({ notifications });
+    } catch (e) {
+      console.error('Notification Fetch Error:', e);
+    }
   }
 };

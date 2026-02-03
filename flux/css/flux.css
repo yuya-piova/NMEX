@@ -81,7 +81,77 @@ body {
 }
 
 /* ==========================================================================
-   3. Sidebar Menu
+   3. Feature: Header & Notifications
+   ========================================================================== */
+
+/* ヘッダー右側エリア */
+#flux-header-right {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.flux-notify-container {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  padding-right: 10px;
+}
+
+.flux-notify-item {
+  position: relative;
+  color: #555;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+  text-decoration: none;
+}
+
+.flux-notify-item:hover {
+  background-color: #e9ecef;
+  color: #333;
+}
+
+/* 通知タイプ別の色 (アイコン色を変える場合) */
+.flux-notify-item.warning {
+  color: #f39c12;
+}
+.flux-notify-item.danger {
+  color: #e74c3c;
+}
+.flux-notify-item.info {
+  color: #3498db;
+}
+
+/* バッジ */
+.flux-notify-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background-color: #e74c3c;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: bold;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #fff; /* 白縁で視認性アップ */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================================================
+   4. Sidebar Menu
    ========================================================================== */
 .flux-menu-item {
   padding: 15px 20px;
@@ -111,7 +181,7 @@ body {
 }
 
 /* ==========================================================================
-   4. Page Containers
+   5. Page Containers
    ========================================================================== */
 /* 通常ページ (カード型ダッシュボードなど) */
 .flux-page {
@@ -176,7 +246,7 @@ body {
 }
 
 /* ==========================================================================
-   5. Components: Buttons & Icons
+   6. Components: Buttons & Icons
    ========================================================================== */
 /* アイコンボタン (丸型) */
 .flux-btn-icon {
@@ -280,7 +350,7 @@ body {
 }
 
 /* ==========================================================================
-   6. Components: Widget Card (Dashboard)
+   7. Components: Widget Card (Dashboard)
    ========================================================================== */
 .flux-card {
   background: #fff;
@@ -332,7 +402,7 @@ body {
 }
 
 /* ==========================================================================
-   7. Feature: Unit Widget (Dashboard)
+   8. Feature: Unit Widget (Dashboard)
    ========================================================================== */
 .flux-unit-list {
   display: flex;
@@ -399,7 +469,7 @@ body {
 }
 
 /* ==========================================================================
-   8. Feature: Task Widget (Dashboard Card)
+   9. Feature: Task Widget (Dashboard Card)
    ========================================================================== */
 .flux-task-list {
   display: flex;
@@ -453,7 +523,7 @@ body {
 }
 
 /* ==========================================================================
-   9. Feature: Full Size Table (Tasks Page)
+   10. Feature: Full Size Table (Tasks Page)
    ========================================================================== */
 /* 固定ページ内でのコンテナ調整 */
 .flux-page-fixed .flux-table-container {
@@ -523,7 +593,7 @@ body {
 }
 
 /* ==========================================================================
-   10. Feature: AsCoach Grid (AsCoach Page)
+   11. Feature: AsCoach Grid (AsCoach Page)
    ========================================================================== */
 /* 固定ページ内でのグリッドコンテナ調整 */
 .flux-page-fixed .flux-coach-grid {
@@ -645,7 +715,7 @@ body {
 }
 
 /* ==========================================================================
-   11. Feature: Management Page
+   12. Feature: Management Page
    ========================================================================== */
 .flux-manage-container {
   padding: 10px;

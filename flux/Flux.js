@@ -8,6 +8,7 @@ import { TaskPageWidget } from './widgets/pages/TaskPageWidget.js';
 import { AsCoachPageWidget } from './widgets/pages/AsCoachPageWidget.js';
 import { ManagementPageWidget } from './widgets/pages/ManagementPageWidget.js';
 import { DashboardActions } from './actions/DashboardAction.js';
+import { NotificationWidget } from './widgets/features/NotificationWidget.js';
 
 export class Flux {
   constructor() {
@@ -16,12 +17,14 @@ export class Flux {
       currentPage: 'Dashboard',
       unitStatus: [],
       tasks: [],
-      errorTasks: []
+      errorTasks: [],
+      notifications: []
     });
 
     // 2. Widgetのインスタンス化
     this.widgets = {
       menu: new MenuWidget(this.core),
+      notification: new NotificationWidget(this.core),
       unit: new UnitWidget(this.core),
       task: new TaskWidget(this.core),
       taskPage: new TaskPageWidget(this.core),
@@ -50,6 +53,7 @@ export class Flux {
     this.createPageContainer(contentArea, 'AsCoach', 'flux-page-fixed');
 
     // Dashboardページに Widget を配置
+    this.widgets.notification.mount('#flux-header-right');
     this.widgets.unit.mount('#page-Dashboard');
     this.widgets.task.mount('#page-Dashboard');
     this.widgets.taskPage.mount('#page-Tasks');
@@ -62,10 +66,16 @@ export class Flux {
     });
 
     // 5. 初期データ取得
+    this.core.dispatch(DashboardActions.fetchNotifications);
     this.core.dispatch(DashboardActions.fetchUnitStatus);
     this.core.dispatch(DashboardActions.fetchTasks);
     this.core.dispatch(DashboardActions.fetchErrorTasks);
     this.core.dispatch(DashboardActions.fetchAsCoachData);
+
+    //通知は１５分毎の定期実行
+    setInterval(() => {
+      this.core.dispatch(DashboardActions.fetchNotifications);
+    }, 900000);
   }
 
   createLayout() {
@@ -74,6 +84,7 @@ export class Flux {
       <div class="flux-layout">
         <header id="flux-header">
             <div class="flux-brand"><i class="fa-solid fa-shapes"></i> Flux</div>
+            <div id="flux-header-right"></div>
         </header>
         <aside id="flux-sidebar"></aside>
         <main id="flux-content"></main>
@@ -85,6 +96,18 @@ export class Flux {
     link.rel = 'stylesheet';
     link.href = chrome.runtime.getURL('flux/css/flux.css');
     document.head.appendChild(link);
+
+    const svgIcon = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+        <rect width="64" height="64" rx="12" fill="#0056b3"/>
+        <text x="32" y="48" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="white" text-anchor="middle">F</text>
+      </svg>
+    `.trim();
+    const favicon = document.createElement('link');
+    favicon.rel = 'icon';
+    //favicon.href = chrome.runtime.getURL('icon19.png');
+    favicon.href = `data:image/svg+xml;base64,${btoa(svgIcon)}`;
+    document.head.appendChild(favicon);
 
     document.title = 'Flux';
   }

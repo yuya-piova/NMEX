@@ -35,6 +35,10 @@ $(function() {
         window.open(`${NX.CONST.host}/index_system.aspx`, '_blank');
         return false;
       });
+      $('button[data-original-title="業務アプリ"]').on('contextmenu', function() {
+        window.open(`${NX.CONST.host}/s/student_inout_checklist.aspx`, '_blank');
+        return false;
+      });
       break;
     case '/portal/Booth/FurikaeIraiList':
       //portal振替一覧画面にstudentLinkerを仕込む
