@@ -166,7 +166,12 @@ export const DashboardActions = {
 
     // 画面上から即座に消すために、現在のStateから該当タスクを除外して更新
     const newTasks = (state.tasks || []).filter(t => t.id !== taskId);
-    commit({ tasks: newTasks });
+    const newErrors = (state.errorTasks || []).filter(t => t.id !== taskId);
+
+    commit({
+      tasks: newTasks,
+      errorTasks: newErrors
+    });
 
     // (任意) PX_Toast が使えるなら表示
     if (typeof PX_Toast === 'function') PX_Toast('タスクを完了にしました');
@@ -264,7 +269,7 @@ export const DashboardActions = {
         opennetzbackEx: `${NX.CONST.host}/todo/todo_input.aspx?doAction=autoClose&id=${id}`
       });
     }
-    // 画面更新のために再取得してもよいが、とりあえずStateから消す
+
     const newErrors = (state.errorTasks || []).filter(t => !taskIds.includes(t.id));
     commit({ errorTasks: newErrors });
   },
@@ -374,6 +379,173 @@ export const DashboardActions = {
       commit({ asCoach: { waiting, going, gone } });
     } catch (e) {
       console.error('AsCoach Fetch Error:', e);
+    }
+  },
+  /**
+   * 管理機能: チェック実行
+   * @param {string} type - 'text', 'open', 'schedule', 'interview'
+   * @param {object} params - { from, to, nendo, season }
+   */
+  async runManagementCheck(commit, state, { type, params }) {
+    // 実行中表示のために一旦クリア
+    commit({ managementResults: [] });
+
+    try {
+      let results = [];
+      const { from, to } = params;
+
+      // 対象校舎リスト (nmextf.jsのロジック: 広島エリア b34)
+      // NXBaseが使えない場合を考慮して、主要な校舎コードを定義しておきます
+      let targetBases = [
+        { code: '3401', name: '皆実町' },
+        { code: '3403', name: '宇品' },
+        { code: '3405', name: '中筋' },
+        { code: '3406', name: '古江' },
+        { code: '3410', name: '安芸府中' },
+        { code: '3416', name: '広島駅前' },
+        { code: '3419', name: '祇園' },
+        { code: '3423', name: '五日市' },
+        { code: '3452', name: '庚午' }
+      ];
+
+      // NXBaseが利用可能なら動的に取得
+      if (typeof NXBase !== 'undefined') {
+        try {
+          targetBases = new NXBase().rawNXT
+            .filterByCondition(['unitcd', 'b34', false], ['closed', ''], ['realbase', 'TRUE'])
+            .pickColumns(['basecd', 'basename'])
+            .toObjectArray()
+            .map(b => ({ code: b.basecd, name: b.basename }));
+        } catch (e) {
+          console.warn('NXBase failed', e);
+        }
+      }
+
+      // --- 1. テキスト配布チェック ---
+      if (type === 'text') {
+        for (const base of targetBases) {
+          const url = `/text/text_list_body.aspx?tenpo_cd=${base.code}&publish_cd=&input1_dt=${from}&input2_dt=${to}&haifu_flg=1`;
+          const snap = await SnapData.quickFetch({ url: `${NX.CONST.host}${url}`, noCache: true });
+          const $html = snap.getAsJQuery();
+          const count = $html.find('input[name=delivery_ch]').length;
+
+          if (count > 0) {
+            results.push({
+              title: `${base.name}`,
+              text: `${count}個 未配布`,
+              url: `${NX.CONST.host}${url}`,
+              type: 'warning'
+            });
+          }
+        }
+      }
+
+      // --- 2. 開校チェック ---
+      else if (type === 'open') {
+        for (const base of targetBases) {
+          const url = `/tenpo_yotei.aspx?input_f_dt=${from}&input_t_dt=${to}&tenpo_cd=${base.code}`;
+          const snap = await SnapData.quickFetch({ url: `${NX.CONST.host}${url}`, noCache: true });
+          const $html = snap.getAsJQuery();
+          // 赤色(#ffcccc)の背景になっているセル＝閉校日なのに設定がおかしい日
+          const count = $html.find('input[value="#ffcccc"]').length;
+
+          if (count > 0) {
+            results.push({
+              title: `${base.name}`,
+              text: `${count}件 エラー`,
+              url: `${NX.CONST.host}${url}`,
+              type: 'danger'
+            });
+          }
+        }
+      }
+
+      // --- 3. 講習SJ入力チェック ---
+      else if (type === 'schedule') {
+        // 全社または広島県校舎(c3400)
+        const url = `/s/schedule_input_check.aspx?tenpo_cd=c3400&input_cb=1&input1_dt=${from}&input2_dt=${to}`;
+        const snap = await SnapData.quickFetch({ url: `${NX.CONST.host}${url}`, noCache: true });
+
+        // テーブル解析 (行ごとに処理)
+        const $rows = snap.getAsJQuery('table tr:gt(0)');
+        $rows.each(function() {
+          const tds = $(this).find('td');
+          if (tds.length < 5) return;
+          const baseName = tds
+            .eq(0)
+            .text()
+            .trim();
+          const countTotal = parseInt(tds.eq(1).text()) || 0;
+          const countInput = parseInt(tds.eq(2).text()) || 0;
+          const diff = countTotal - countInput;
+
+          if (diff > 0) {
+            results.push({
+              title: baseName,
+              text: `未入力 ${diff}件`,
+              url: `${NX.CONST.host}${url}`,
+              type: 'warning'
+            });
+          }
+        });
+      }
+
+      // --- 4. 面談過去対応チェック ---
+      else if (type === 'interview') {
+        // 面談チェックはパラメータが複雑なため、とりあえず固定のロジックで実装
+        const nendo = params.nendo || NX.VAR.nendo;
+        const season = params.season || '2'; // デフォルト夏
+        const ns = `${nendo}${season}`;
+
+        // 共通パラメータ
+        const commParam = `nendo_season_cb=${ns}&tanto_cd=&tanto_cb=1&kado_flg=1&menu_cb=&cb=&sort_cb=4&mendan_status_cb=nn&kaiyaku_flg=1&gen_course_flg=1&mikomi_flg=1&mendan_aite_flg=1&mendan_tanto_flg=1&shukei_cb=0&shibo_cb_flg=1`;
+
+        // 中四国全体で取得 (a5031)
+        const nextUrl = `/s/teian_list_body.aspx?${commParam}&tenpo_cd=a5031&next_dt1=${NX.DT.CMP_START.md}&next_dt2=${NX.DT.today.md}&gakunen_cb=&input_dt1=&input_dt2=&course_ng=`;
+
+        const snap = await SnapData.quickFetch({ url: `${NX.CONST.host}${nextUrl}`, noCache: true });
+
+        // 簡易解析: 「保留」「日程調整」「面談待」の行を探す
+        // NXTableのような高度な解析ライブラリがない前提で、jQueryでカウント
+        const $table = snap.getAsJQuery('table');
+        const counts = {}; // { baseName: count }
+
+        $table.find('tr:gt(0)').each(function() {
+          const $tr = $(this);
+          const baseName = $tr
+            .find('td')
+            .eq(0)
+            .text()
+            .trim(); // 教室名
+          const status = $tr
+            .find('td')
+            .eq(6)
+            .text()
+            .trim(); // 状態 (列インデックスは推定)
+
+          if (['保留', '日程調整', '面談待'].includes(status)) {
+            counts[baseName] = (counts[baseName] || 0) + 1;
+          }
+        });
+
+        for (const [base, count] of Object.entries(counts)) {
+          results.push({
+            title: base,
+            text: `未対応 ${count}件`,
+            url: `${NX.CONST.host}${nextUrl}`, // フィルタ済みURLではないがリンク用
+            type: 'info'
+          });
+        }
+      }
+
+      if (results.length === 0) {
+        results.push({ title: '完了', text: '対象データはありません', type: 'success' });
+      }
+
+      commit({ managementResults: results });
+    } catch (e) {
+      console.error('Check Error:', e);
+      commit({ managementResults: [{ title: 'Error', text: e.message, type: 'danger' }] });
     }
   }
 };

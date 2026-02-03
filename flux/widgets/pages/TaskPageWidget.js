@@ -5,6 +5,9 @@ import { DashboardActions } from '../../actions/DashboardAction.js';
 
 export class TaskPageWidget extends Widget {
   render(state) {
+    const scrollContainer = this.root.querySelector('.flux-table-container');
+    const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
+
     const tasks = state.errorTasks || [];
     const hasRangeError = tasks.some(t => t.isIncorrectRange);
     const hasFollowError = tasks.some(t => t.isNeedFollow);
@@ -67,6 +70,11 @@ export class TaskPageWidget extends Widget {
       </div>
     `;
 
+    const newScrollContainer = this.root.querySelector('.flux-table-container');
+    if (newScrollContainer) {
+      newScrollContainer.scrollTop = scrollTop;
+    }
+
     // --- イベントリスナ ---
 
     // 一括操作ボタン
@@ -92,15 +100,28 @@ export class TaskPageWidget extends Widget {
     this.root.querySelectorAll('tr[data-id]').forEach(tr => {
       const id = tr.dataset.id;
 
+      // 完了ボタン
       tr.querySelector('.action-complete')?.addEventListener('click', () => {
+        // ★UI上の即時削除 (Actionの完了を待たずに消す)
+        tr.style.opacity = '0.3'; // 薄くして「処理中」感を出す
         this.core.dispatch(DashboardActions.completeTask, id);
       });
+
+      // 中止ボタン
       tr.querySelector('.action-cancel')?.addEventListener('click', () => {
-        this.core.dispatch(DashboardActions.deleteInstructionTask, id); // 中止扱い
+        if (confirm('タスクを中止しますか？')) {
+          tr.style.opacity = '0.3';
+          this.core.dispatch(DashboardActions.deleteInstructionTask, id);
+        }
       });
+
+      // 期間適正化
       tr.querySelector('.action-fix')?.addEventListener('click', () => {
+        tr.style.opacity = '0.3';
         this.core.dispatch(DashboardActions.fixTaskDeadline, id);
       });
+
+      // 詳細
       tr.querySelector('.action-detail')?.addEventListener('click', () => {
         window.open(`${NX.CONST.host}/todo/todo_input.aspx?id=${id}`);
       });

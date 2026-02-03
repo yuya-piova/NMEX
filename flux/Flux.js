@@ -6,6 +6,7 @@ import { UnitWidget } from './widgets/features/UnitWidget.js';
 import { TaskWidget } from './widgets/features/TaskWidget.js';
 import { TaskPageWidget } from './widgets/pages/TaskPageWidget.js';
 import { AsCoachPageWidget } from './widgets/pages/AsCoachPageWidget.js';
+import { ManagementPageWidget } from './widgets/pages/ManagementPageWidget.js';
 import { DashboardActions } from './actions/DashboardAction.js';
 
 export class Flux {
@@ -24,7 +25,8 @@ export class Flux {
       unit: new UnitWidget(this.core),
       task: new TaskWidget(this.core),
       taskPage: new TaskPageWidget(this.core),
-      asCoachPage: new AsCoachPageWidget(this.core)
+      asCoachPage: new AsCoachPageWidget(this.core),
+      managementPage: new ManagementPageWidget(this.core)
     };
   }
 
@@ -38,9 +40,12 @@ export class Flux {
     // (または、DashboardページならUnitとTaskを表示、のような制御も可)
     const contentArea = document.querySelector('#flux-content');
 
-    // ページごとのコンテナを作成
+    // コンテナ作成
     this.createPageContainer(contentArea, 'Dashboard');
     this.createPageContainer(contentArea, 'Unit');
+    this.createPageContainer(contentArea, 'Management');
+
+    // 固定ページ系
     this.createPageContainer(contentArea, 'Tasks', 'flux-page-fixed');
     this.createPageContainer(contentArea, 'AsCoach', 'flux-page-fixed');
 
@@ -49,6 +54,7 @@ export class Flux {
     this.widgets.task.mount('#page-Dashboard');
     this.widgets.taskPage.mount('#page-Tasks');
     this.widgets.asCoachPage.mount('#page-AsCoach');
+    this.widgets.managementPage.mount('#page-Management');
 
     // 4. ページ切り替え監視
     this.core.subscribe(state => {

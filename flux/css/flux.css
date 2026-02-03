@@ -115,7 +115,6 @@ body {
    ========================================================================== */
 /* 通常ページ (カード型ダッシュボードなど) */
 .flux-page {
-  /* ★追加: ここでスクロールを担当する */
   flex: 1; /* 親の余白一杯に広がる */
   overflow-y: auto; /* 中身が多いときはここでスクロール */
   min-height: 0; /* Flex子要素の最小サイズ潰れ防止 */
@@ -124,24 +123,12 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
   align-content: start;
-
-  /* height: 100%; は削除して flex: 1 に任せる */
 }
-/*
-.flux-page {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  align-content: start;
-  height: 100%;
-}
-  */
 
 /* 固定ページ (Tasks, AsCoachなど、画面いっぱいに広げて内部スクロールするページ) */
 .flux-page.flux-page-fixed {
-  /* ★修正: height: 100% ではなく flex で埋める */
   flex: 1;
-  min-height: 0; /* 重要 */
+  min-height: 0;
 
   display: flex;
   flex-direction: column;
@@ -152,18 +139,16 @@ body {
   border: none;
 }
 
-/*
-.flux-page-fixed {
-  height: 100%;
-  max-height: 100%;
-  display: flex;
+.flux-page.flux-page-fixed > div {
+  flex: 1; /* 親の残りを埋める */
+  min-height: 0;
+
+  display: flex; /* 子要素(grid)のためにFlexコンテナになる */
   flex-direction: column;
-  overflow: hidden;
-  padding-bottom: 0;
-  margin-bottom: 0;
-  border: none;
+
+  width: 100%; /* 横幅も確保 */
+  overflow: hidden; /* はみ出し防止 */
 }
-*/
 
 /* ページ内ヘッダー (Page Title & Actions) */
 .flux-page-header {
@@ -225,6 +210,12 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+.flux-btn-primary {
+  background-color: #0056b3;
+}
+.flux-btn-primary:hover {
+  background-color: #07488d;
 }
 .flux-btn-secondary {
   background-color: #6c757d;
@@ -651,4 +642,111 @@ body {
 }
 .flux-icon-green {
   color: #28a745;
+}
+
+/* ==========================================================================
+   11. Feature: Management Page
+   ========================================================================== */
+.flux-manage-container {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+.flux-manage-controls {
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.flux-manage-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.flux-input {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.flux-manage-actions-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* 結果リストエリア */
+.flux-manage-results {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 個別チップ */
+.flux-manage-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 15px;
+  border-radius: 6px;
+  border-left: 5px solid #ccc;
+  background-color: #f9f9f9;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.chip-title {
+  font-weight: bold;
+  width: 150px;
+}
+
+.chip-text {
+  flex-grow: 1;
+}
+
+.chip-link {
+  color: #666;
+  padding: 5px;
+}
+.chip-link:hover {
+  color: #0056b3;
+}
+
+/* タイプ別色分け */
+.chip-warning {
+  border-left-color: #ffc107;
+  background-color: #fffbf0;
+}
+.chip-danger {
+  border-left-color: #dc3545;
+  background-color: #fff5f5;
+}
+.chip-success {
+  border-left-color: #28a745;
+  background-color: #f0fff4;
+}
+.chip-info {
+  border-left-color: #17a2b8;
+  background-color: #f0fbfc;
+}
+
+.flux-loading {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-size: 1.2rem;
 }
