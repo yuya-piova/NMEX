@@ -27,7 +27,7 @@ export class UnitWidget extends Widget {
             ${
               u.boothUrl
                 ? `
-            <a href="${u.boothUrl}" target="_blank" class="flux-icon-link" title="座席表を開く">
+            <a href="${u.boothUrl}" target="_blank" class="flux-icon-link" title="ブース表を開く">
                <i class="fa-solid fa-table"></i>
             </a>
             `

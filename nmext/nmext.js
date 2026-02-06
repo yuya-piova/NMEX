@@ -472,7 +472,7 @@ $(function() {
           $('[name=b_submit]').trigger('click');
         }
 
-        //GASでzoom会議室作成をする
+        //zoom会議室作成をする
         FUNCTION_T.student_mendan_input.F2menu();
         break;
       }
@@ -1621,40 +1621,37 @@ $(function() {
           $('input[name="kekka_cb"]').prop('checked', true);
           $('input[name=kekka_update]').trigger('click');
         }
-        popmenut_F8.setContentFunction(function() {
-          $('<button>', {
+
+        popmenu.appendItems([
+          {
             text: 'Diverse登録画面を開く',
-            on: {
-              click: () => {
-                const tableHead = $('table').getTableHead();
-                const eqDiverse = tableHead['科目'] || 10;
-                const eqStudentName = tableHead['生徒名'] || 8;
-                const DiverseList = [
-                  ...new Set(
-                    $('tr')
-                      .map(function() {
-                        // 科目のテキストに"Diverse"が含まれているかチェック
-                        //prettier-ignore
-                        if ($(this).findTdGetTxt(eqDiverse).includes('Diverse')) {
-                          // 8番目のtdの中のa要素のテキストを取得し、トリムして返す
+            handler: () => {
+              const tableHead = $('table').getTableHead();
+              const eqDiverse = tableHead['科目'] || 10;
+              const eqStudentName = tableHead['生徒名'] || 8;
+              const DiverseList = [
+                ...new Set(
+                  $('tr')
+                    .map(function() {
+                      // 科目のテキストに"Diverse"が含まれているかチェック
+                      //prettier-ignore
+                      if ($(this).findTdGetTxt(eqDiverse).includes('Diverse')) {
                           return $(this).find('td').eq(eqStudentName).find('a').text().trim();
                         }
-                        return null;
-                      })
-                      .get()
-                  )
-                ];
-                popmenut_F8.closemenu();
+                      return null;
+                    })
+                    .get()
+                )
+              ];
 
-                //遷移先のロードを待って反映
-                const diverseWindow = window.open('https://lms2.s-diverse.com/');
-                setTimeout(() => {
-                  diverseWindow.postMessage(DiverseList, 'https://lms2.s-diverse.com');
-                }, 3000);
-              }
+              //遷移先のロードを待って反映
+              const diverseWindow = window.open(NX.URL.diverse);
+              setTimeout(() => {
+                diverseWindow.postMessage(DiverseList, NX.URL.diverse);
+              }, 3000);
             }
-          }).appendTo(this);
-        });
+          }
+        ]);
         break;
       case '/netz/netz1/tehai/tehai_input.aspx': {
         const { doAction, forceSubject } = getparameter();

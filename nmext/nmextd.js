@@ -4,21 +4,18 @@ $(function() {
   window.addEventListener('message', function(event) {
     // 送信元を確認
     if (event.origin === 'https://menu.edu-netz.com' || event.origin === 'https://menu2.edu-netz.com') {
-      popmenut_F2.setContentFunction(function() {
-        $('<button>', {
+      popmenu.appendItems([
+        {
           text: 'ブース表から出欠登録',
-          on: {
-            click: function() {
-              event.data.forEach(student => {
-                $(`tr:contains("${student.replace('　', ' ')}")`)
-                  .find('.chakra-checkbox')
-                  .trigger('click');
-              });
-              popmenut_F2.closemenu();
-            }
+          handler: () => {
+            event.data.forEach(student => {
+              $(`tr:contains("${student.replace('　', ' ')}")`)
+                .find('.chakra-checkbox')
+                .trigger('click');
+            });
           }
-        }).appendTo(this);
-      });
+        }
+      ]);
     }
   });
 });

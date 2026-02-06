@@ -9,10 +9,12 @@ export class StatsWidget extends Widget {
     this.root.classList.add('flux-widget-full');
 
     const contracts = state.contractCount !== undefined ? state.contractCount : '-';
+    const trials = state.trialCount !== undefined ? state.trialCount : '-';
     const cancels = state.cancelCount !== undefined ? state.cancelCount : '-';
 
     // StateからURLを取得 (未取得時は #)
     const contractUrl = state.contractUrl || '#';
+    const trialUrl = state.trialUrl || '#';
     const cancelUrl = state.cancelUrl || '#';
 
     this.root.innerHTML = `
@@ -29,6 +31,25 @@ export class StatsWidget extends Widget {
           </div>
           <div class="stat-body">
             <span class="stat-value">${contracts}</span>
+            <span class="stat-unit">件</span>
+          </div>
+          <div class="stat-footer">
+            <button class="flux-btn-icon reload-btn" data-type="contract" title="更新"><i class="fa-solid fa-rotate"></i></button>
+          </div>
+        </div>
+
+        <div class="flux-stat-card">
+          <div class="stat-header">
+            <div class="stat-label">
+                <span class="stat-icon"><i class="fa-solid fa-handshake"></i></span>
+                <span class="stat-title">Trial</span>
+            </div>
+            <a href="${trialUrl}" target="_blank" class="flux-btn-icon mini" title="詳細ページへ">
+                <i class="fa-solid fa-up-right-from-square"></i>
+            </a>
+          </div>
+          <div class="stat-body">
+            <span class="stat-value">${trials}</span>
             <span class="stat-unit">件</span>
           </div>
           <div class="stat-footer">

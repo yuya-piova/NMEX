@@ -22,6 +22,7 @@ export class Flux {
       errorTasks: [],
       notifications: [],
       contractCount: '-',
+      trialCount: '-',
       cancelCount: '-',
       blockSales: null
     });
@@ -77,6 +78,7 @@ export class Flux {
 
     // 5. 初期データ取得
     this.core.dispatch(DashboardActions.fetchContracts);
+    this.core.dispatch(DashboardActions.fetchTrials);
     this.core.dispatch(DashboardActions.fetchCancels);
     this.core.dispatch(DashboardActions.fetchNotifications);
     this.core.dispatch(DashboardActions.fetchUnitStatus);

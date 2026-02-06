@@ -2672,6 +2672,9 @@ const NX = {
     zoomMaker: 'https://n8n.overhauser0.synology.me/webhook/zoomMaker',
     sendMail: 'https://n8n.overhauser0.synology.me/webhook/sendNetzMail'
   },
+  URL: {
+    diverse: 'https://lms2.s-diverse.com'
+  },
   //GETのパラメータ
   SEARCHPARAMS: new URLSearchParams(window.location.search),
   NOWBASE: {

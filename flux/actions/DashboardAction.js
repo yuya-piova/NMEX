@@ -679,7 +679,6 @@ export const DashboardActions = {
       const snap = await SnapData.quickFetch({ url: fullUrl, noCache: true });
       const count = snap.getAsJQuery('table input[name=b_keiyaku]').length;
 
-      // ★ URLもcommit
       commit({
         contractCount: count,
         contractUrl: fullUrl
@@ -687,6 +686,51 @@ export const DashboardActions = {
     } catch (e) {
       console.error('Fetch Contract Error:', e);
       commit({ contractCount: '-' });
+    }
+  },
+
+  /**
+   * 今月の契約数取得
+   */
+  async fetchTrials(commit, state) {
+    try {
+      const groupCd = 'a5031'; //myprofiles.getone({ mygroup: '' }) || 'a5031';
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      const formatDate = d => `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+
+      const params = {
+        tenpo_cd: groupCd,
+        input_dt1: formatDate(firstDay),
+        input_dt2: formatDate(today),
+        tenpo_cb: 1,
+        cancel_cb: 1,
+        keiyaku_cb: 2,
+        kanri_cb: 1,
+        week_vl: 4,
+        sort_cb: 1,
+        tax_cb: 0,
+        gakunen_cb: '',
+        kiteigessya_cb: '',
+        nyukai_cb: ''
+      };
+
+      const qs = Object.entries(params)
+        .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+        .join('&');
+      const url = `/k/keiyaku_list_body.aspx?${qs}`;
+      const fullUrl = `${NX.CONST.host}${url}`; // ★URL保存用
+
+      const snap = await SnapData.quickFetch({ url: fullUrl, noCache: true });
+      const count = snap.getAsJQuery('table input[name=b_keiyaku]').length;
+
+      commit({
+        trialCount: count,
+        trialUrl: fullUrl
+      });
+    } catch (e) {
+      console.error('Fetch Contract Error:', e);
+      commit({ trialCount: '-' });
     }
   },
 

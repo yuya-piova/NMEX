@@ -1620,160 +1620,89 @@ window.addEventListener('keydown', async e => {
   };
   FUNCTION_T.student_mendan_input = {};
   FUNCTION_T.student_mendan_input.F2menu = function() {
-    //GASでzoom会議室作成をする
-    popmenut_F8.setContentFunction(function() {
-      const student_cd = $('input[name=student_cd]').val();
-      $('<button>', {
-        type: 'button',
-        class: 'nx offprimary',
+    //n8nでzoom会議室作成をする
+    const student_cd = $('input[name=student_cd]').val();
+    popmenu.appendItems([
+      {
         text: '面談組案内文',
-        on: {
-          click: () => {
-            const date = new ExDate($('#mendan_dt').val() + ' ' + $('#mendan_tm').val());
-            const dateStr = $NX(`${date.as('m月d日（aaa） H:MM')}～（最大６０分）`).toFullWidth();
-            const way = $('input[name=mendan_way_cb]:checked').val();
+        handler: () => {
+          const date = new ExDate($('#mendan_dt').val() + ' ' + $('#mendan_tm').val());
+          const dateStr = $NX(`${date.as('m月d日（aaa） H:MM')}～（最大６０分）`).toFullWidth();
+          const way = $('input[name=mendan_way_cb]:checked').val();
+          $('<textarea id="invite" rows="10" cols="80"></textarea>')
+            .appendTo('body')
+            .val(LCT.TEMPLATE.Meeting[way](dateStr));
+          clipper(LCT.TEMPLATE.Meeting[way](dateStr));
+          PX_Toast('クリップボードにコピーしました');
+          const note = {
+            1: '★日程案内済',
+            2: '日程案内済※要zoomURL'
+          };
+          $(`[name=bikou_nm]`).valPrepend(note[way]);
+          $('[name=shido_data_flg]').prop('checked', true);
+        }
+      },
+      {
+        text: 'Zoom作成',
+        handler: () => {
+          const mendt = new ExDate($('#mendan_dt').val());
+          const topic = `三者面談【${$('.studentLinker').text()}】`;
+          const startdt = `${mendt.as('yyyy-mm-dd')}T${$('#mendan_tm').val()}:00`;
+          const duration = parseInt($('[name=mendan_jk]').val()) || 50;
+          $.post(NX.ENDPOINT.zoomMaker, { topic, startdt, duration }, function(data) {
+            console.log('Response from Server', data);
+            const { join_url, id, password } = JSON.parse(JSON.stringify(data));
+            const meetingID = `${String(id).slice(0, 3)} ${String(id).slice(3, 7)} ${String(id).slice(7, 11)}`;
+            const dateStr = $NX(mendt.as('m月d日（aaa） ') + $('#mendan_tm').val()).toFullWidth();
+            const template = LCT.TEMPLATE.joinAnnounce(dateStr, join_url, meetingID, password);
             $('<textarea id="invite" rows="10" cols="80"></textarea>')
               .appendTo('body')
-              .val(LCT.TEMPLATE.Meeting[way](dateStr));
-            clipper(LCT.TEMPLATE.Meeting[way](dateStr));
+              .val(template);
+            clipper(template);
             PX_Toast('クリップボードにコピーしました');
-            const note = {
-              1: '★日程案内済',
-              2: '日程案内済※要zoomURL'
-            };
-            $(`[name=bikou_nm]`).valPrepend(note[way]);
-            $('[name=shido_data_flg]').prop('checked', true);
-          }
+            $(`[name=bikou_nm]`)
+              .valReplace('日程案内済※要zoomURL', '')
+              .valPrepend('★URL送付済');
+            $('#url_dt').val(join_url);
+            $('#meeting_id').val(meetingID);
+            $('#passcode').val(password);
+          });
         }
-      }).appendTo(this);
-      $('<button>', {
-        type: 'button',
-        class: 'nx offajax',
-        text: 'Zoom作成',
-        on: {
-          click: () => {
-            const mendt = new ExDate($('#mendan_dt').val());
-            const topic = `三者面談【${$('.studentLinker').text()}】`;
-            const startdt = `${mendt.as('yyyy-mm-dd')}T${$('#mendan_tm').val()}:00`;
-            const duration = parseInt($('[name=mendan_jk]').val()) || 50;
-            //GASのURL　'https://script.google.com/macros/s/AKfycbyQp5KhAPwsNWdtPjQqKvOxWAJu9eiTZs5tEjEL8z4-ULncAxGeVrSspl71KUBGYOyT/exec'
-            $.post(NX.ENDPOINT.zoomMaker, { topic, startdt, duration }, function(data) {
-              console.log('Response from Server', data);
-              const { join_url, id, password } = JSON.parse(JSON.stringify(data));
-              const meetingID = `${String(id).slice(0, 3)} ${String(id).slice(3, 7)} ${String(id).slice(7, 11)}`;
-              const template = `【１対１ネッツ】オンライン面談ログイン方法のご案内
-お世話になります。ネッツです。
-
-オンライン面談へのご協力、誠にありがとうございます。
-面談日が近づいてまいりましたので当日のご案内を差し上げます。
-当日は、現在の学習状況のご報告と今後の学習計画についてご相談をさせていただく予定です。
-
-■日時: ${$NX(mendt.as('m月d日（aaa） ') + $('#mendan_tm').val()).toFullWidth()}～（最大６０分）
-
-■Zoomミーティング情報
-Zoomミーティングに参加する
-${join_url}
-
-ミーティングID: ${meetingID}
-パスコード: ${password}
-
-※ご本人様と一緒にご参加をお願いいたします。
- 
-ご都合が悪い場合には、アプリもしくは現生徒専用フリーダイヤル（0120-689-121）までご連絡ください。
-
-${LCT.TEMPLATE.Mail.howtoZoom}
-
-当日はどうぞよろしくお願いいたします。
-
-１対１ネッツ
-辰野`;
-              $('<textarea id="invite" rows="10" cols="80"></textarea>')
-                .appendTo('body')
-                .val(template);
-              clipper(template);
-              PX_Toast('クリップボードにコピーしました');
-              $(`[name=bikou_nm]`)
-                .valReplace('日程案内済※要zoomURL', '')
-                .valPrepend('★URL送付済');
-              $('#url_dt').val(join_url);
-              $('#meeting_id').val(meetingID);
-              $('#passcode').val(password);
-              /* eslint-enable */
-            });
-          }
-        }
-      }).appendTo(this);
-      $('<span>→</span>').appendTo(this);
-      $('<button>', {
-        type: 'button',
-        class: 'nx offprimary',
+      },
+      {
         text: 'メール送付',
-        on: {
-          click: () => {
-            const clip = $('#invite').length == 1 ? 'true' : 'false';
-            const param = {
-              student_cd: $('input[name=student_cd]').val(),
-              limit: $('#mendan_dt').val(),
-              clip
-            };
-            window.open(`${NX.CONST.host}/s/student_mailsend_input.aspx?${$.param(param)}`);
-            popmenut_F8.closemenu();
-          }
+        handler: () => {
+          const clip = $('#invite').length == 1 ? 'true' : 'false';
+          const param = {
+            student_cd,
+            limit: $('#mendan_dt').val(),
+            clip
+          };
+          window.open(`${NX.CONST.host}/s/student_mailsend_input.aspx?${$.param(param)}`);
         }
-      }).appendTo(this);
-      $('<br>').appendTo(this);
-      if (myprofiles.getone({ myname: '' }) == '辰野　由弥') {
-        $('<button>', {
-          type: 'button',
-          class: 'nx offajax',
-          text: 'outlook予定表に追加',
-          on: {
-            click: () => {
-              const startEXDT = new ExDate($('#mendan_dt').val());
-              const topic = `現生徒面談【${$('.studentLinker').text()}】`;
-              const startdt = `${startEXDT.as('yyyy-mm-dd')}T${$('#mendan_tm').val()}:00`;
-              const duration = $('select[name=mendan_jk] option:selected').val();
-              $.post(
-                'https://script.google.com/macros/s/AKfycbwwG54-D3VbMrrH9p31vQa44vk5MY7piaVhg0NYfoWdXWOCWLlQu3eXbPoVZ16hPd6u5A/exec',
-                { onlymakeschedule: 'true', topic, startdt, duration },
-                PX_Toast('POST完了')
-              );
-            }
-          }
-        }).appendTo(this);
-      }
-      //面談履歴チェック用
-      $('<button>', {
-        type: 'button',
-        class: 'nx offsecondary',
+      },
+      {
         text: '履歴入力済',
-        on: {
-          click: () => {
-            $('[name=bikou_nm]')
-              .valReplace('▽履歴未入力')
-              .valReplace('★日程案内済')
-              .valReplace('★URL送付済')
-              .valPrepend('■');
-            $('#edt_cb').prop('checked', false);
-            $('[name=b_submit]').trigger('click');
-          }
+        handler: () => {
+          $('[name=bikou_nm]')
+            .valReplace('▽履歴未入力')
+            .valReplace('★日程案内済')
+            .valReplace('★URL送付済')
+            .valPrepend('■');
+          $('#edt_cb').prop('checked', false);
+          $('[name=b_submit]').trigger('click');
         }
-      }).appendTo(this);
-      $('<button>', {
-        type: 'button',
-        class: 'nx',
+      },
+      {
         text: '指導予定',
-        on: {
-          click: () => {
-            if (!student_cd) return false;
-            const iframe = new IframeMakerEx({ iframeName: 'yotei', x: 800, y: 10, draggable: true }).loadUrl(
-              `${NX.CONST.host}/kanren/student_shido_yotei.aspx?student_cd=${student_cd}`
-            );
-            popmenut_F8.closemenu();
-          }
+        handler: () => {
+          if (!student_cd) return false;
+          const iframe = new IframeMakerEx({ iframeName: 'yotei', x: 800, y: 10, draggable: true }).loadUrl(
+            `${NX.CONST.host}/kanren/student_shido_yotei.aspx?student_cd=${student_cd}`
+          );
         }
-      }).appendTo(this);
-    });
+      }
+    ]);
   };
 
   FUNCTION_T.teian_list_body = {};

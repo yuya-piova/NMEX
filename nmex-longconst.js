@@ -1451,31 +1451,6 @@ LCT.TEMPLATE.Student.future = `＜将来の夢＞
 ーーー`;
 /* eslint-enable no-irregular-whitespace */
 LCT.TEMPLATE.Mail = {};
-LCT.TEMPLATE.Mail.AtamaAtHome = `【１対１ネッツ】atama+ご自宅利用について
-お世話になります。ネッツです。
-
-atama+は、パソコン・スマートフォン・タブレットをお持ちであればご自宅でも可能です。
-以下の方法にてご利用くださいませ。
-
-■利用方法
-ブラウザにて
-https://web2020.atama.plus/
-にアクセスすると、ログイン画面が出てきます。
-以下ログインIDとパスワードを入力してください。
-
-ログインID：netzs生徒番号６桁（生徒番号とはIDカードに記載されている数字６桁です。※CDというアルファベットは不要です）
-パスワード：誕生日４桁
-
-※atama＋ログイン(WEB版)と上記に表示されます。
-　アプリストアからダウンロードできるatama＋アプリ版やatama＋HOMEからはログインできません。
-※推奨ブラウザをお使いいただくと、ホーム画面に追加が可能です。
-　（推奨ブラウザ：android→google chrome／iPhone,iPad→Safali）
-
-■操作方法
-操作方法について以下URLから動画を確認いただけます。
-https://drive.google.com/file/d/1n9yLmZmD06vPet3WMr55LHJT-icDxdTl/view?usp=sharing
-
-対話式進学塾１対１ネッツ`;
 LCT.TEMPLATE.Mail.howtoZoom = `■ログイン方法
 ＜PCの場合＞
 　・WEBブラウザで上記URLにアクセスすると、自動的にアプリがダウンロードされ起動します。
@@ -1511,7 +1486,34 @@ ${dateStr}
 辰野`;
   }
 };
+LCT.TEMPLATE.joinAnnounce = (dateStr, join_url, meetingID, password) => {
+  return `【１対１ネッツ】オンライン面談ログイン方法のご案内
+お世話になります。ネッツです。
 
+オンライン面談へのご協力、誠にありがとうございます。
+面談日が近づいてまいりましたので当日のご案内を差し上げます。
+当日は、現在の学習状況のご報告と今後の学習計画についてご相談をさせていただく予定です。
+
+■日時: ${dateStr}～（最大６０分）
+
+■Zoomミーティング情報
+Zoomミーティングに参加する
+${join_url}
+
+ミーティングID: ${meetingID}
+パスコード: ${password}
+
+※ご本人様と一緒にご参加をお願いいたします。
+ 
+ご都合が悪い場合には、アプリもしくは現生徒専用フリーダイヤル（0120-689-121）までご連絡ください。
+
+${LCT.TEMPLATE.Mail.howtoZoom}
+
+当日はどうぞよろしくお願いいたします。
+
+１対１ネッツ
+辰野`;
+};
 LCT.MYPROFILES = {};
 LCT.MYPROFILES.defalut = {
   mode_special: 1,
