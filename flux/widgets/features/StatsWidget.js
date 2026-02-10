@@ -41,7 +41,7 @@ export class StatsWidget extends Widget {
         <div class="flux-stat-card">
           <div class="stat-header">
             <div class="stat-label">
-                <span class="stat-icon"><i class="fa-solid fa-handshake"></i></span>
+                <span class="stat-icon icon-info"><i class="fa-solid fa-handshake"></i></span>
                 <span class="stat-title">Trial</span>
             </div>
             <a href="${trialUrl}" target="_blank" class="flux-btn-icon mini" title="詳細ページへ">
@@ -53,7 +53,7 @@ export class StatsWidget extends Widget {
             <span class="stat-unit">件</span>
           </div>
           <div class="stat-footer">
-            <button class="flux-btn-icon reload-btn" data-type="contract" title="更新"><i class="fa-solid fa-rotate"></i></button>
+            <button class="flux-btn-icon reload-btn" data-type="trial" title="更新"><i class="fa-solid fa-rotate"></i></button>
           </div>
         </div>
 
@@ -87,6 +87,8 @@ export class StatsWidget extends Widget {
 
         if (type === 'contract') {
           this.core.dispatch(DashboardActions.fetchContracts);
+        } else if (type === 'trial') {
+          this.core.dispatch(DashboardActions.fetchTrials);
         } else {
           this.core.dispatch(DashboardActions.fetchCancels);
         }

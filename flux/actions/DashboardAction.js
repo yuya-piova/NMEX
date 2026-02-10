@@ -594,7 +594,7 @@ export const DashboardActions = {
       });
 
       // 2. 解約未承認チェック
-      const myGroup = myprofiles.getone({ mygroup: '' }) || 'a5031'; // デフォルト値注意
+      const myGroup = 'a5031'; //myprofiles.getone({ mygroup: '' });
       const cancelUrl = `/k/kaiyaku_list_body.aspx?tenpo_cd=${myGroup}&disp_cb=0&input_dt1=&input_dt2=&kaiyaku_cb=&status_cb=3&end_dt=&sort_cb=1`;
       const cancelSnap = await SnapData.quickFetch({
         url: `${host}${cancelUrl}`,
@@ -603,7 +603,8 @@ export const DashboardActions = {
         storeName: 'FluxData',
         key: 'notifyCanceled'
       });
-      const cancelCount = cancelSnap.getAsJQuery('table input[value=承認]').length;
+
+      const cancelCount = cancelSnap.getAsJQuery('input[value=承認]').length;
 
       if (cancelCount > 0) {
         notifications.push({
@@ -860,5 +861,24 @@ export const DashboardActions = {
       console.error('Block Sales Fetch Error:', e);
       if (typeof PX_Toast === 'function') PX_Toast('取得エラー', 'error');
     }
+  },
+  /**
+   * 生徒数集計データの取得 (枠組み)
+   */
+  async fetchStudentCounts(commit, state, { year, baseCd, subject, force }) {
+    console.log(`Fetch Student Counts: Year=${year}, Base=${baseCd}, Subject=${subject}`);
+
+    if (typeof PX_Toast === 'function') PX_Toast('データ取得ロジックは未実装です', 'Processing');
+
+    // とりあえず更新時刻だけ更新してStateに入れる
+    commit({
+      studentCounts: {
+        year,
+        baseCd,
+        subject,
+        updatedAt: new Date().toLocaleTimeString(),
+        data: []
+      }
+    });
   }
 };

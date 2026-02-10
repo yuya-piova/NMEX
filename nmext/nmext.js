@@ -255,6 +255,10 @@ $(function() {
           $('input[value="登録"]').prop('disabled', !flg);
         }
         break;
+      //予定表一覧
+      case '/netz/netz1/schedule/yotei_list.aspx':
+        FUNCTION_T.yotei_list.popmenu();
+        break;
       case '/netz/netz1/schedule/yotei.aspx':
         //エリア予定表に本日のswipeを仕込む
         $('button[class="ui-datepicker-trigger"]').swipe('本日', () => {
@@ -630,14 +634,6 @@ $(function() {
         FUNCTION_T.teian_list_body.F2menu();
         //提案予定管理画面のメモ
         FUNCTION_T.teian_list_body.teianmemo();
-
-        popmenut_F8.setContentFunction(function() {
-          $(document).on('contextmenu', 'table', function() {
-            clipper(tableToCSV($(this)[0], '\t'));
-            PX_Toast('table copied');
-            return false;
-          });
-        });
         break;
       case '/netz/netz1/k/moshikomi4_course_select.aspx':
         $('input[name*=_vl],input[name^=tmp]')
@@ -654,6 +650,21 @@ $(function() {
         break;
       case '/netz/netz1/s/student_profile_mendan_input.aspx':
         FUNCTION_T.student_profile_mendan_input.notesaver();
+        break;
+      case '/netz/netz1/s/teian_shukei1s.aspx':
+        const trs = $('tr');
+        const tdCount = trs.last().find('td').length;
+        $('table tr').each(function() {
+          const $tr = $(this);
+          if ($tr.find('td').length != tdCount) return true;
+          const tds = $tr.findTdGetTxt();
+          const nonCand = {
+            target: parseInt(tds[1]) + parseInt(tds[6]),
+            continue: parseInt(tds[2]) + parseInt(tds[7]),
+            canceled: parseInt(tds[5]) + parseInt(tds[10])
+          };
+          $tr.append(`<td>${nonCand.continue}</td><td>${nonCand.target - nonCand.canceled}</td>`);
+        });
         break;
       case '/netz/netz1/s/student_mailsend_input.aspx':
         //パラメータCH
@@ -2395,6 +2406,16 @@ $(function() {
               alert('エラーが発生しました');
             });
         }
+
+        // CH項目機能
+        $('input[type=checkbox]').on('contextmenu', function() {
+          $(this).prop('checked', !this.checked);
+          const checks = $('input[type=checkbox][name^=checklist_flg]').length;
+          const dones = $('input[type=checkbox][name^=checklist_flg]:checked').length;
+          $('#progress_vl').val(Math.floor((dones / checks) * 100));
+          jyotai_cb.val(dones == checks ? 'F' : 'D');
+          return false;
+        });
         popmenut_F8.setContentFunction(function() {
           $('<button>', {
             type: 'button',

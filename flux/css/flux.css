@@ -880,6 +880,9 @@ body {
 .stat-icon.icon-danger {
   color: #dc3545;
 }
+.stat-icon.icon-info {
+  color: #28a745;
+}
 
 .flux-btn-icon.mini {
   width: 24px;

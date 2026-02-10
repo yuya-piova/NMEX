@@ -387,12 +387,6 @@ $(function() {
 
         break;
       }
-      //予定表一覧
-      case '/netz/netz1/schedule/yotei_list.aspx':
-        FUNCTION_O.yotei_list.popmenu();
-        $('table').netztabler();
-        break;
-
       //指導報告
       case '/netz/netz1/kanren/tenpo_shido_kiroku_list.aspx':
         //tablerを仕込む

@@ -9,7 +9,8 @@ export class MenuWidget extends Widget {
       { id: 'AsCoach', icon: 'fa-user-clock', label: 'AsCoach' },
       { id: 'Tasks', icon: 'fa-list-check', label: 'Tasks' },
       { id: 'BlockSales', icon: 'fa-chart-simple', label: 'Block Sales' },
-      { id: 'Management', icon: 'fa-briefcase', label: 'Management' }
+      { id: 'Management', icon: 'fa-briefcase', label: 'Management' },
+      { id: 'StudentCount', icon: 'fa-users', label: 'Student Count' }
     ];
 
     this.root.innerHTML = `
