@@ -10,7 +10,8 @@ export class MenuWidget extends Widget {
       { id: 'Tasks', icon: 'fa-list-check', label: 'Tasks' },
       { id: 'BlockSales', icon: 'fa-chart-simple', label: 'Block Sales' },
       { id: 'Management', icon: 'fa-briefcase', label: 'Management' },
-      { id: 'StudentCount', icon: 'fa-users', label: 'Student Count' }
+      { id: 'StudentCount', icon: 'fa-users', label: 'Student Count' },
+      { id: 'Diverse', icon: 'fa-graduation-cap', label: 'Diverse' }
     ];
 
     this.root.innerHTML = `

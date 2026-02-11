@@ -12,6 +12,7 @@ import { NotificationWidget } from './widgets/features/NotificationWidget.js';
 import { StatsWidget } from './widgets/features/StatsWidget.js';
 import { BlockSalesPageWidget } from './widgets/pages/BlockSalesPageWidget.js';
 import { StudentCountPageWidget } from './widgets/pages/StudentCountPageWidget.js';
+import { DiversePageWidget } from './widgets/pages/DiversePageWidget.js';
 
 export class Flux {
   constructor() {
@@ -26,7 +27,8 @@ export class Flux {
       trialCount: '-',
       cancelCount: '-',
       blockSales: null,
-      studentCounts: null
+      studentCounts: null,
+      diverseData: null
     });
 
     // 2. Widgetのインスタンス化
@@ -40,7 +42,8 @@ export class Flux {
       asCoachPage: new AsCoachPageWidget(this.core),
       managementPage: new ManagementPageWidget(this.core),
       blockSalesPage: new BlockSalesPageWidget(this.core),
-      studentCountPage: new StudentCountPageWidget(this.core)
+      studentCountPage: new StudentCountPageWidget(this.core),
+      diversePage: new DiversePageWidget(this.core)
     };
   }
 
@@ -64,6 +67,7 @@ export class Flux {
     this.createPageContainer(contentArea, 'AsCoach', 'flux-page-fixed');
     this.createPageContainer(contentArea, 'BlockSales', 'flux-page-fixed');
     this.createPageContainer(contentArea, 'StudentCount', 'flux-page-fixed');
+    this.createPageContainer(contentArea, 'Diverse', 'flux-page-fixed');
 
     // Dashboardページに Widget を配置
     this.widgets.notification.mount('#flux-header-right');
@@ -75,6 +79,7 @@ export class Flux {
     this.widgets.managementPage.mount('#page-Management');
     this.widgets.blockSalesPage.mount('#page-BlockSales');
     this.widgets.studentCountPage.mount('#page-StudentCount');
+    this.widgets.diversePage.mount('#page-Diverse');
 
     // 4. ページ切り替え監視
     this.core.subscribe(state => {

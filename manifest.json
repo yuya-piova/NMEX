@@ -62,6 +62,7 @@
         "flux/widgets/features/*.js",
         "flux/actions/*.js",
         "flux/css/*.css",
+        "core/*.js",
         "templates.html"
       ],
       "matches": ["<all_urls>"]
