@@ -291,8 +291,101 @@ class NXTable {
   /**
    * 別のNXTableと結合する
    * ヘッダーの和集合を取り、足りない列は null で埋める
+   * @param {NXTable} otherTable 結合するテーブル
+   * @param {string|boolean} [arg2] uniqueKey(string) または inPlace(boolean)
+   * - stringの場合: そのカラムをキーとして結合（Merge/Upsert）
+   * - booleanの場合: 結果を新しいインスタンスで返すか(false)、自身を書き換えるか(true)
+   * - 省略時: uniqueKeyなし、inPlace=true (単純結合・破壊的変更)
    */
-  merge(otherTable, inPlace = true) {
+  merge(otherTable, arg2 = null) {
+    if (!(otherTable instanceof NXTable)) {
+      throw new Error('NXTable: Argument must be an instance of NXTable.');
+    }
+
+    let uniqueKey = null;
+    let inPlace = true;
+
+    // 引数の型判定によるオーバーロード対応
+    if (typeof arg2 === 'boolean') {
+      inPlace = arg2;
+    } else if (typeof arg2 === 'string') {
+      uniqueKey = arg2;
+    }
+
+    // ヘッダーのマージ（重複排除）
+    const newHead = [...new Set([...this.head, ...otherTable.head])];
+
+    // ヘッダー位置マップ（一時的）
+    const thisIdx = this.headIndices;
+    const otherIdx = otherTable.headIndices;
+
+    // 行データを新ヘッダーに合わせて再配置する関数
+    const adaptRow = (row, indices) => {
+      // 存在しない列は null で埋める
+      return newHead.map(h => (indices.has(h) ? row[indices.get(h)] : null));
+    };
+
+    // ベースとなる行データの作成（this側）
+    let newBody = this.body.map(row => adaptRow(row, thisIdx));
+
+    if (uniqueKey) {
+      // --- キー結合モード ---
+      const keyIdx = newHead.indexOf(uniqueKey);
+
+      if (keyIdx === -1) {
+        console.warn(`NXTable: uniqueKey "${uniqueKey}" not found. Performing simple merge.`);
+        newBody = [...newBody, ...otherTable.body.map(row => adaptRow(row, otherIdx))];
+      } else {
+        // 高速検索用マップ作成 (Key -> Row)
+        const primaryMap = new Map();
+        newBody.forEach(row => {
+          const k = String(row[keyIdx]);
+          // 主テーブル内でキー重複がある場合、先勝ちでマップに登録
+          if (!primaryMap.has(k)) primaryMap.set(k, row);
+        });
+
+        // 相手側のデータを走査
+        otherTable.body.forEach(rawRow => {
+          const alignedRow = adaptRow(rawRow, otherIdx);
+          const k = String(alignedRow[keyIdx]);
+
+          if (primaryMap.has(k)) {
+            // A. キー一致: 結合 (Merge)
+            const existingRow = primaryMap.get(k);
+            alignedRow.forEach((val, colIdx) => {
+              // 主(existing)がnull/undefinedなら、副(aligned)の値を入れる
+              // 「主が優先」のため、既に値がある場合は何もしない
+              if (existingRow[colIdx] == null && val != null) {
+                existingRow[colIdx] = val;
+              }
+            });
+          } else {
+            // B. キー不一致: 追加 (Append)
+            newBody.push(alignedRow);
+            // 追加した行もマップに登録（相手側テーブル内での重複に対応するため）
+            primaryMap.set(k, alignedRow);
+          }
+        });
+      }
+    } else {
+      // --- 通常結合モード (単純追加) ---
+      newBody = [...newBody, ...otherTable.body.map(row => adaptRow(row, otherIdx))];
+    }
+
+    if (inPlace) {
+      this.head = newHead;
+      this.body = newBody;
+      this.rebuildIndices();
+      return this;
+    } else {
+      return new NXTable(newHead, newBody);
+    }
+  }
+  /**
+   * 別のNXTableと結合する
+   * ヘッダーの和集合を取り、足りない列は null で埋める
+   */
+  merge_old(otherTable, inPlace = true) {
     if (!(otherTable instanceof NXTable)) {
       throw new Error('NXTable: Argument must be an instance of NXTable.');
     }

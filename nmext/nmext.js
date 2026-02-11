@@ -24,7 +24,7 @@ $(function() {
   if (myprofiles.getone({ isSpecialEnabled: 0 }) == 1) {
     //スペシャルモードで全ページ発火
     //エリアモードなら自エリア以外除外
-    FUNCTION_T.general.isAreaMode();
+    //FUNCTION_T.general.isAreaMode();
     //DatePickerを設定
     FUNCTION_T.general.set_datepicker();
     //一時的に必要な機能を入れる関数

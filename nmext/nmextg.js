@@ -2429,9 +2429,7 @@ function post_to_addr_setter() {
     return false;
   });
 }
-function makeOption(array) {
-  return array.map(elem => `<option value="${elem[0]}">${elem[1]}</option>`).join('');
-}
+
 //★★★★★★★★グローバル変数★★★★★★★★
 //★教室のリスト
 const SLM = new studentLinkMenu();

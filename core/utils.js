@@ -46,7 +46,13 @@ const NMEX_Utils = {
   nxtableToArray: jsonString => {
     const data = JSON.parse(jsonString);
     return [data.head, ...data.body];
-  }
+  },
+  /**
+   * [[value,text],[]]の配列から、<option>を作成
+   * @param {*} array
+   * @returns
+   */
+  makeOption: array => array.map(elem => `<option value="${elem[0]}">${elem[1]}</option>`).join('')
 };
 
 /**

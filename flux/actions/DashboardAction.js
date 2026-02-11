@@ -813,7 +813,7 @@ export const DashboardActions = {
           // SnapDataで取得 (forceならネットから、falseならローカルDBキャッシュから)
           const snap = await SnapData.quickFetch({ url: url, force: force, storeName: `FluxSales_${baseCd}`, key: `${y}/${mm}` });
 
-          // ★NXTableで解析 (コード削減箇所)
+          // ★NXTableで解析
           const table = $NX(snap.getAsJQuery('table')).makeNXTable();
           const records = table.toObjectArray(); // [{ "科目": "入会金", "現状売上": "10,000", ... }, ...]
 
@@ -885,75 +885,6 @@ export const DashboardActions = {
     });
   },
   /**
-   * Diverse集計データの取得
-   */
-  async fetchDiverseData_old(commit, state, { ym, force }) {
-    console.log(`Fetch Diverse Data: ${ym}`);
-    if (typeof PX_Toast === 'function' && force) PX_Toast('Diverseデータ取得中...', 'Processing');
-
-    try {
-      // 1. 現状データの取得
-      const url = `${NX.CONST.host}/text/contents_list.aspx?shido_ng=${ym}&contents_id=10`;
-      const snap = await SnapData.quickFetch({ url: url, force: force, storeName: 'Flux_Diverse', key: '202604' });
-
-      // NXTableで解析
-      // ※SnapDataにgetAsNXTableがない場合を考慮し、手動でnewする形も想定
-      const $table = snap.getAsJQuery('table').eq(0);
-      const table = new NXTable($table);
-      const currentList = table.toObjectArray(); // [{"校舎":"早稲田", "合計":"40", ...}, ...]
-
-      // 現状データをMap化 { '早稲田': 40, ... }
-      const currentMap = {};
-      currentList.forEach(row => {
-        const baseName = row['校舎'];
-        const val = parseInt((row['合計'] || '0').replace(/,/g, '')) || 0;
-        if (baseName) {
-          currentMap[baseName] = val;
-        }
-      });
-
-      // 2. 目標データとのマージ (NX.GOAL.AprilDivNXT)
-      // nmexg.jsで定義されている前提
-      const goals = typeof NX !== 'undefined' && NX.GOAL && NX.GOAL.AprilDivNXT ? new NXTable(NX.GOAL.AprilDivNXT) : new NXTable();
-
-      // 全校舎リストを作成 (目標がある校舎 + 現状がある校舎)
-      const allBases = new Set([...Object.keys(goals), ...Object.keys(currentMap)]);
-      const rows = [];
-
-      allBases.forEach(base => {
-        const goal = goals[base] || 0;
-        const current = currentMap[base] || 0;
-
-        // どちらも0なら表示しない等のフィルタが必要ならここで行う
-        // 今回は全てのデータを表示
-        rows.push({
-          baseName: base,
-          goal: goal,
-          current: current,
-          diff: current - goal
-        });
-      });
-
-      // 並び替え (とりあえず目標の多い順、あるいは校舎名順)
-      // ここでは元のテーブルの並び順（goalsの定義順に近い形）を維持したいが、
-      // Setにした時点で順序は保証されないため、校舎マスタ順などが望ましい。
-      // 今回は暫定的に目標数の降順でソート
-      rows.sort((a, b) => b.goal - a.goal);
-
-      commit({
-        diverseData: {
-          rows: rows,
-          updatedAt: new Date().toLocaleTimeString()
-        }
-      });
-
-      if (typeof PX_Toast === 'function' && force) PX_Toast('Diverse更新完了');
-    } catch (e) {
-      console.error('Fetch Diverse Error:', e);
-      if (typeof PX_Toast === 'function') PX_Toast('取得エラー', 'error');
-    }
-  },
-  /**
    * Diverse集計データの取得 (NXTable不使用版)
    */
   async fetchDiverseData(commit, state, { ym, force }) {
@@ -962,83 +893,41 @@ export const DashboardActions = {
 
     try {
       // 1. 現状データの取得
-      const url = `${NX.CONST.host}/text/contents_list.aspx?shido_ng=${ym}&contents_id=10`;
+      const params = {
+        tenpo_cd: '',
+        gakunen_cb: '',
+        shido_ng: ym,
+        contents_id: 10,
+        contents_kamoku_id: '',
+        moshikomi_id: '',
+        cb: 3
+      };
+      const url = `${NX.CONST.host}/text/contents_list.aspx?&kamoku_cb=1&kamoku_cb=2&kamoku_cb=3&kamoku_cb=4&${$.param(params)}`;
       const snap = await SnapData.quickFetch({ url: url, force: force, storeName: 'Flux_Diverse', key: '202604' });
-      const $table = snap.getAsJQuery('table').eq(0);
-
-      // --- 解析ロジック (jQuery直接) ---
-      const currentMap = {};
-      let colIdxBase = -1; // 「校舎」列のインデックス
-      let colIdxTotal = -1; // 「合計」列のインデックス
-
-      // ヘッダー行を探して列位置を特定
-      $table.find('tr').each((i, tr) => {
-        $(tr)
-          .find('td, th')
-          .each((j, cell) => {
-            const txt = $(cell)
-              .text()
-              .trim();
-            if (txt === '校舎') colIdxBase = j;
-            if (txt === '合計') colIdxTotal = j;
-          });
-        if (colIdxBase !== -1 && colIdxTotal !== -1) return false;
-      });
-
-      // 見つからない場合のフォールバック (データ例に基づく推定)
-      if (colIdxBase === -1) colIdxBase = 2; // 空セルが2つある場合など
-      if (colIdxTotal === -1) colIdxTotal = 5;
-
-      // 行データを走査
-      $table.find('tr').each((i, tr) => {
-        const $tds = $(tr).find('td');
-        if ($tds.length <= Math.max(colIdxBase, colIdxTotal)) return;
-
-        const baseName = $tds
-          .eq(colIdxBase)
-          .text()
-          .trim();
-        const valStr = $tds
-          .eq(colIdxTotal)
-          .text()
-          .trim()
-          .replace(/,/g, '');
-        const val = parseInt(valStr) || 0;
-
-        // ヘッダー行や集計行を除外して格納
-        if (baseName && baseName !== '校舎' && baseName !== '合計') {
-          currentMap[baseName] = val;
-        }
-      });
+      const tableNXT = snap.getAsNXTable();
+      tableNXT.filter('校舎', cell => cell != '校舎' && cell != '合計');
 
       // 2. 目標データとのマージ
-      const goals = typeof NX !== 'undefined' && NX.GOAL && NX.GOAL.AprilDivNXT ? new NXTable(NX.GOAL.AprilDivNXT).toDictionary(2) : {};
+      const goalsNXT = new NXTable(NX.GOAL.AprilDivNXT);
+      const mergeNXT = goalsNXT.merge(tableNXT, '校舎');
 
-      const allBases = new Set([...Object.keys(goals), ...Object.keys(currentMap)]);
       const rows = [];
-
-      allBases.forEach(base => {
-        // 目標か現状のどちらかが存在する（0より大きい）場合のみ表示する場合
-        // 今回は全ての校舎をリストアップ
-        const goal = goals[base].goal2604 || 0;
-        const current = currentMap[base] || 0;
-
+      mergeNXT.getColumn('校舎').forEach(baseName => {
+        const goal = mergeNXT.xlookup(baseName, '校舎', 'goal2604') || 0;
+        const current = mergeNXT.xlookup(baseName, '校舎', '合計') || 0;
         rows.push({
-          baseName: base,
-          goal: goal,
-          exist: goals[base].exist2603 || 0,
-          service: goals[base].service2603 || 0,
-          current: current,
+          baseName,
+          goal,
+          exist: mergeNXT.xlookup(baseName, '校舎', 'exist2603') || 0,
+          service: mergeNXT.xlookup(baseName, '校舎', 'service2603') || 0,
+          current,
           diff: current - goal
         });
       });
 
-      // 目標数の多い順にソート（メインの校舎を上に）
-      rows.sort((a, b) => b.goal - a.goal);
-
       commit({
         diverseData: {
-          rows: rows,
+          rows,
           updatedAt: new Date().toLocaleTimeString()
         }
       });

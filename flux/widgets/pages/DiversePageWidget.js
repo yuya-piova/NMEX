@@ -17,10 +17,10 @@ export class DiversePageWidget extends Widget {
     const rows = diverseData.rows || [];
 
     // 合計行の計算
-    const totalExist = rows.reduce((sum, r) => sum + (r.exist || 0), 0);
-    const totalService = rows.reduce((sum, r) => sum + (r.service || 0), 0);
-    const totalGoal = rows.reduce((sum, r) => sum + (r.goal || 0), 0);
-    const totalCurrent = rows.reduce((sum, r) => sum + (r.current || 0), 0);
+    const totalExist = rows.reduce((sum, r) => sum + (parseInt(r.exist) || 0), 0);
+    const totalService = rows.reduce((sum, r) => sum + (parseInt(r.service) || 0), 0);
+    const totalGoal = rows.reduce((sum, r) => sum + (parseInt(r.goal) || 0), 0);
+    const totalCurrent = rows.reduce((sum, r) => sum + (parseInt(r.current) || 0), 0);
     const totalDiff = totalCurrent - totalGoal;
 
     const trHtml = rows
@@ -63,12 +63,12 @@ export class DiversePageWidget extends Widget {
           <table class="flux-table-full flux-table-sales">
             <thead>
               <tr>
-                <th style="width:auto;">校舎</th>
-                <th style="width:50px;">３月月謝</th>
-                <th style="width:50px;">３月サービス</th>
-                <th style="width:50px;">目標</th>
-                <th style="width:50px;">現状</th>
-                <th style="width:50px;">差異</th>
+                <th>校舎</th>
+                <th>３月月謝</th>
+                <th>３月サービス</th>
+                <th>目標</th>
+                <th>現状</th>
+                <th>差異</th>
               </tr>
             </thead>
             <tbody>
@@ -76,7 +76,7 @@ export class DiversePageWidget extends Widget {
             </tbody>
             <tfoot>
                <tr style="background:#f0f8ff; font-weight:bold;">
-                 <td>合計</td>
+                 <td class="flux-cell-head">合計</td>
                  <td class="text-right">${totalExist.toLocaleString()}</td>
                  <td class="text-right">${totalService.toLocaleString()}</td>
                  <td class="text-right">${totalGoal.toLocaleString()}</td>

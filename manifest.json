@@ -42,6 +42,7 @@
         "nmexo/nmexop.js",
         "nmext/nmextp.js",
         "nmext/nmextd.js",
+        "pages/loader.js",
         "checker.js",
         "nmexo/closer.js"
       ],
@@ -63,6 +64,7 @@
         "flux/actions/*.js",
         "flux/css/*.css",
         "core/*.js",
+        "pages/*.js",
         "templates.html"
       ],
       "matches": ["<all_urls>"]

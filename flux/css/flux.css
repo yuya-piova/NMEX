@@ -722,7 +722,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .flux-manage-controls {
@@ -933,6 +935,11 @@ body {
 /* ==========================================================================
    13. Feature: Sales Table
    ========================================================================== */
+.flux-table-sales {
+  width: auto; /* 100%をやめる */
+  min-width: 600px; /* 最低限の幅は確保 */
+  margin-bottom: 0; /* 余白調整 */
+}
 .flux-table-sales th,
 .flux-table-sales td {
   font-size: 0.9rem;
@@ -970,4 +977,12 @@ body {
 .flux-table-sales thead th:first-child {
   z-index: 15;
   left: 0;
+}
+.flux-table-sales tfoot td {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background-color: #f0f8ff; /* 合計行の背景色 */
+  border-top: 2px solid #ddd;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* 浮いている感を出す影 */
 }
