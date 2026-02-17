@@ -65,6 +65,7 @@
         "flux/css/*.css",
         "core/*.js",
         "pages/*.js",
+        "parsers/*.js",
         "templates.html"
       ],
       "matches": ["<all_urls>"]

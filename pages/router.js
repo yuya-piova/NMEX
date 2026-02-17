@@ -1,4 +1,5 @@
 import PageFuncAll from './PageFuncAll.js';
+import PageFuncSchedule from './PageFuncSchedule.js';
 
 $(function() {
   console.log('PageFunction.js');
@@ -17,6 +18,7 @@ $(function() {
   if (typeof myprofiles === 'undefined' || myprofiles.getone({ isSpecialEnabled: 0 }) != 1) return;
 
   const pageFuncAll = new PageFuncAll();
+  const pageFuncSchedule = new PageFuncSchedule();
 
   // エリアモード
   pageFuncAll.applyAreaMode();
@@ -29,15 +31,18 @@ $(function() {
     /* ---------------------------------------------------*/
     /* PageFuncTehai
     /* ---------------------------------------------------*/
+
     case '/netz/netz1/tehai/tehai_input.aspx':
       break;
     case '/netz/netz1/tehai/kanren_input_save.aspx':
       //関連登録画面開いたら即送信
       $('form[name=form1]')['0'].submit();
       break;
+
     /* ---------------------------------------------------*/
     /* PageFuncS
     /* ---------------------------------------------------*/
+
     case '/netz/netz1/s/teian_list_head.aspx':
       //自動で自教室を開く
       $('select[name=tenpo_cd]').val('m');
@@ -56,6 +61,15 @@ $(function() {
       });
 
       $('input[name=b_reload]').setshortcutkey('Enter');
+      break;
+
+    /* ---------------------------------------------------*/
+    /* PageFuncSchedule
+    /* ---------------------------------------------------*/
+
+    case '/netz/netz1/schedule/yotei_list.aspx':
+      // 予定をGoogleCalendarに登録
+      pageFuncSchedule.setGCalRegister();
       break;
   }
 });

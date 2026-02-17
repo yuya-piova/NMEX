@@ -122,7 +122,8 @@ const NMEX_Utils = {
     }
 
     return markdown;
-  }
+  },
+  multiIncludes: (target, querys) => querys.some(equery => target.includes(equery))
 };
 
 /**

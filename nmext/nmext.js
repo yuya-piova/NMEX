@@ -254,10 +254,6 @@ $(function() {
           $('input[value="登録"]').prop('disabled', !flg);
         }
         break;
-      //予定表一覧
-      case '/netz/netz1/schedule/yotei_list.aspx':
-        FUNCTION_T.yotei_list.popmenu();
-        break;
       case '/netz/netz1/schedule/yotei.aspx':
         //エリア予定表に本日のswipeを仕込む
         $('button[class="ui-datepicker-trigger"]').swipe('本日', () => {
