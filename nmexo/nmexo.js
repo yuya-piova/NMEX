@@ -223,24 +223,6 @@ $(function() {
           $(select).removeAttr('onclick');
         });
         break;
-
-      //予定表
-      case '/netz/netz1/schedule/yotei.aspx':
-        $('input[name=b_submit][value="表示更新"]').setshortcutkey('Enter');
-        $('input[name=b_yesterday]').setshortcutkey('ArrowLeft');
-        $('input[name=b_tommorow]').setshortcutkey('ArrowRight');
-        FUNCTION_O.yotei.default();
-
-        FUNCTION_O.yotei.float();
-      // eslint-disable no-fallthrough
-      case '/netz/netz1/schedule/yotei2.aspx':
-        //右クリックで予定表に入れるやつ
-        FUNCTION_O.yotei.addYoteibySwipe();
-
-        FUNCTION_O.yotei.popmenu();
-
-        break;
-
       //振替head
       case '/netz/netz1/tehai/shido_furikae_list_head.aspx':
         $('input[name=b_submit]')
@@ -330,9 +312,6 @@ $(function() {
 
         //日付追加
         FUNCTION_O.shido_kiroku_input.adddate();
-
-        //色々追加
-        FUNCTION_O.shido_kiroku_input.frames();
 
         FUNCTION_O.shido_kiroku_input.showmenu();
 
@@ -944,247 +923,8 @@ $(function() {
 
         $('input[name=next_tm]').netztimepicker(false);
         break;
-      case '/netz/netz1/tenpo_yotei.aspx':
-        var startday = getstrDate($('input[name=input_f_dt]').val(), 'yyyy/mm/dd');
-        var i = 0;
-        $('table:contains(開校担当) tr').each(function(e) {
-          if (e > 1) {
-            var date = weekdaylist[afterdays(startday, i).getDay()];
-            $(this)
-              .find('input')
-              .attr('class', date);
-            $(this)
-              .find('input[type=text]')
-              .on('change', function() {
-                $(this).attr('onclick', $(this).attr('onchange'));
-                $(this).click();
-                $(this).removeAttr('onclick');
-              });
-            i++;
-            console.log(date);
-          }
-        });
-        var tableobject = $(
-          '<table name="templater" border="1" cellpadding="1" cellspacing="1" style="border-collapse: collapse" class="small"><tr style="background-color:#dfdfff"><td>日付</td><td>指導開始</td><td>状態</td><td>開校予定</td><td>開校担当(CD入力)</td><td>CH</td><td>指導終了</td><td>閉校予定</td><td>閉校担当</td><td>休校</td><td>備考</td></tr></table>'
-        );
-        var kaikoutemplater = function(youbi, tableobject) {
-          /**
-           *
-           * @param {JQuery<HTMLElement>} origintr
-           * @param {string} youbi
-           * @returns {JQuery<HTMLElement>}
-           */
-          let maketr = function(origintr, youbi) {
-            let tr = $(origintr).clone(true);
-            $(tr).attr('id', youbi);
-            $(tr)
-              .find('input,span')
-              .each(function() {
-                let name = $(this).attr('name') || '';
-                name = name.match(/.+?(?=[0-9])/) || '';
-                $(this).attr('name', name);
-                let id = $(this).attr('id') || '';
-                id = id.match(/.+?(?=[0-9])/) || '';
-                $(this).attr('id', id);
-                $(this).attr('value', '');
-                $(this).attr('class', youbi);
-                $(this).val('');
-                if ($(this).text != '') $(this).text('');
-              });
-            $(tr)
-              .find('td:first')
-              .text(youbi);
-            $(tr)
-              .attr('onmouseover', '')
-              .attr('onmouseout', '')
-              .attr('style', '');
-            return tr;
-          };
-          //trのコピーを生成
-          let object = $(maketr($('table:first').find('tr:last'), youbi)).appendTo(tableobject);
-          //トレースを割り当て
-          object.find('input').each(function() {
-            $(this).netztracer('input[name^=' + $(this).attr('name') + '][class=' + youbi + ']');
-          });
-        };
-        for (var i = 0; i < weekdaylist.length; i++) {
-          kaikoutemplater(weekdaylist[i], tableobject);
-        }
-        tableobject.insertBefore('#b_submit');
-
-        var kaikoulist = {
-          講習: {
-            日: ['休校'],
-            月: [10, 40, 21, 20],
-            火: [10, 40, 21, 20],
-            水: ['休校'],
-            木: [10, 40, 21, 20],
-            金: [10, 40, 21, 20],
-            土: [10, 40, 21, 20]
-          },
-          通常: {
-            日: ['休校'],
-            月: [16, 30, 22, 0],
-            火: [16, 30, 22, 0],
-            水: ['休校'],
-            木: [16, 30, 22, 0],
-            金: [16, 30, 22, 0],
-            土: [10, 40, 21, 20]
-          }
-        };
-        var timetemplater = function(jiki) {
-          var timelist;
-          if (kaikoulist[jiki] == false) return false;
-          $(tableobject)
-            .find('tr')
-            .each(function(e) {
-              if (e > 0) {
-                timelist = kaikoulist[jiki][$(this).attr('id')] || [];
-                if (timelist[0] == '休校')
-                  $(this)
-                    .find('input[name=kyuko_flg]')
-                    .prop('checked', true)
-                    .trigger('change');
-                else {
-                  $(this)
-                    .find('input[name=open_tm]')
-                    .val(`${zeroPadding(timelist[0], 2)}:${zeroPadding(timelist[1], 2)}`)
-                    .trigger('change');
-                  $(this)
-                    .find('input[name=close_tm]')
-                    .val(`${zeroPadding(timelist[2], 2)}:${zeroPadding(timelist[3], 2)}`)
-                    .trigger('change');
-                }
-              }
-            });
-        };
-
-        $('<input type="button" name="koushuu" value="講習">')
-          .insertAfter($('input[value="登録"]'))
-          .on('click', function() {
-            timetemplater($(this).val());
-          });
-        $('<input type="button" name="tuujou" value="通常">')
-          .insertAfter($('input[value="登録"]'))
-          .on('click', function() {
-            timetemplater($(this).val());
-          });
-        //講師cd入力
-        var teacher_info = new teacher_info_class(myprofiles.getone({ mybase: '' }));
-        if (teacher_info != false) {
-          var object = {};
-          var namelist = teacher_info.list('講師名');
-          for (var i = 0; i < namelist.length; i++) {
-            object[namelist[i]] = teacher_info.search('講師名', namelist[i]).cd;
-          }
-          $('input[name^=open_tanto_cd],input[name^=close_tanto_cd]').each(function() {
-            $(this).netzpicker2(object, $(this).nextAll());
-          });
-        }
-        $('table:contains("教室")').netztabler(1);
-        break;
       case '/netz/netz1/tehai/shido_furikae_list_body.aspx':
         $('table:contains(生徒名)').netztabler(0);
-        break;
-      case '/netz/netz1/tehai/shido_base_list_body.aspx':
-        popmenuo_F2.setContentFunction(function() {
-          /*$('<input type="button" name="list" value="リスト化">')
-					.appendTo('body')
-					.on("click",function(){
-						makebooth(getkihonbooth());
-					});*/
-          var tenpo_cd = $('frame[name=header]', parent.document)
-            .contents()
-            .find('select[name=tenpo_cd]')
-            .val();
-          $('body').append('<table id="noboothlist" border="1px"><tr><td>基本ブースなし</td></tr></table>');
-          var students = new seito_info_class(tenpo_cd).list('生徒名');
-          var search;
-          var kihonbooth = getkihonbooth();
-          console.log(kihonbooth);
-          for (var i = 0; i < kihonbooth.length; i++) {
-            search = $.inArray(kihonbooth[i]['student_name'], students);
-            if (search != -1) students.splice(search, 1);
-          }
-          var obj = $('#noboothlist');
-          for (var i = 0; i < students.length; i++) {
-            $(obj).append('<td>' + students[i] + '</td>');
-          }
-        });
-
-        //trに情報を付加
-        var table = $('table:contains("指導教室")');
-        var tablehead = getTableHead($(table), 0);
-        var student_cd, teacher_cd, weekday, intime;
-        var seito_info = new seito_info_class();
-        var teacher_info = new teacher_info_class();
-        var seito_scheduler, teacher_scheduler;
-        $(table)
-          .find('tr:not(:first)')
-          .each(function() {
-            //生徒名
-            student_cd = seito_info.search(
-              '生徒名',
-              $(this)
-                .find('td')
-                .eq(tablehead['生徒'])
-                .text()
-            )['生徒NO'];
-            teacher_cd = teacher_info.search(
-              '講師名',
-              $(this)
-                .find('td')
-                .eq(tablehead['講師'])
-                .text()
-            )['cd'];
-            weekday = $(this)
-              .find('td')
-              .eq(tablehead['曜'])
-              .text();
-            intime = new Intime(
-              $(this)
-                .find('td')
-                .eq(tablehead['時間'])
-                .text()
-                .slice(7)
-                .replace(/～/g, '-')
-            ).gettimelist()[0];
-
-            var startday = $(this)
-              .find('td')
-              .eq(tablehead['期間'])
-              .text()
-              .substr(0, 10);
-            $(this).attr('student_cd', student_cd);
-            $(this).attr('teacher_cd', teacher_cd);
-            $(this).attr('weekday', weekday);
-            $(this).attr('intime', intime);
-            $(this).attr('startday', startday);
-
-            /*曜日不可を表示*/
-            /*seito_scheduler = Scheduler.getscheduler("student_cd",student_cd);
-					teacher_scheduler = Scheduler.getscheduler("teacher_cd",teacher_cd);
-
-					if(!seito_scheduler.inkihoncheck(weekday,intime)){
-						$(this).find("td").eq(tablehead["生徒"]).css("background-color","yellow");
-					}
-					if(!teacher_scheduler.inkihoncheck(weekday,intime)){
-						$(this).find("td").eq(tablehead["講師"]).css("background-color","yellow");
-					}*/
-          });
-
-        $(table)
-          .find('tr:not(:first)')
-          .each(function() {
-            var startday = new Date($(this).attr('startday'));
-            if (startday.getTime() > dt.getTime()) {
-              $(this)
-                .find('td')
-                .eq(tablehead['期間'])
-                .css('background-color', '#AAFFAA');
-            }
-          });
-        $('table:contains("予定作成")').netztabler(0);
         break;
       case '/netz/netz1/kanren/teacher_shido_yotei.aspx': {
         $('input[name=b_kikan]').setshortcutkey('Enter');
@@ -1219,9 +959,6 @@ $(function() {
         //講師NO選択画面にデフォルトの値がほしい
         $('<option value="6" style="background-color: lightcyan;">指導予定</option>').appendTo('#menu_cb');
         $('<option value="5" style="background-color: lightcyan;">スケジュール</option>').appendTo('#menu_cb');
-        break;
-      case '/netz/netz1/schedule/shain_yotei.aspx':
-        $('input[name=b_submit]').setshortcutkey('Enter');
         break;
       case '/netz/netz1/shingaku/kouza_jyuko_list.aspx':
       case '/netz/netz1/shingaku/kouza_enshu_jyuko_list.aspx':
@@ -1379,46 +1116,6 @@ $(function() {
       case '/netz/netz1/student_kouza_list_body.aspx':
         $('table').netztabler();
         break;
-      case '/netz/netz1/tehai/shido2_input_sp_h.aspx': {
-        const mybasename = myprofiles.getone({ mybasename: '南大分' });
-        const mybase = myprofiles.getone({ mybase: 4401 });
-        const input_f_dt = $('input[name=input_f_dt]').val();
-        const input_t_dt = $('input[name=input_t_dt]').val();
-        /**@type {string} */
-        const student_cd = $('input[name=student_cd]').val();
-        let student_scheduler = Scheduler.getscheduler('student_cd', student_cd);
-        var tlist = new teacher_info_class(mybase).searchlist('教室', mybasename);
-        var select = $('select[name="teacher_cd"]');
-        /**
-         *
-         * @param {Date} from_dt
-         * @param {Date} to_dt
-         * @param {Scheduler} student_scheduler
-         * @param {Scheduler} teacher_scheduler
-         */
-        function akikomanum(from_dt, to_dt, student_scheduler, teacher_scheduler) {
-          /**@type {number} */
-          let koma = 0;
-          for (let dt = from_dt; dt <= to_dt; dt.setDate(dt.getDate() + 1)) {
-            koma += student_scheduler.getdatetime(dateslash(dt)).matchnum(teacher_scheduler.getdatetime(dateslash(dt)).gettimelist());
-          }
-          return koma;
-        }
-        tlist.forEach(elem => {
-          /**@type {string} */
-          let teacher_cd = elem['cd'];
-          let teacher_scheduler = Scheduler.getscheduler('teacher_cd', teacher_cd);
-          let koma = akikomanum(new Date(input_f_dt), new Date(input_t_dt), student_scheduler, teacher_scheduler);
-          //すでに存在すれば飛ばす
-          if (select.children(`option[value="${teacher_cd}"]`).length != 0)
-            select.children(`option[value="${teacher_cd}"]`).each(function() {
-              $(this).text($(this).text() + `(${koma})`);
-            });
-          else $(`<option value="${teacher_cd}" style="background-color:lightcyan;">${elem['講師名']}(${koma})</option>`).appendTo(select);
-        });
-        $(select).selectSearcher();
-        break;
-      }
       case '/netz/netz1/s/student_renraku_body.aspx':
         //それぞれのtableにstudent_cdを保存
         $('input[name=b_student]').each(function() {
@@ -1778,36 +1475,6 @@ $(function() {
         $('select[name=select_tanto_cd]').selectSearcher();
         $('input[name=input_f_dt],input[name=input_t_dt]').datepicker();
         break;
-      case '/netz/netz1/todo/todo_list.aspx':
-        {
-          $('table:first').netztabler();
-          //生徒NO記載
-          popmenuo_ins.setContentFunction(function() {
-            let table = $('table');
-            let tablebody = $(table).find('tr:not(:first)');
-            let tablehead = getTableHead($('table'), 0);
-            let seito_info = new seito_info_class();
-            $(tablebody).each(function() {
-              let tr = $(this);
-              let student_name = $(tr)
-                .find('td')
-                .eq(tablehead['対象'])
-                .text()
-                .substring(3);
-              let one_infos = seito_info.search('生徒名', student_name);
-              if (one_infos.length > 0) $(tr).attr('student_cd', one_infos[0].生徒NO);
-              if (one_infos.生徒NO != null) $(tr).attr('student_cd', one_infos.生徒NO);
-            });
-            $('table')
-              .find('tr')
-              .each(function(i) {
-                if (i == 0) $('<td student_cd="true">student_cd</td>').appendTo(this);
-                else $(`<td student_cd="true">${$(this).attr('student_cd')}</td>`).appendTo(this);
-              });
-          });
-        }
-        break;
-
       case '/netz/netz1/todo/todo_input.aspx':
         if (localStorage.getItem('testplay') == 'true') {
           popmenuo_F2.setContentFunction(function() {

@@ -1,5 +1,6 @@
 import PageFuncAll from './PageFuncAll.js';
 import PageFuncSchedule from './PageFuncSchedule.js';
+import PageFuncTenpoYotei from './PageFuncTenpoYotei.js';
 
 $(function() {
   console.log('PageFunction.js');
@@ -15,7 +16,10 @@ $(function() {
   /* ---------------------------------------------------*/
 
   // スペシャルモードチェック
-  if (typeof myprofiles === 'undefined' || myprofiles.getone({ isSpecialEnabled: 0 }) != 1) return;
+  if (typeof myprofiles === 'undefined' || myprofiles.getone({ isSpecialEnabled: 0 }) != 1) {
+    console.log('Special mode disabled');
+    return;
+  }
 
   const pageFuncAll = new PageFuncAll();
   const pageFuncSchedule = new PageFuncSchedule();
@@ -32,10 +36,8 @@ $(function() {
     /* PageFuncTehai
     /* ---------------------------------------------------*/
 
-    case '/netz/netz1/tehai/tehai_input.aspx':
-      break;
     case '/netz/netz1/tehai/kanren_input_save.aspx':
-      //関連登録画面開いたら即送信
+      // 関連登録画面開いたら即送信
       $('form[name=form1]')['0'].submit();
       break;
 
@@ -44,14 +46,14 @@ $(function() {
     /* ---------------------------------------------------*/
 
     case '/netz/netz1/s/teian_list_head.aspx':
-      //自動で自教室を開く
+      // 自動で自教室を開く
       $('select[name=tenpo_cd]').val('m');
       $('input[name=b_reload]').trigger('click');
 
-      //最後に開いた季節を保存
+      // 最後に開いた季節を保存
       myprofiles.save({ nendo_season_cb: $('select[name=nendo_season_cb]').val() });
 
-      //一括設定
+      // 一括設定
       $('#tanto_cd').swipe('自分担当', () => {
         $('#tanto_cd').val(myprofiles.getone({ mynumber: '000231' }));
         $('select[name=tanto_cb]').val(2);
@@ -70,6 +72,72 @@ $(function() {
     case '/netz/netz1/schedule/yotei_list.aspx':
       // 予定をGoogleCalendarに登録
       pageFuncSchedule.setGCalRegister();
+      break;
+
+    case '/netz/netz1/schedule/shain_yotei.aspx':
+      // // ショートカットキーセット
+      $('input[name=b_submit]').setshortcutkey('Enter');
+
+      // 社員予定表にswipe仕込む
+      $('input[name=b_today]').swipe('今日～翌月', () => {
+        $('input[name="input_f_dt"]').val(NX.DT.today.slash);
+        $('input[name="input_t_dt"]').val(dateslash(window.dtnextmonth));
+        $('input[name=b_submit]').trigger('click');
+      });
+
+      // tdに日付を仕込む
+      $('a:contains("◆予定追加")').each(function() {
+        $(this)
+          .closest('td')
+          .attr(
+            'data-date',
+            $(this)
+              .attr('href')
+              .getStrBetween("'", "'")
+          );
+      });
+      break;
+
+    case '/netz/netz1/schedule/yotei.aspx':
+      // ショートカットキーセット
+      $('input[name=b_submit][value="表示更新"]').setshortcutkey('Enter');
+      $('input[name=b_yesterday]').setshortcutkey('ArrowLeft');
+      $('input[name=b_tommorow]').setshortcutkey('ArrowRight');
+
+      // エリア予定表に本日のswipeを仕込む
+      $('button[class="ui-datepicker-trigger"]').swipe('本日', () => {
+        $('form[name=form1]')['0'].action = 'yotei.aspx';
+        $('form[name=form1]')['0'].input_dt.value = NX.DT.today.slash;
+        $('form[name=form1]')['0'].submit();
+      });
+
+      // 読み込み後、デフォルトを開く（リンクが存在しない（＝未読込）＆会場ではない）
+      if (
+        $('a').length == 0 &&
+        $('select[name=tenpo_cd] option:selected')
+          .text()
+          .match(/(会場|×)/) == null
+      ) {
+        $('input[value="表示更新"]').trigger('click');
+      }
+      break;
+
+    case '/netz/netz1/schedule/yotei_input2_save.aspx':
+      // 保存完了画面を即閉じる
+      $('[name=b_close]').trigger('click');
+      break;
+
+    case '/netz/netz1/schedule/yotei2.aspx':
+      $('[name=b_submit]').swipe('通常予定画面', () => {
+        window.location.href = `${NX.CONST.host}/schedule/yotei.aspx`;
+      });
+
+    /* ---------------------------------------------------*/
+    /* PageFunc Directs
+    /* ---------------------------------------------------*/
+
+    case '/netz/netz1/tenpo_yotei.aspx':
+      popmenu.appendItems([{ text: 'テンプレート', handler: () => new PageFuncTenpoYotei().init() }]);
       break;
   }
 });

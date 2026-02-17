@@ -5,13 +5,7 @@ import CalendarSync from '../core/CalendarSync.js';
 
 export default class PageFuncSchedule {
   constructor() {
-    this.init();
-  }
-
-  init() {
-    // ページ読み込み時に実行したい処理があればここに記述
-    // 例: PopMenuへの登録など
-    //this.registerPopMenu();
+    this.path = location.pathname;
   }
 
   setGCalRegister() {

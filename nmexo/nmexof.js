@@ -617,30 +617,6 @@ FUNCTION_O.shido_kiroku_input.texttrace = function() {
   $('input[name=textall]').netztracer('input[name^=hw_text_nm][trace=true]');
 };
 
-FUNCTION_O.shido_kiroku_input.frames = function() {
-  var table = $('td:contains("生徒")').closest('table');
-  var name = table
-    .find('td:contains("生徒")')
-    .next()
-    .text();
-  var students = new seito_info_class();
-  var student_cd = students.search('生徒名', name)['生徒NO'];
-  if (student_cd != null) {
-    let iframemaker = new IframeMaker('shidoframe', 850, 10);
-    let buttons = new NetzButtonsofseito(student_cd, table, iframemaker.getframename(), iframemaker);
-    buttons.makebuttons('houkoku', '報', {
-      from_dt: dateslash(afterdays(dt, -30)),
-      to_dt: dateslash(afterdays(dt, 30))
-    });
-    buttons.makebuttons('yotei', '予');
-    buttons.makebuttons('seisekij', '成');
-  }
-
-  $('hr')
-    .css('width', 800)
-    .css('margin-left', '0px');
-};
-
 FUNCTION_O.shido_kiroku_input.showmenu = function() {
   popmenuo_F2.setContentFunction(function() {
     $('<input type="button" name="objectcopier" value="select,textareaなどコピー">')
@@ -881,85 +857,6 @@ FUNCTION_O.teacher_shido_yotei.schedulecheck = function() {
           .eq(tablehead['講師名'])
           .addClass('schedule_ng');
     });
-};
-
-FUNCTION_O.yotei = {};
-
-FUNCTION_O.yotei.addYoteibySwipe = function() {
-  const { x: mouseX, y: mouseY } = getMousePosition();
-  var iframemaker = new IframeMaker('new_syain_yotei', mouseX + 1, mouseY + 1);
-  new Rightdragger(
-    $('table')
-      .find('tr:gt(2)')
-      .find('td[colspan],td[ondblclick]'),
-    function() {},
-    function() {
-      iframemaker.movediv(mouseX + 1, mouseY + 1);
-      newsyainSchedule(
-        getStrBetween($(this.startobject).attr('ondblclick'), "'", "'"),
-        new Yoteidata(this.startobject).getTime().starttime,
-        new Yoteidata(this.endobject).getTime().endtime,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        iframemaker
-      );
-      iframemaker.getdivobject().draggable();
-    }
-  );
-};
-
-FUNCTION_O.yotei.default = function() {
-  if (
-    $('a').length == 0 &&
-    $('option[value="' + $('select[name=tenpo_cd]').val() + '"]')
-      .text()
-      .match(/(会場|×)/) == null
-  ) {
-    $('input[value="表示更新"]').trigger('click');
-  }
-};
-
-FUNCTION_O.yotei.float = function() {
-  /*popmenuo_ins.setContentFunction(function() {
-    var trfirst = $('table').find('tr:first');
-    $(trfirst)
-      .css('background', 'white')
-      .clone(false)
-      .insertAfter(trfirst)
-      .find('input,select')
-      .remove();
-    $(trfirst).netznotscroll(1);
-    popmenuo_ins.closemenu();
-  });*/
-};
-
-FUNCTION_O.yotei.popmenu = function() {
-  popmenuo_F2.setContentFunction(function() {
-    $('<input type="button" value="全エリア結合">')
-      .on('click', async function() {
-        for (var one of Object.keys(areablocklist.block).map(key => `a${areablocklist.block[key]}`)) {
-          let form = $('form[name=form1]').clone(false);
-          $(form)
-            .find('select[name=tenpo_cd]')
-            .val(one);
-          var data = await $.get(`${NX.CONST.host}/schedule/yotei.aspx?${$(form).serialize()}`);
-          $(data)
-            .find('table')
-            .find('tr')
-            .slice(
-              3,
-              $(data)
-                .find('table')
-                .find('tr').length - 2
-            )
-            .appendTo('tbody');
-        }
-      })
-      .appendTo(this);
-  });
 };
 
 FUNCTION_O.teian_list_body = {};

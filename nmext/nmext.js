@@ -142,35 +142,9 @@ $(function() {
           });
         }
         break;
-      case '/netz/netz1/schedule/shain_yotei.aspx':
-        //社員予定表にswipe仕込む
-        $('input[name=b_today]').swipe('今日～翌月', () => {
-          $('input[name="input_f_dt"]').val(NX.DT.today.slash);
-          $('input[name="input_t_dt"]').val(dateslash(window.dtnextmonth));
-          $('input[name=b_submit]').trigger('click');
-        });
-        //tdに日付を仕込む
-        $('a:contains("◆予定追加")').each(function() {
-          $(this)
-            .closest('td')
-            .attr(
-              'data-date',
-              $(this)
-                .attr('href')
-                .getStrBetween("'", "'")
-            );
-        });
-        break;
-      case '/netz/netz1/schedule/yotei_input2_save.aspx':
-        $('[name=b_close]').trigger('click');
-        break;
       case '/netz/netz1/shingaku/kouza_enshu_shido_input_save.aspx':
         $('[name=b_close]').trigger('click');
         break;
-      case '/netz/netz1/schedule/yotei2.aspx':
-        $('[name=b_submit]').swipe('通常予定画面', () => {
-          window.location.href = `${NX.CONST.host}/schedule/yotei.aspx`;
-        });
       case '/netz/netz1/tehai/shido2_base_input.aspx':
         //すべてautocompleteをoffにする
         $('input').offAutocomplete();
@@ -253,14 +227,6 @@ $(function() {
           }
           $('input[value="登録"]').prop('disabled', !flg);
         }
-        break;
-      case '/netz/netz1/schedule/yotei.aspx':
-        //エリア予定表に本日のswipeを仕込む
-        $('button[class="ui-datepicker-trigger"]').swipe('本日', () => {
-          $('form[name=form1]')['0'].action = 'yotei.aspx';
-          $('form[name=form1]')['0'].input_dt.value = NX.DT.today.slash;
-          $('form[name=form1]')['0'].submit();
-        });
         break;
       case '/netz/netz1/text/text_haifu_save.aspx':
         //テキスト配布CH完了の確認ページはスキップ
