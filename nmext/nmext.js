@@ -23,10 +23,9 @@ $(function() {
   /*/■■■■■■■■■■■■■■■■■■■■以下スペシャルモードのみ■■■■■■■■■■■■■■■■■■■■/*/
   if (myprofiles.getone({ isSpecialEnabled: 0 }) == 1) {
     //スペシャルモードで全ページ発火
-    //エリアモードなら自エリア以外除外
-    //FUNCTION_T.general.isAreaMode();
+
     //DatePickerを設定
-    FUNCTION_T.general.set_datepicker();
+    //FUNCTION_T.general.set_datepicker();
     //一時的に必要な機能を入れる関数
     FUNCTION_T.general.temporary();
     //生徒名を右クリックして生徒メニューを表示
@@ -283,7 +282,6 @@ $(function() {
 
         $('input[name=b_submit]').setshortcutkey('Enter', { ctrlkey: true });
         break;
-      case '/netz/netz1/tehai/kanren_input_save.aspx':
       case '/netz/netz1/kanren/kanren_input_save.aspx':
         //関連登録画面開いたら即送信
         $('form[name=form1]')['0'].submit();
@@ -531,26 +529,6 @@ $(function() {
               $(this).remove();
           });
         }
-        break;
-
-      case '/netz/netz1/s/teian_list_head.aspx':
-        //自動で自教室を開く
-        $('select[name=tenpo_cd]').val('m');
-        $('input[name=b_reload]').trigger('click');
-
-        //最後に開いた季節を保存
-        myprofiles.save({ nendo_season_cb: $('select[name=nendo_season_cb]').val() });
-
-        //一括設定
-        $('#tanto_cd').swipe('自分担当', () => {
-          $('#tanto_cd').val(myprofiles.getone({ mynumber: '000231' }));
-          $('select[name=tanto_cb]').val(2);
-          $('[name=sort_cb]').val([2]);
-          $('[name=kaiyaku_flg],[name=gen_course_flg],[name=mikomi_flg],[name=kakutei_flg]').prop('checked', true);
-          $('[name=course_ng]').val('2025/11');
-        });
-
-        $('input[name=b_reload]').setshortcutkey('Enter');
         break;
       case '/netz/netz1/s/koshu_gakunen_shukei.aspx':
         const parentDoc = parent.teian_list_head.document;
@@ -1703,50 +1681,26 @@ $(function() {
         const student_cd = $('input[name=student_cd').val();
         const iframe = new IframeMakerEx({ x: 1100, y: 10, draggable: true });
 
-        popmenut_F8.setContentFunction(function() {
-          $('<button>', {
+        popmenu.appendItems([
+          {
             text: '手配中にして登録',
-            class: 'nx',
-            on: {
-              click: () => {
-                applyToSubject();
-                $('select[name=jyotai_cb]').val('1');
-                $('input[name=b_submit]').trigger('click');
-              }
+            handler: () => {
+              applyToSubject();
+              $('select[name=jyotai_cb]').val('1');
+              $('input[name=b_submit]').trigger('click');
             }
-          }).appendTo(this);
-          $('<button>', {
+          },
+          {
             text: '手配済にして登録',
-            class: 'nx offwarning',
-            on: {
-              click: () => {
-                applyToSubject();
-                $('select[name=jyotai_cb]').val('5');
-                $('input[name=b_submit]').trigger('click');
-              }
+            handler: () => {
+              applyToSubject();
+              $('select[name=jyotai_cb]').val('5');
+              $('input[name=b_submit]').trigger('click');
             }
-          }).appendTo(this);
-          $('<button>', {
-            text: 'プロファイル',
-            class: 'nx offsecondary',
-            on: {
-              click: () => {
-                iframe.loadUrl(`${NX.CONST.host}/s/student_profile_input.aspx?student_cd=${student_cd}`);
-                popmenut_F8.closemenu();
-              }
-            }
-          }).appendTo(this);
-          $('<button>', {
-            text: '契約情報',
-            class: 'nx offsecondary',
-            on: {
-              click: () => {
-                iframe.loadUrl(`${NX.CONST.host}/k/student_keiyaku_data.aspx?student_cd=${student_cd}`);
-                popmenut_F8.closemenu();
-              }
-            }
-          }).appendTo(this);
-        });
+          },
+          { text: 'プロファイル', handler: () => iframe.loadUrl(`${NX.CONST.host}/s/student_profile_input.aspx?student_cd=${student_cd}`) },
+          { text: '契約情報', handler: () => iframe.loadUrl(`${NX.CONST.host}/k/student_keiyaku_data.aspx?student_cd=${student_cd}`) }
+        ]);
 
         function applyToSubject(sub = 'kok') {
           const applyedSum = ['kok', 'sha', 'sug', 'rik', 'eig'].reduce((acc, cur) => {
@@ -2339,6 +2293,8 @@ $(function() {
         const kigen_dt = $('#kigen_dt');
         const kigen_tm = $('#kigen_tm');
         const jyotai_cb = $('select[name=jyotai_cb]');
+        const $checklist_flgs = $('input[name^=checklist_flg]');
+        const $progress_vl = $('#progress_vl');
         //パラメーターを持ってきてたら自動処理する
         let { setStart, setEnd, setDeadLine, setTime, doSave, setState, doAction } = getparameter();
         switch (doAction) {
@@ -2374,8 +2330,8 @@ $(function() {
         if (allowedState.includes(setState || '')) jyotai_cb.val(setState);
         //完了なら全チェックを入れる
         if (setState == 'F') {
-          $('input[name^=checklist_flg]').prop('checked', true);
-          $('#progress_vl').val(100);
+          $checklist_flgs.prop('checked', true);
+          $progress_vl.val(100);
         }
         //開始日を変更する
         if (setStart) start_dt.val(setStart);
@@ -2408,25 +2364,27 @@ $(function() {
         }
 
         // CH項目機能
-        $('input[type=checkbox]').on('contextmenu', function() {
+        $checklist_flgs.on('contextmenu', function() {
           $(this).prop('checked', !this.checked);
-          const checks = $('input[type=checkbox][name^=checklist_flg]').length;
+          const checks = $checklist_flgs.length;
           const dones = $('input[type=checkbox][name^=checklist_flg]:checked').length;
           $('#progress_vl').val(Math.floor((dones / checks) * 100));
           jyotai_cb.val(dones == checks ? 'F' : 'D');
           return false;
         });
-        popmenut_F8.setContentFunction(function() {
-          $('<button>', {
-            type: 'button',
+
+        popmenu.appendItems([
+          {
             text: '完了',
-            on: {
-              click: () => {
-                jyotai_cb.val('F');
-                $('#b_submit').trigger('click');
-              }
+            handler: () => {
+              jyotai_cb.val('F');
+              $checklist_flgs.prop('checked', true);
+              $progress_vl.val(100);
+              $('#b_submit').trigger('click');
             }
-          }).appendTo(this);
+          }
+        ]);
+        popmenut_F8.setContentFunction(function() {
           $('<button>', {
             type: 'button',
             text: '講師一覧を取得',

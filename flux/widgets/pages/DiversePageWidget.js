@@ -13,7 +13,7 @@ export class DiversePageWidget extends Widget {
   }
 
   render(globalState) {
-    const diverseData = globalState.diverseData || { rows: [], updatedAt: '-' };
+    const diverseData = globalState.diverseData || { url: '', rows: [], updatedAt: '-' };
     const rows = diverseData.rows || [];
 
     // 合計行の計算
@@ -32,6 +32,7 @@ export class DiversePageWidget extends Widget {
         return `
         <tr>
           <td class="flux-cell-head">${row.baseName}</td>
+          <td>${row.kind || ''}</td>
           <td class="text-right">${row.exist.toLocaleString()}</td>
           <td class="text-right">${row.service.toLocaleString()}</td>
           <td class="text-right">${row.goal.toLocaleString()}</td>
@@ -42,12 +43,17 @@ export class DiversePageWidget extends Widget {
       })
       .join('');
 
+    const listButton =
+      diverseData.url != ''
+        ? `<button class="flux-btn flux-btn-secondary" onclick='window.open("${diverseData.url}","_blank")'><i class="fa-solid fa-list"></i> 一覧</button>`
+        : '';
     this.root.innerHTML = `
       <div class="flux-page-header">
         <h2 class="flux-page-title"><i class="fa-solid fa-graduation-cap"></i> Diverse</h2>
         <div class="flux-page-actions">
            <span style="font-size:0.8rem; color:#666; margin-right:10px;">Last Update: ${diverseData.updatedAt}</span>
            <button class="flux-btn flux-btn-primary" id="btn-diverse-reload"><i class="fa-solid fa-rotate"></i> 更新</button>
+           ${listButton}
         </div>
       </div>
 
@@ -60,10 +66,11 @@ export class DiversePageWidget extends Widget {
         </div>
 
         <div class="flux-table-container" style="flex:1; overflow:auto; margin-top:10px;">
-          <table class="flux-table-full flux-table-sales">
+          <table class="flux-table-full flux-table-sales dblcopytable">
             <thead>
               <tr>
                 <th>校舎</th>
+                <th>対面</th>
                 <th>３月月謝</th>
                 <th>３月サービス</th>
                 <th>目標</th>
@@ -76,7 +83,7 @@ export class DiversePageWidget extends Widget {
             </tbody>
             <tfoot>
                <tr style="background:#f0f8ff; font-weight:bold;">
-                 <td class="flux-cell-head">合計</td>
+                 <td colspan="2" class="flux-cell-head">合計</td>
                  <td class="text-right">${totalExist.toLocaleString()}</td>
                  <td class="text-right">${totalService.toLocaleString()}</td>
                  <td class="text-right">${totalGoal.toLocaleString()}</td>

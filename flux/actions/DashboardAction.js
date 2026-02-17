@@ -68,11 +68,11 @@ export const DashboardActions = {
         return;
       }
 
-      const path = `/todo/todo_list.aspx?tanto_cd=${myNumber}&base_dt=`;
+      const url = `${NX.CONST.host}/todo/todo_list.aspx?tanto_cd=${myNumber}&base_dt=`;
 
       // SnapDataを使用してデータ取得 (既存のグローバルクラス)
       // noCache: false にするとキャッシュが効きますが、タスクは更新頻度が高いので都度取得推奨
-      const snap = await SnapData.quickFetch({ url: `${NX.CONST.host}${path}`, noCache: true });
+      const snap = await SnapData.quickFetch({ url, noCache: true });
       const $table = snap
         .getAsJQuery('table')
         .filter(function() {
@@ -255,7 +255,7 @@ export const DashboardActions = {
         }
       });
 
-      commit({ errorTasks });
+      commit({ undonePath, todayPath, errorTasks });
     } catch (e) {
       console.error('ErrorTask Fetch Error:', e);
     }
@@ -504,9 +504,9 @@ export const DashboardActions = {
         const commParam = `nendo_season_cb=${ns}&tanto_cd=&tanto_cb=1&kado_flg=1&menu_cb=&cb=&sort_cb=4&mendan_status_cb=nn&kaiyaku_flg=1&gen_course_flg=1&mikomi_flg=1&mendan_aite_flg=1&mendan_tanto_flg=1&shukei_cb=0&shibo_cb_flg=1`;
 
         // 中四国全体で取得 (a5031)
-        const nextUrl = `/s/teian_list_body.aspx?${commParam}&tenpo_cd=a5031&next_dt1=${NX.DT.CMP_START.md}&next_dt2=${NX.DT.today.md}&gakunen_cb=&input_dt1=&input_dt2=&course_ng=`;
+        const nextUrl = `${NX.CONST.host}/s/teian_list_body.aspx?${commParam}&tenpo_cd=a5031&next_dt1=${NX.DT.CMP_START.md}&next_dt2=${NX.DT.today.md}&gakunen_cb=&input_dt1=&input_dt2=&course_ng=`;
 
-        const snap = await SnapData.quickFetch({ url: `${NX.CONST.host}${nextUrl}`, noCache: true });
+        const snap = await SnapData.quickFetch({ url: nextUrl, noCache: true });
 
         // 簡易解析: 「保留」「日程調整」「面談待」の行を探す
         // NXTableのような高度な解析ライブラリがない前提で、jQueryでカウント
@@ -535,7 +535,7 @@ export const DashboardActions = {
           results.push({
             title: base,
             text: `未対応 ${count}件`,
-            url: `${NX.CONST.host}${nextUrl}`, // フィルタ済みURLではないがリンク用
+            url: nextUrl, // フィルタ済みURLではないがリンク用
             type: 'info'
           });
         }
@@ -903,7 +903,7 @@ export const DashboardActions = {
         cb: 3
       };
       const url = `${NX.CONST.host}/text/contents_list.aspx?&kamoku_cb=1&kamoku_cb=2&kamoku_cb=3&kamoku_cb=4&${$.param(params)}`;
-      const snap = await SnapData.quickFetch({ url: url, force: force, storeName: 'Flux_Diverse', key: '202604' });
+      const snap = await SnapData.quickFetch({ url, force, storeName: 'Flux_Diverse', key: '202604' });
       const tableNXT = snap.getAsNXTable();
       tableNXT.filter('校舎', cell => cell != '校舎' && cell != '合計');
 
@@ -912,14 +912,18 @@ export const DashboardActions = {
       const mergeNXT = goalsNXT.merge(tableNXT, '校舎');
 
       const rows = [];
-      mergeNXT.getColumn('校舎').forEach(baseName => {
+      const targetBaseList = mergeNXT.unique('受講校舎').filter(nm => nm != null);
+      targetBaseList.push('');
+      targetBaseList.forEach(baseName => {
         const goal = mergeNXT.xlookup(baseName, '校舎', 'goal2604') || 0;
-        const current = mergeNXT.xlookup(baseName, '校舎', '合計') || 0;
+        const current = mergeNXT.sumifs('合計', ['受講校舎', baseName]) || 0;
+        const kind = mergeNXT.xlookup(baseName, '校舎', '対面');
         rows.push({
           baseName,
           goal,
           exist: mergeNXT.xlookup(baseName, '校舎', 'exist2603') || 0,
           service: mergeNXT.xlookup(baseName, '校舎', 'service2603') || 0,
+          kind,
           current,
           diff: current - goal
         });
@@ -927,6 +931,7 @@ export const DashboardActions = {
 
       commit({
         diverseData: {
+          url,
           rows,
           updatedAt: new Date().toLocaleTimeString()
         }

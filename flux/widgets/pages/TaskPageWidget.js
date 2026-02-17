@@ -40,6 +40,10 @@ export class TaskPageWidget extends Widget {
       })
       .join('');
 
+    const listButton =
+      state.undonePath != ''
+        ? `<button class="flux-btn flux-btn-secondary" onclick='window.open("${NX.CONST.host}${state.undonePath}","_blank")'><i class="fa-solid fa-list"></i> 一覧</button>`
+        : '';
     // 全体レイアウト (ヘッダー + フルサイズテーブル)
     this.root.innerHTML = `
       <div class="flux-page-header">
@@ -47,7 +51,8 @@ export class TaskPageWidget extends Widget {
         <div class="flux-page-actions">
           ${hasFollowError ? `<button class="flux-btn flux-btn-danger" id="btn-del-follow">指導F削除</button>` : ''}
           ${hasRangeError ? `<button class="flux-btn flux-btn-warning" id="btn-fix-range">期限適正化</button>` : ''}
-          <button class="flux-btn flux-btn-secondary" id="btn-reload"><i class="fa-solid fa-rotate"></i> 更新</button>
+          <button class="flux-btn flux-btn-primary" id="btn-reload"><i class="fa-solid fa-rotate"></i> 更新</button>
+          ${listButton}
         </div>
       </div>
       

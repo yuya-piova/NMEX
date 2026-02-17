@@ -3,7 +3,7 @@ $(function() {
   if (document.domain != 'portal.edu-netz.com') return;
   console.log('nmextp.js');
   $('select[name=tenpo_cd]')
-    .prepend(`${makeOption(NX.NOWBASE[myprofiles.getone({ mynumber: '000231' })])}<option value="allmode">全教室表示</option>`)
+    .prepend(`${NMEX_Utils.makeOption(NX.NOWBASE[myprofiles.getone({ mynumber: '000231' })])}<option value="allmode">全教室表示</option>`)
     .selectSearcher();
   setEmppicker();
   //成績情報の目標非表示をデフォに

@@ -11,7 +11,7 @@ export class AsCoachPageWidget extends Widget {
       <div class="flux-page-header">
         <h2 class="flux-page-title"><i class="fa-solid fa-user-clock"></i> AsCoach</h2>
         <div class="flux-page-actions">
-          <button class="flux-btn flux-btn-secondary" id="btn-reload-coach"><i class="fa-solid fa-rotate"></i> 更新</button>
+          <button class="flux-btn flux-btn-primary" id="btn-reload-coach"><i class="fa-solid fa-rotate"></i> 更新</button>
         </div>
       </div>
       
