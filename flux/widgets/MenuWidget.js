@@ -11,7 +11,9 @@ export class MenuWidget extends Widget {
       { id: 'BlockSales', icon: 'fa-chart-simple', label: 'Block Sales' },
       { id: 'Management', icon: 'fa-briefcase', label: 'Management' },
       { id: 'StudentCount', icon: 'fa-users', label: 'Student Count' },
-      { id: 'Diverse', icon: 'fa-graduation-cap', label: 'Diverse' }
+      { id: 'Diverse', icon: 'fa-graduation-cap', label: 'Diverse' },
+      { id: 'Tools', icon: 'fa-toolbox', label: 'Tools' },
+      { id: 'Settings', icon: 'fa-gear', label: 'Settings' }
     ];
 
     this.root.innerHTML = `

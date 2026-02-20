@@ -14,6 +14,8 @@ import { StatsWidget } from './widgets/features/StatsWidget.js';
 import { BlockSalesPageWidget } from './widgets/pages/BlockSalesPageWidget.js';
 import { StudentCountPageWidget } from './widgets/pages/StudentCountPageWidget.js';
 import { DiversePageWidget } from './widgets/pages/DiversePageWidget.js';
+import { SettingsPageWidget } from './widgets/pages/SettingsPageWidget.js';
+import { ToolsPageWidget } from './widgets/pages/ToolsPageWidget.js';
 
 export class Flux {
   constructor() {
@@ -46,7 +48,9 @@ export class Flux {
       managementPage: new ManagementPageWidget(this.core),
       blockSalesPage: new BlockSalesPageWidget(this.core),
       studentCountPage: new StudentCountPageWidget(this.core),
-      diversePage: new DiversePageWidget(this.core)
+      diversePage: new DiversePageWidget(this.core),
+      settingsPage: new SettingsPageWidget(this.core),
+      toolsPage: new ToolsPageWidget(this.core)
     };
   }
 
@@ -71,6 +75,8 @@ export class Flux {
     this.createPageContainer(contentArea, 'BlockSales', 'flux-page-fixed');
     this.createPageContainer(contentArea, 'StudentCount', 'flux-page-fixed');
     this.createPageContainer(contentArea, 'Diverse', 'flux-page-fixed');
+    this.createPageContainer(contentArea, 'Settings', 'flux-page-fixed');
+    this.createPageContainer(contentArea, 'Tools', 'flux-page-fixed');
 
     // Dashboardページに Widget を配置
     this.widgets.notification.mount('#flux-header-right');
