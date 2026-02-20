@@ -942,5 +942,72 @@ export const DashboardActions = {
       console.error('Fetch Diverse Error:', e);
       if (typeof PX_Toast === 'function') PX_Toast('取得エラー', 'error');
     }
+  },
+  async fetchMiscStats(commit, state, force) {
+    try {
+      if (typeof PX_Toast === 'function' && force) PX_Toast('講座データ取得中...', 'Processing');
+
+      // NX.VAR.nendo が未定義の場合のガード
+      const nendo = 2026; //typeof NX !== 'undefined' && NX.VAR ? NX.VAR.nendo : new Date().getFullYear();
+
+      // パラメータ作成 (jQueryの$.param相当をURLSearchParamsで代用)
+      const params = {
+        nendo: nendo,
+        season_cb: '4',
+        tenpo_cd: '',
+        gakunen_cb: '',
+        shido_cb: '',
+        base_dt: '',
+        shingaku_id: '',
+        id_flg: 1
+      };
+      const qs = new URLSearchParams(params).toString();
+      const path = `/shingaku/kouza_list.aspx?${qs}`;
+
+      // データ取得
+      const snap = await SnapData.quickFetch({
+        url: `${NX.CONST.host}${path}`,
+        force: force,
+        noCache: false,
+        expiration: 6 * 60,
+        storeName: 'FluxData',
+        key: 'kouza_list'
+      });
+
+      // NXTable化
+      const nxt = $NX(snap.getAsJQuery('table').eq(0)).makeNXTable();
+
+      // ターゲット項目リスト
+      const targets = [
+        '【広島】中３受験勉強会',
+        '【広島】市内六校合格講座',
+        'OL大学入試講座「二次関数」',
+        'OL大学入試講座「確率」',
+        'OL大学入試講座「英語読解（入門編）」',
+        'OL大学入試講座「ジブン未来プログラム」'
+      ];
+
+      // xlookupで値を取得
+      const data = targets.map(label => {
+        // xlookup(検索値, 検索列名, 戻り値列名)
+        const val = nxt.xlookup(label, '講座名', '受講者数');
+        return {
+          label: label,
+          value: val !== null ? val : '-'
+        };
+      });
+
+      commit({
+        miscStats: {
+          data: data,
+          updatedAt: new Date().toLocaleTimeString()
+        }
+      });
+
+      if (typeof PX_Toast === 'function' && force) PX_Toast('講座データ更新完了');
+    } catch (e) {
+      console.error('Fetch MiscStats Error:', e);
+      if (typeof PX_Toast === 'function' && force) PX_Toast('取得エラー', 'error');
+    }
   }
 };

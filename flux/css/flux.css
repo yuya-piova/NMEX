@@ -10,6 +10,7 @@
 }
 
 /* スクロールバーのカスタマイズ (Chrome/Edge用) */
+/*
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -23,6 +24,25 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #a0aec0;
+}
+*/
+.flux-page::-webkit-scrollbar,
+.flux-table-container::-webkit-scrollbar,
+.flux-coach-list::-webkit-scrollbar,
+.flux-unit-list::-webkit-scrollbar,
+.flux-task-list::-webkit-scrollbar,
+.flux-manage-results::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.flux-page,
+.flux-table-container,
+.flux-coach-list,
+.flux-unit-list,
+.flux-task-list,
+.flux-manage-results {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 body {
   margin: 0;
@@ -476,7 +496,7 @@ body {
   flex-direction: column;
   max-height: 400px; /* カード内での高さ制限 */
   overflow-y: auto;
-  scrollbar-width: thin;
+  /* scrollbar-width: thin; */
 }
 
 .flux-task-row {

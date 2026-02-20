@@ -25,7 +25,7 @@
         "fullcalendar-6.1.8.min.js",
         "encoding.min.js",
         "nmex-longconst.js",
-        "core/utils.js",
+        "core/utils_reg.js",
         "core/ExDate.js",
         "core/SnapData.js",
         "core/NXTable.js",

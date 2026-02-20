@@ -4,6 +4,7 @@ import { FluxCore } from './core/FluxCore.js';
 import { MenuWidget } from './widgets/MenuWidget.js';
 import { UnitWidget } from './widgets/features/UnitWidget.js';
 import { TaskWidget } from './widgets/features/TaskWidget.js';
+import { MiscStatsWidget } from './widgets/features/MiscStatsWidget.js';
 import { TaskPageWidget } from './widgets/pages/TaskPageWidget.js';
 import { AsCoachPageWidget } from './widgets/pages/AsCoachPageWidget.js';
 import { ManagementPageWidget } from './widgets/pages/ManagementPageWidget.js';
@@ -21,6 +22,7 @@ export class Flux {
       currentPage: 'Dashboard',
       unitStatus: [],
       tasks: [],
+      miscStats: null,
       errorTasks: [],
       notifications: [],
       contractCount: '-',
@@ -37,6 +39,7 @@ export class Flux {
       notification: new NotificationWidget(this.core),
       unit: new UnitWidget(this.core),
       task: new TaskWidget(this.core),
+      miscStats: new MiscStatsWidget(this.core),
       stats: new StatsWidget(this.core),
       taskPage: new TaskPageWidget(this.core),
       asCoachPage: new AsCoachPageWidget(this.core),
@@ -74,6 +77,7 @@ export class Flux {
     this.widgets.stats.mount('#page-Dashboard');
     this.widgets.unit.mount('#page-Dashboard');
     this.widgets.task.mount('#page-Dashboard');
+    this.widgets.miscStats.mount('#page-Dashboard');
     this.widgets.taskPage.mount('#page-Tasks');
     this.widgets.asCoachPage.mount('#page-AsCoach');
     this.widgets.managementPage.mount('#page-Management');
@@ -93,6 +97,7 @@ export class Flux {
     this.core.dispatch(DashboardActions.fetchNotifications);
     this.core.dispatch(DashboardActions.fetchUnitStatus);
     this.core.dispatch(DashboardActions.fetchTasks);
+    this.core.dispatch(DashboardActions.fetchMiscStats);
     this.core.dispatch(DashboardActions.fetchErrorTasks);
     this.core.dispatch(DashboardActions.fetchAsCoachData);
     this.core.dispatch(DashboardActions.fetchBlockSales);

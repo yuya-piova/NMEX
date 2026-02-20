@@ -1,5 +1,5 @@
 // pages/PageFuncTenpoYotei.js
-import { bindSync } from '../core/expUtils.js';
+import { bindSync } from '../core/utils.js';
 
 /**
  * 店舗予定入力ページ (tenpo_yotei.aspx) 用の機能クラス

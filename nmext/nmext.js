@@ -591,21 +591,6 @@ $(function() {
       case '/netz/netz1/s/student_profile_mendan_input.aspx':
         FUNCTION_T.student_profile_mendan_input.notesaver();
         break;
-      case '/netz/netz1/s/teian_shukei1s.aspx':
-        const trs = $('tr');
-        const tdCount = trs.last().find('td').length;
-        $('table tr').each(function() {
-          const $tr = $(this);
-          if ($tr.find('td').length != tdCount) return true;
-          const tds = $tr.findTdGetTxt();
-          const nonCand = {
-            target: parseInt(tds[1]) + parseInt(tds[6]),
-            continue: parseInt(tds[2]) + parseInt(tds[7]),
-            canceled: parseInt(tds[5]) + parseInt(tds[10])
-          };
-          $tr.append(`<td>${nonCand.continue}</td><td>${nonCand.target - nonCand.canceled}</td>`);
-        });
-        break;
       case '/netz/netz1/s/student_mailsend_input.aspx':
         //パラメータCH
         FUNCTION_T.student_mailsend_input.chParam();
@@ -1467,26 +1452,23 @@ $(function() {
           window.open(`${NX.CONST.host}/ai/1on1_input.aspx?shido_id=${shido_id}`);
           return false;
         });
-        popmenut_F8.setContentFunction(function() {
-          $('<button>', {
-            type: 'button',
+        popmenu.appendItems([
+          {
             text: '講師コメント一覧',
-            on: {
-              click: () => {
-                $('tr').each(async function(e) {
-                  const shido_id = ($(this).attr('id') || '').replace('td', '');
-                  const done = $(this).find('input').length > 0;
-                  let text = e != 0 && !done ? '' : '講師コメント';
-                  if (e != 0 && shido_id != '' && done) {
-                    const ajx = await $.get(`${NX.CONST.host}/kanren/shido_kiroku_input2.aspx?shido_id=${shido_id}`);
-                    text = ($(ajx).find('#comment,#etc') || $('<input></input>')).val();
-                  }
-                  $(this).append(`<td width="500">${text}</td>`);
-                });
-              }
+            handler: () => {
+              $('tr').each(async function(e) {
+                const shido_id = ($(this).attr('id') || '').replace('td', '');
+                const done = $(this).find('input').length > 0;
+                let text = e != 0 && !done ? '' : '講師コメント';
+                if (e != 0 && shido_id != '' && done) {
+                  const ajx = await $.get(`${NX.CONST.host}/kanren/shido_kiroku_input2.aspx?shido_id=${shido_id}`);
+                  text = ($(ajx).find('#comment,#etc') || $('<input></input>')).val();
+                }
+                $(this).append(`<td width="500">${text}</td>`);
+              });
             }
-          }).appendTo(this);
-        });
+          }
+        ]);
         break;
       //トークで生徒名を選択できるようにする
       case '/netz/netz1/talk/talkmenu.aspx':
