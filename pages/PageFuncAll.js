@@ -1,4 +1,5 @@
 import PopMenu from '../core/PopMenu.js';
+import { myprofile } from '../core/store.js';
 
 export default class PageFuncAll {
   constructor() {
@@ -8,7 +9,7 @@ export default class PageFuncAll {
   applyAreaMode() {
     //予定表ページは除外
     if (this.path === '/netz/netz1/schedule/yotei.aspx') return;
-    const myNumber = myprofiles.getone({ mynumber: '000231' });
+    const myNumber = myprofile.get('mynumber', '000231');
     const nowBaseArr = NX.NOWBASE[myNumber] || [];
 
     ['tenpo_cd', 'main_tenpo_cd'].forEach(name => {
@@ -250,5 +251,91 @@ export default class PageFuncAll {
       }
     });
     popmenu.append(basemanButton, { type: 'common', handler: () => new BaseMan().show() }).appendItems(popButtons);
+  }
+  infoSave() {
+    const [elemName, storageName] = {
+      '/netz/netz1/student_list_head.aspx': ['tenpo_cd', 'sInfoSave'],
+      '/netz/netz1/t/teacher_list_head.aspx': ['main_tenpo_cd', 'tInfoSave']
+    }[this.path] || [null, null];
+    if (elemName && storageName && myprofile.get('showInfosave', 1) == 1) {
+      const $tenpoSelector = $(`select[name=${elemName}]`);
+      const $stateCheck = $('<input>', { type: 'checkbox' });
+
+      // localStorage のデータを取得・保存する関数
+      const getSaveData = () => JSON.parse(localStorage.getItem(storageName)) || {};
+      const setSaveData = data => localStorage.setItem(storageName, JSON.stringify(data));
+
+      // チェックボックスの状態変更時の処理
+      const handleCheckboxChange = () => {
+        const saveData = getSaveData();
+        saveData[$tenpoSelector.val()] = $stateCheck.prop('checked');
+        setSaveData(saveData);
+      };
+
+      // 店舗セレクター変更時の処理
+      const handleTenpoChange = () => {
+        const saveData = getSaveData();
+        $stateCheck.prop('checked', saveData[$tenpoSelector.val()] || false);
+      };
+
+      // イベント登録
+      $stateCheck.on('change', handleCheckboxChange);
+      $tenpoSelector.on('change', handleTenpoChange).trigger('change');
+
+      // ラベルを作成し、セレクターの後に追加
+      $('<label>', { text: '情報保存' })
+        .prepend($stateCheck)
+        .insertAfter($tenpoSelector);
+    }
+  }
+  checkboxClickHelper() {
+    document.addEventListener('click', function(e) {
+      const td = e.target.closest('td');
+      if (!td) return; // td外のクリックなら何もしない止）
+      if (e.target.closest('input, label, a, button')) return; //二重発火防止
+      if (td.getAttribute('tablehead') === 'true') return; // tableheadなら除外
+
+      const inputs = td.querySelectorAll('input[type="checkbox"], input[type="radio"]');
+      if (inputs.length === 1) inputs[0].click();
+    });
+  }
+  tenpoClicker() {
+    const $targets = $('select[name=tenpo_cd], select[name=main_tenpo_cd]');
+    if (!$targets.length) return;
+
+    // ユーティリティ: profilelist から特定のプレフィックスを持つ値を抽出・ソートする
+    const extractValuesByKeyPrefix = (data, prefix) => {
+      return Object.keys(data)
+        .filter(key => key.startsWith(prefix) && /^\d*$/.test(key.slice(prefix.length)))
+        .sort((a, b) => {
+          const numA = parseInt(a.slice(prefix.length), 10) || 0;
+          const numB = parseInt(b.slice(prefix.length), 10) || 0;
+          return numA - numB;
+        })
+        .map(key => data[key]);
+    };
+
+    $targets
+      .on('contextmenu', function(e) {
+        e.preventDefault();
+        const profilelist = myprofile.getAll();
+
+        // 1つの平坦な配列として結合
+        const tenpocds = [
+          ...extractValuesByKeyPrefix(profilelist, 'mybase'),
+          ...extractValuesByKeyPrefix(profilelist, 'mygroup'),
+          ...extractValuesByKeyPrefix(profilelist, 'myarea')
+        ];
+
+        $(this)
+          .selectSwitcher(tenpocds)
+          .trigger('change');
+      })
+      .selectSearcher()
+      .find('option')
+      .each(function() {
+        // optionにホバーした際に値をtitleとして表示する
+        $(this).attr('title', $(this).val());
+      });
   }
 }

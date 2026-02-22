@@ -24,20 +24,12 @@ $(function() {
   if (myprofiles.getone({ isSpecialEnabled: 0 }) == 1) {
     //スペシャルモードで全ページ発火
 
-    //一時的に必要な機能を入れる関数
-    FUNCTION_T.general.temporary();
     //生徒名を右クリックして生徒メニューを表示
     FUNCTION_T.general.SLM();
     //社員ピッカーのセット
     FUNCTION_T.general.EMP_Picker();
-    //教室の生徒講師情報保存
-    FUNCTION_T.general.infoSave();
     //講師cdのinput要素にswipeを付与
     FUNCTION_T.general.teacherSwipe();
-    //radio or checkboxのクリック範囲を拡大
-    FUNCTION_T.general.checkboxClickHelper();
-    //教室名右クリックでプロファイルに設定した教室にする
-    FUNCTION_T.general.tenpoClicker();
     //ここからページ別発火
     switch (location.pathname) {
       //●●●●●●●●●●●●●●●●●●●●●●●●●●●●Genre：NMのレイアウト修正

@@ -245,7 +245,7 @@ class ExamSaver extends Saver {
 
 console.log('nmexog');
 //プロファイル保存
-const myprofiles = new Saver('myprofile');
+const myprofiles = new Saver('myprofile'); //移行中 core/store.js よりimport
 const memos = new Saver('memotexts');
 const teacher_memos = new Saver('teacher_memotexts');
 const student_exams = new ExamSaver('student_exams');

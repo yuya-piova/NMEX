@@ -14,7 +14,7 @@ export default class PageFuncS {
 
     popmenu.appendItems([
       {
-        text: '面談組メール送付',
+        text: '✉️ 面談組メール送付',
         handler: () => {
           const data = this._extractData();
           if (!data.dateObj) {
@@ -37,18 +37,18 @@ export default class PageFuncS {
         }
       },
       {
-        text: 'Zoom作成',
-        handler: () => this.handleCreateZoom()
-      },
-      {
-        text: 'zoom招待メール送付',
+        text: '✉️ zoom招待メール送付',
         handler: () => {
           const zoomInvitationText = this._makeZoomInvitaion();
           this._openMailSending(zoomInvitationText, student_cd);
         }
       },
       {
-        text: '履歴入力済',
+        text: '🎦 Zoom作成',
+        handler: () => this.handleCreateZoom()
+      },
+      {
+        text: '☑️ 履歴入力済',
         handler: () => {
           $('[name=bikou_nm]')
             .valReplace('▽履歴未入力')
@@ -60,7 +60,7 @@ export default class PageFuncS {
         }
       },
       {
-        text: '指導予定',
+        text: '📅 指導予定',
         handler: () => {
           if (!student_cd) return false;
           new IframeMakerEx({ iframeName: 'yotei', x: 800, y: 10, draggable: true }).loadUrl(

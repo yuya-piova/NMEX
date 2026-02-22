@@ -435,23 +435,6 @@ class teacherInfoClass extends memberInfoClass {
   }
 }
 
-//つくりかけーーーーーーーーーーーーー
-class NXEvent extends NXDatabase {
-  constructor() {
-    super();
-    this.data = JSON.parse(localStorage.getItem('NXEvent')) || {};
-    super._initData(this.data);
-  }
-  bySchool(schoolname, schoolyear) {
-    var filteredNXT = null;
-    try {
-      filteredNXT = this.rawNXT.clone().filterByCondition(['学校名', schoolname], ['年度', schoolyear]);
-    } catch (err) {
-      filteredNXT = new NXTable();
-    }
-  }
-}
-
 /**
  * TheTXT ver1.0
  * 1.0 基本機能作成
@@ -491,34 +474,6 @@ class TheTXT {
     return this.content == '';
   }
 }
-/**
- * PX_Toast ver1.1
- * 指定文字列のトースト表示
- * 1.0: 作成
- * 1.1: option整備
- * @param {string} toasttext トースト文字列
- * @param {Object} option オプション※以下参照
- * {
- *  [color]: トースト色 ※htmlカラー,
- *  [close]: 除去イベント ※リスナー名を入れる　デフォルトはanimationend
- * }
- */
-function PX_Toast_old(toasttext, option) {
-  if (!toasttext) {
-    console.warn('PX_Toast: toasttext is required');
-    return;
-  }
-  const { color = '', close = 'animationend' } = option;
-  let toastdiv = document.createElement('div');
-  toastdiv.classList.add('px-toast', option.close);
-  toastdiv.textContent = toasttext;
-  if (option.color) toastdiv.style.backgroundColor = color;
-  document.getElementsByTagName('body')[0].appendChild(toastdiv);
-  toastdiv.addEventListener(option.close, () => {
-    toastdiv.remove();
-  });
-}
-
 /**
  * Displays a toast notification on the screen.
  *

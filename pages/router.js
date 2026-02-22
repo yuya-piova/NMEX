@@ -6,6 +6,7 @@ import PageFuncTenpoYotei from './PageFuncTenpoYotei.js';
 import PageFuncToiawases from './PageFuncToiawases.js';
 import PopMenu from '../core/PopMenu.js';
 import MemberLinker from '../core/features/MemberLinker.js';
+import { myprofile } from '../core/store.js';
 
 $(function() {
   console.log('PageFunction.js');
@@ -21,7 +22,7 @@ $(function() {
   /* ---------------------------------------------------*/
 
   // スペシャルモードチェック
-  if (typeof myprofiles === 'undefined' || myprofiles.getone({ isSpecialEnabled: 0 }) != 1) {
+  if (myprofile.get('isSpecialEnabled', 0) != 1) {
     console.log('Special mode disabled');
     return;
   }
@@ -38,6 +39,12 @@ $(function() {
   pageFuncAll.setDatePicker();
   // ダブルクリックでテーブルメニューを開く
   pageFuncAll.setDblcopyTable();
+  // 教室の生徒講師情報保存
+  pageFuncAll.infoSave();
+  // radio or checkboxのクリック範囲を拡大
+  pageFuncAll.checkboxClickHelper();
+  // 教室名右クリックでプロファイルに設定した教室にする
+  pageFuncAll.tenpoClicker();
 
   // popmenu
   const popmenu = new PopMenu({
@@ -110,11 +117,11 @@ $(function() {
       $('input[name=b_reload]').trigger('click');
 
       // 最後に開いた季節を保存
-      myprofiles.save({ nendo_season_cb: $('select[name=nendo_season_cb]').val() });
+      myprofile.set({ nendo_season_cb: $('select[name=nendo_season_cb]').val() });
 
       // 一括設定
       $('#tanto_cd').swipe('自分担当', () => {
-        $('#tanto_cd').val(myprofiles.getone({ mynumber: '000231' }));
+        $('#tanto_cd').val(myprofile.get('mynumber', '000231'));
         $('select[name=tanto_cb]').val(2);
         $('[name=sort_cb]').val([2]);
         $('[name=kaiyaku_flg],[name=gen_course_flg],[name=mikomi_flg],[name=kakutei_flg]').prop('checked', true);
