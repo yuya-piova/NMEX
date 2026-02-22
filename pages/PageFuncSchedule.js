@@ -1,7 +1,7 @@
 // pages/PageFuncSchedule.js
 import ScheduleParser from '../parsers/ScheduleParser.js';
 import CalendarSync from '../core/CalendarSync.js';
-//import PopMenu from '../core/PopMenu.js';
+import PopMenu from '../core/PopMenu.js';
 
 export default class PageFuncSchedule {
   constructor() {
@@ -9,13 +9,7 @@ export default class PageFuncSchedule {
   }
 
   setGCalRegister() {
-    // 既存のPopMenuインスタンスを取得、なければ新規作成
-    // ※id: 'main' は既存コードのルールに合わせてください
-    const popmenu = new PopMenu({
-      id: 'tool-set',
-      keyCode: 113,
-      showFloatingButton: true
-    });
+    const popmenu = new PopMenu({ id: 'main' }); // 定義済みのmainを取得する
 
     // 「Googleカレンダー同期」ボタンを追加
     popmenu.append('Googleカレンダー同期', {

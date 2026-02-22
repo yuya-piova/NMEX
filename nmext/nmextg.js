@@ -30,17 +30,6 @@ class $NXClass {
     return this.args[0].replace(/[!-~]/g, match => String.fromCharCode(match.charCodeAt(0) + 0xfee0));
   }
   /**
-   * Converts a string to its Katakana representation.
-   * @returns {string|false} - The Katakana string or false if the argument is not a string.
-   */
-  toKatakana() {
-    if (!this.isString()) {
-      console.error('$NX', 'Argument must be String.', this.args[0]);
-      return false;
-    }
-    return this.args[0].replace(/[\u3041-\u3096]/g, match => String.fromCharCode(match.charCodeAt(0) + 0x60));
-  }
-  /**
    * Converts a string to its Hiragana representation.
    * @returns {string|false} - The Hiragana string or false if the argument is not a string.
    */
@@ -50,41 +39,6 @@ class $NXClass {
       return false;
     }
     return this.args[0].replace(/[\u30a1-\u30f6]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60));
-  }
-  /**
-   * Formats a phone number based on predefined phone groups.
-   * @returns {string|false} - The formatted phone number or false if the argument is not a string or the length is invalid.
-   */
-  phoneformat() {
-    if (!this.isString()) {
-      console.error('$NX', 'Argument must be String.', this.args[0]);
-      return false;
-    }
-    // データは http://www.soumu.go.jp/main_sosiki/joho_tsusin/top/tel_number/number_shitei.html より入手後、整形
-    const group = LCT.INQ.phonegroup;
-    // 市外局番の桁数を取得して降順に並べ替える
-    const code = Object.keys(group)
-      .map(num => parseInt(num, 10))
-      .sort((a, b) => b - a);
-    // 入力文字から数字以外を削除してnumber変数に格納する
-    const number = String(this.args[0])
-      .replace(/[０-９]/g, function($s) {
-        return String.fromCharCode($s.charCodeAt(0) - 65248);
-      })
-      .replace(/\D/g, '');
-    // 電話番号が10～11桁じゃなかったらfalseを返して終了する
-    if (number.length < 10 || number.length > 11) {
-      return false;
-    }
-    // 市外局番がどのグループに属するか確認していく
-    for (const leng of code) {
-      const area = number.slice(0, leng);
-      const city = group[leng][area];
-      if (city) {
-        const formattedNumber = `${area}-${number.substr(leng, city)}`;
-        return number.substr(leng + city) ? `${formattedNumber}-${number.substr(leng + city)}` : formattedNumber;
-      }
-    }
   }
   /**
    * Checks if the value is an object.

@@ -1,3 +1,5 @@
+import PopMenu from '../core/PopMenu.js';
+
 export default class PageFuncAll {
   constructor() {
     this.path = location.pathname;
@@ -198,6 +200,8 @@ export default class PageFuncAll {
     });
   }
   setPopMenu() {
+    const popmenu = new PopMenu({ id: 'main' }); // 定義済みのmainを取得する
+
     const popButtons = [
       {
         text: '右クリtr削除モード',
@@ -245,6 +249,6 @@ export default class PageFuncAll {
         }
       }
     });
-    window.popmenu.append(basemanButton, { type: 'common', handler: () => new BaseMan().show() }).appendItems(popButtons);
+    popmenu.append(basemanButton, { type: 'common', handler: () => new BaseMan().show() }).appendItems(popButtons);
   }
 }

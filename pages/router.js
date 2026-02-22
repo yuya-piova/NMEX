@@ -1,7 +1,9 @@
 import PageFuncAll from './PageFuncAll.js';
 import PageFuncS from './PageFuncS.js';
+import PageFuncT from './PageFuncT.js';
 import PageFuncSchedule from './PageFuncSchedule.js';
 import PageFuncTenpoYotei from './PageFuncTenpoYotei.js';
+import PageFuncToiawases from './PageFuncToiawases.js';
 import PopMenu from '../core/PopMenu.js';
 import MemberLinker from '../core/features/MemberLinker.js';
 
@@ -27,6 +29,8 @@ $(function() {
   const pageFuncAll = new PageFuncAll();
   const pageFuncS = new PageFuncS();
   const pageFuncSchedule = new PageFuncSchedule();
+  const pageFuncToiawases = new PageFuncToiawases();
+  const pageFuncT = new PageFuncT();
 
   // エリアモード
   pageFuncAll.applyAreaMode();
@@ -37,7 +41,7 @@ $(function() {
 
   // popmenu
   const popmenu = new PopMenu({
-    id: 'tool-set',
+    id: 'main',
     keyCode: 113,
     showFloatingButton: true
   });
@@ -82,6 +86,9 @@ $(function() {
   // memberLinker
   const memberLinker = new MemberLinker();
   memberLinker.init();
+
+  // 全ページ共通のPopMenu
+  pageFuncAll.setPopMenu();
 
   switch (location.pathname) {
     /* ---------------------------------------------------*/
@@ -144,6 +151,27 @@ $(function() {
       pageFuncS.setZoomMaker();
       break;
     }
+
+    /* ---------------------------------------------------*/
+    /* PageFuncT
+    /* ---------------------------------------------------*/
+    case '/netz/netz1/t/teacher_toroku_list_head.aspx':
+      $('select[name=area_cd]').on('contextmenu', function() {
+        $(this).val(['g']);
+        return false;
+      });
+      break;
+    case '/netz/netz1/t/teacher_toroku_input.aspx':
+      //zoomメール作成（要URL作成＆特記事項に入力）
+      pageFuncT.makeZoomMail();
+      //電話番号や名前、メアドの整形セット
+      pageFuncT.detailPrettier();
+      //右クリックで広島に
+      $('select[name=area_cd]').on('contextmenu', function() {
+        $(this).val(['g']);
+        return false;
+      });
+      break;
 
     /* ---------------------------------------------------*/
     /* PageFuncSchedule
@@ -219,7 +247,50 @@ $(function() {
     case '/netz/netz1/tenpo_yotei.aspx':
       popmenu.appendItems([{ text: 'テンプレート', handler: () => new PageFuncTenpoYotei().init() }]);
       break;
+
+    case '/netz/netz1/toiawase_input.aspx': {
+      //Page Const
+      const student_cd = $('input[name=student_cd]').val();
+      const toi_id = $('input[name=toi_id]').val();
+
+      //名前のスペースと電話番号整形
+      pageFuncToiawases.detailPrettier();
+
+      //生年月日を和暦入力
+      $('#birthday_dt')
+        .attr('autocomplete', 'off')
+        .on('contextmenu', function() {
+          $(this).val(
+            new ExDate()
+              .setbyWareki(prompt('和暦を漢字で ex.令和、平成、昭和、大正、明治'), prompt('年'), prompt('月') - 1, prompt('日'))
+              .as('yyyy/mm/dd')
+          );
+          return false;
+        });
+
+      $('.shain_cd').each(function() {
+        $(this).emppicker();
+      });
+
+      //PopMenu
+      popmenu.appendItems([
+        { text: '連絡事項', handler: () => window.open(`${NX.CONST.host}/s/student_renraku_list.aspx?student_cd=${student_cd}`, '_blank') },
+        { text: '指導予定', handler: () => window.open(`${NX.CONST.host}/kanren/student_shido_yotei.aspx?student_cd=${student_cd}`, '_blank') },
+        {
+          text: '新規用プロファイル',
+          handler: () => window.open(`${NX.CONST.host}/s/student_profile_nyukai_input.aspx?student_cd=${student_cd}&toi_id=${toi_id}`, '_blank')
+        }
+      ]);
+      break;
+    }
+    case '/netz/netz1/toiawase_input_save.aspx':
+      $('input[name=b_close]').trigger('click');
+      break;
+    case '/netz/netz1/toiawase_list_head.aspx':
+      $('input[value="今日"][onclick^=dataset2]').swipe('本日以降', () => {
+        $('input[name=input_dt11]').val(dateslash(window.dt));
+        $('input[name=input_dt12]').val('');
+      });
+      break;
   }
-  // 全ページ共通のPopMenu
-  pageFuncAll.setPopMenu();
 });

@@ -1,11 +1,16 @@
+import PopMenu from '../core/PopMenu.js';
+
 export default class PageFuncS {
   constructor() {
     this.path = location.pathname;
   }
   setZoomMaker() {
+    const popmenu = new PopMenu({ id: 'main' }); // 定義済みのmainを取得する
+
     //n8nでzoom会議室作成をする
     const student_cd = $('input[name=student_cd]').val();
-    window.popmenu.appendItems([
+
+    popmenu.appendItems([
       {
         text: '面談組案内文',
         handler: () => {
