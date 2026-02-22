@@ -66,6 +66,14 @@ export const NX_Utils = {
       return false;
     }
     return str.replace(/[\u30a1-\u30f6]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60));
+  },
+  getPageParams: (pal, targetWindow) => {
+    // 参照するウィンドウオブジェクトを指定（省略時は現在のウィンドウ）
+    const search = (targetWindow || window).location.search;
+    const params = new URLSearchParams(search);
+    const allParams = Object.fromEntries(params);
+
+    return pal === undefined ? allParams : allParams[pal];
   }
 };
 

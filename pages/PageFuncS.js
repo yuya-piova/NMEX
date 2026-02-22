@@ -140,4 +140,15 @@ export default class PageFuncS {
     };
     window.open(`${NX.CONST.host}/s/student_mailsend_input.aspx?${$.param(param)}`);
   }
+  async mailSendChParam() {
+    const { limit, clip } = NX_Utils.getPageParams();
+    if (limit) {
+      $('#app_kigen_dt').val(limit);
+      $('#app_flg,#aps_flg').prop('checked', true);
+    }
+    if (clip === 'true') {
+      const textFromClip = await navigator.clipboard.readText();
+      $('[name="message_nm"]').val(textFromClip);
+    }
+  }
 }

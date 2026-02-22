@@ -151,10 +151,15 @@ $(function() {
       pageFuncS.setZoomMaker();
       break;
     }
+    case '/netz/netz1/s/student_mailsend_input.aspx':
+      //パラメータCH
+      pageFuncS.mailSendChParam();
+      break;
 
     /* ---------------------------------------------------*/
     /* PageFuncT
     /* ---------------------------------------------------*/
+
     case '/netz/netz1/t/teacher_toroku_list_head.aspx':
       $('select[name=area_cd]').on('contextmenu', function() {
         $(this).val(['g']);
