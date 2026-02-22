@@ -3,7 +3,7 @@
  * キーボードトリガーおよびフローティングボタンによるポップアップメニュー管理クラス
  * 依存: なし (getMousePosition があれば利用)
  */
-class PopMenu {
+export default class PopMenu {
   static instances = new Map();
   static activeMenuElement = null;
 

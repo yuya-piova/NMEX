@@ -30,7 +30,6 @@
         "core/SnapData.js",
         "core/NXTable.js",
         "core/FaIcon.js",
-        "core/PopMenu.js",
         "flux/loader.js",
         "nmexg.js",
         "nmexo/nmexog.js",
@@ -64,6 +63,7 @@
         "flux/actions/*.js",
         "flux/css/*.css",
         "core/*.js",
+        "core/features/*.js",
         "pages/*.js",
         "parsers/*.js",
         "templates.html"

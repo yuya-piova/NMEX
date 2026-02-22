@@ -197,4 +197,54 @@ export default class PageFuncAll {
       );
     });
   }
+  setPopMenu() {
+    const popButtons = [
+      {
+        text: '右クリtr削除モード',
+        type: 'common',
+        handler: () =>
+          $('tr').on('contextmenu', function() {
+            $(this).remove();
+            return false;
+          })
+      },
+      {
+        text: '$("form").serialize()',
+        type: 'common',
+        handler: () => {
+          console.log('URL', location.href);
+          //prettier-ignore
+          console.log('form', $('form').serialize().toString());
+        }
+      },
+      { text: '$("input,select").remove()', type: 'common', handler: () => $('input,select').remove() },
+      { text: '$("br").remove()', type: 'common', handler: () => $('br').remove() },
+      { text: '$("table").netztabler()', type: 'common', handler: () => $('table').netztabler() },
+      '<hr>'
+    ];
+    const basemanButton = $('<button>', {
+      type: 'button',
+      text: 'BaseMan(b)'
+    }).setshortcutkey('b');
+    const pageNoteButton = $('<button>', {
+      type: 'button',
+      text: 'PageNote(p)',
+      on: {
+        click: function() {
+          new PageNote();
+          popmenut_F8.closemenu();
+        }
+      }
+    }).setshortcutkey('p');
+    const tablerButton = $('<button>', {
+      type: 'button',
+      text: 'tablerアイコン表示',
+      on: {
+        click: () => {
+          $('.netztablerbutton,.addbutton_nmex').toggleClass('unshown');
+        }
+      }
+    });
+    window.popmenu.append(basemanButton, { type: 'common', handler: () => new BaseMan().show() }).appendItems(popButtons);
+  }
 }

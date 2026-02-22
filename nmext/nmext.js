@@ -24,8 +24,6 @@ $(function() {
   if (myprofiles.getone({ isSpecialEnabled: 0 }) == 1) {
     //スペシャルモードで全ページ発火
 
-    //DatePickerを設定
-    //FUNCTION_T.general.set_datepicker();
     //一時的に必要な機能を入れる関数
     FUNCTION_T.general.temporary();
     //生徒名を右クリックして生徒メニューを表示
@@ -412,34 +410,6 @@ $(function() {
         break;
       }
       //●●●●●●●●●●●●●●●●●●●●●●●●●●●●Genre：現生徒面談関連
-      case '/netz/netz1/s/student_mendan_input.aspx': {
-        //履歴チェックは外す
-        $('#edt_cb').prop('checked', false);
-
-        //曜日を表示
-        $('input[name=mendan_dt]').setweekday();
-
-        //pickerをセット
-        $('#mendan_tm').netztimepicker(false);
-
-        //自動処理があれば先に完了させる
-        const { mode, teacher_cd, mendan_jk, mendan_status_cb, bikou_nm, mendan_dt, mendan_tm } = getparameter();
-        if (mode == 'autoChange') {
-          //teacher_cdを持っていれば面談担当者を変更する
-          if ($NX(teacher_cd).isHexaNumber()) $('[name=tanto_cd]').val(teacher_cd);
-          if ([50, 70, 100].indexOf(mendan_jk)) $('select[name=mendan_jk]').val(mendan_jk);
-          if (['0', '1', '9', 'd', 'h'].indexOf(mendan_status_cb)) $('select[name=mendan_status_cb]').val(mendan_status_cb);
-          if (bikou_nm && bikou_nm != '') $('[name=bikou_nm').val(bikou_nm);
-          if (mendan_dt) $('input[name=mendan_dt]').val(mendan_dt);
-          if (mendan_tm) $('input[name=mendan_tm]').val(mendan_tm);
-          if (mendan_dt && mendan_tm) $('input[name=mendan_nd]').prop('checked', false);
-          $('[name=b_submit]').trigger('click');
-        }
-
-        //zoom会議室作成をする
-        FUNCTION_T.student_mendan_input.F2menu();
-        break;
-      }
       case '/netz/netz1/kanren/enshu_check_list.aspx':
         const { mode } = getparameter();
         if (mode == 'onlyDiverse') onlyDiverse();

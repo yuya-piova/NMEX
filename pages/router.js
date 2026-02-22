@@ -1,6 +1,9 @@
 import PageFuncAll from './PageFuncAll.js';
+import PageFuncS from './PageFuncS.js';
 import PageFuncSchedule from './PageFuncSchedule.js';
 import PageFuncTenpoYotei from './PageFuncTenpoYotei.js';
+import PopMenu from '../core/PopMenu.js';
+import MemberLinker from '../core/features/MemberLinker.js';
 
 $(function() {
   console.log('PageFunction.js');
@@ -22,6 +25,7 @@ $(function() {
   }
 
   const pageFuncAll = new PageFuncAll();
+  const pageFuncS = new PageFuncS();
   const pageFuncSchedule = new PageFuncSchedule();
 
   // エリアモード
@@ -30,6 +34,54 @@ $(function() {
   pageFuncAll.setDatePicker();
   // ダブルクリックでテーブルメニューを開く
   pageFuncAll.setDblcopyTable();
+
+  // popmenu
+  const popmenu = new PopMenu({
+    id: 'tool-set',
+    keyCode: 113,
+    showFloatingButton: true
+  });
+  window.addEventListener('keydown', async e => {
+    if (e.keyCode === popmenu.keyCode) {
+      // 1. 前回の動的ボタンをクリア
+      popmenu.clearDynamic();
+
+      // 2. 選択テキストを取得
+      const selectedText = window
+        .getSelection()
+        .toString()
+        .trim();
+
+      if (selectedText !== '') {
+        // 3. StudentInfoを使って検索 (core/StudentInfo.js を使用)
+        // 事前に初期化済みの studentInfoManager インスタンスがあると想定
+        const students = new studentInfoClass().search(['生徒名', selectedText]); //studentInfoManager.search(selectedText);
+
+        if (students) {
+          //.length > 0
+          //const student = students[0]; // 最初の候補
+          const student_cd = students['生徒NO'];
+          const student_name = students['生徒名'];
+
+          // 4. 動的ボタンとして追加 (レイヤー色を 'page' = 紫に設定)
+          popmenu.appendDynamic(`連絡事項 (${student_name})`, {
+            type: 'page',
+            handler: () => {
+              window.open(`${NX.CONST.host}/s/student_renraku_list.aspx?student_cd=${student_cd}`);
+            }
+          });
+        }
+      }
+
+      // 5. メニューを表示
+      const pos = typeof getMousePosition === 'function' ? getMousePosition() : { x: e.pageX, y: e.pageY };
+      popmenu.show(pos.x, pos.y);
+    }
+  });
+
+  // memberLinker
+  const memberLinker = new MemberLinker();
+  memberLinker.init();
 
   switch (location.pathname) {
     /* ---------------------------------------------------*/
@@ -64,6 +116,34 @@ $(function() {
 
       $('input[name=b_reload]').setshortcutkey('Enter');
       break;
+    case '/netz/netz1/s/student_mendan_input.aspx': {
+      //履歴チェックは外す
+      $('#edt_cb').prop('checked', false);
+
+      //曜日を表示
+      $('input[name=mendan_dt]').setweekday();
+
+      //pickerをセット
+      $('#mendan_tm').netztimepicker(false);
+
+      //自動処理があれば先に完了させる
+      const { mode, teacher_cd, mendan_jk, mendan_status_cb, bikou_nm, mendan_dt, mendan_tm } = getparameter();
+      if (mode == 'autoChange') {
+        //teacher_cdを持っていれば面談担当者を変更する
+        if ($NX(teacher_cd).isHexaNumber()) $('[name=tanto_cd]').val(teacher_cd);
+        if ([50, 70, 100].indexOf(mendan_jk)) $('select[name=mendan_jk]').val(mendan_jk);
+        if (['0', '1', '9', 'd', 'h'].indexOf(mendan_status_cb)) $('select[name=mendan_status_cb]').val(mendan_status_cb);
+        if (bikou_nm && bikou_nm != '') $('[name=bikou_nm').val(bikou_nm);
+        if (mendan_dt) $('input[name=mendan_dt]').val(mendan_dt);
+        if (mendan_tm) $('input[name=mendan_tm]').val(mendan_tm);
+        if (mendan_dt && mendan_tm) $('input[name=mendan_nd]').prop('checked', false);
+        $('[name=b_submit]').trigger('click');
+      }
+
+      //zoom会議室作成をする
+      pageFuncS.setZoomMaker();
+      break;
+    }
 
     /* ---------------------------------------------------*/
     /* PageFuncSchedule
@@ -140,4 +220,6 @@ $(function() {
       popmenu.appendItems([{ text: 'テンプレート', handler: () => new PageFuncTenpoYotei().init() }]);
       break;
   }
+  // 全ページ共通のPopMenu
+  pageFuncAll.setPopMenu();
 });

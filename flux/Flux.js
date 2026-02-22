@@ -90,6 +90,8 @@ export class Flux {
     this.widgets.blockSalesPage.mount('#page-BlockSales');
     this.widgets.studentCountPage.mount('#page-StudentCount');
     this.widgets.diversePage.mount('#page-Diverse');
+    this.widgets.settingsPage.mount('#page-Settings');
+    this.widgets.toolsPage.mount('#page-Tools');
 
     // 4. ページ切り替え監視
     this.core.subscribe(state => {
