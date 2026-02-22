@@ -1311,7 +1311,7 @@ class ClipText {
     this.clipicon = $('<i class="fa-solid fa-clipboard" style="color:#2a5caa"></i>');
     $(document).on('click', '.cliptext', function() {
       const cptxt = $(this).attr('clipcontent') || _this.getonlynode($(this));
-      clipper(cptxt);
+      navigator.clipboard.writeText(cptxt);
       PX_Toast(`clickboard copied:${cptxt}`);
     });
     $(document).on('mouseenter', '.cliptext:not(.noicon)', function() {

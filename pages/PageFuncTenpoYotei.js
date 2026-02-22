@@ -1,5 +1,5 @@
 // pages/PageFuncTenpoYotei.js
-import { NX_Utils } from '../core/utils.js';
+import { bindSync } from '../core/utils.js';
 
 /**
  * 店舗予定入力ページ (tenpo_yotei.aspx) 用の機能クラス
@@ -129,7 +129,7 @@ export default class PageFuncTenpoYotei {
         // テンプレート($elem) が変更されたら、
         // メインテーブル(.wd-{曜日} かつ nameがbaseNameで始まるもの) に同期する
         const targetSelector = `.wd-${weekday}[name^="${baseName}"]`;
-        NX_Utils.bindSync($elem, targetSelector);
+        bindSync($elem, targetSelector);
 
         // チェックボックス対応
         if ($elem.is(':checkbox')) {

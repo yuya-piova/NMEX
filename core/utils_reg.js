@@ -176,28 +176,21 @@ function getUniqueSelector(element) {
 
   return null;
 }
-/**
- * 任意の文字列をクリップボードにコピー
- * @param {string} text [クリップボードに入れたいテキスト]
- */
-function clipper(text) {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.left = '-9999px';
-  document.body.appendChild(ta);
-  ta.select();
-  document.execCommand('copy');
-  ta.remove();
-}
+
 $.fn.clipper = function() {
-  //選択可能なオブジェクトをコピー
-  var element = $(this)[0];
-  var range = document.createRange();
-  //取得した要素の内側を範囲とする
-  range.selectNodeContents(element);
-  //範囲を選択状態にする
-  window.getSelection().addRange(range);
-  const result = document.execCommand('copy');
+  // inputやtextareaならval()、普通のdiv等ならtext()を取得
+  const text = this.is('input, textarea') ? this.val() : this.text();
+
+  if (navigator.clipboard) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => console.log('Copied!'))
+      .catch(err => console.error('Copy failed:', err));
+  } else {
+    console.warn('Clipboard API is not supported in this environment.');
+  }
+
+  return this; // メソッドチェーンを維持
 };
 
 //選択解除

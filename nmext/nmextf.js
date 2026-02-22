@@ -2361,7 +2361,7 @@ const popmenut_F8 = new Popmenumaker('popmenut_F8', 119);
           if ($(this).attr('url')) copytext = $(this).attr('url');
           if ($(this).attr('data-copy')) copytext = $(this).attr('data-copy');
           if (copytext) {
-            clipper(copytext);
+            navigator.clipboard.writeText(copytext);
             PX_Toast('コピーしました');
           }
         });

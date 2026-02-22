@@ -187,11 +187,11 @@ export default class PageFuncAll {
         choice => {
           switch (choice) {
             case 'csv':
-              clipper(NMEX_Utils.tableToCSV(table, '\t'));
+              navigator.clipboard.writeText(NMEX_Utils.tableToCSV(table, '\t'));
               PX_Toast('CSVコピー完了');
               break;
             case 'markdown':
-              clipper(NMEX_Utils.tableToMarkdown(table));
+              navigator.clipboard.writeText(NMEX_Utils.tableToMarkdown(table));
               PX_Toast('Markdownコピー完了');
               break;
           }

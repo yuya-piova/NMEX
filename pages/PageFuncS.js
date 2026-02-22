@@ -20,7 +20,7 @@ export default class PageFuncS {
           $('<textarea id="invite" rows="10" cols="80"></textarea>')
             .appendTo('body')
             .val(LCT.TEMPLATE.Meeting[way](dateStr));
-          clipper(LCT.TEMPLATE.Meeting[way](dateStr));
+          navigator.clipboard.writeText(LCT.TEMPLATE.Meeting[way](dateStr));
           PX_Toast('クリップボードにコピーしました');
           const note = {
             1: '★日程案内済',
@@ -46,7 +46,7 @@ export default class PageFuncS {
             $('<textarea id="invite" rows="10" cols="80"></textarea>')
               .appendTo('body')
               .val(template);
-            clipper(template);
+            navigator.clipboard.writeText(template);
             PX_Toast('クリップボードにコピーしました');
             $(`[name=bikou_nm]`)
               .valReplace('日程案内済※要zoomURL', '')
