@@ -44,6 +44,28 @@ export const NX_Utils = {
       return false;
     }
     return str.replace(/[\u3041-\u3096]/g, match => String.fromCharCode(match.charCodeAt(0) + 0x60));
+  },
+  /**
+   * Converts a string to its full-width representation.
+   * @returns {string|false} - The full-width string or false if the argument is not a string.
+   */
+  toFullWidth: str => {
+    if (!typeof str === 'string') {
+      console.error('NX_Utils', 'Argument must be String.', str);
+      return false;
+    }
+    return str.replace(/[!-~]/g, match => String.fromCharCode(match.charCodeAt(0) + 0xfee0));
+  },
+  /**
+   * Converts a string to its Hiragana representation.
+   * @returns {string|false} - The Hiragana string or false if the argument is not a string.
+   */
+  toHiragana: str => {
+    if (!typeof str === 'string') {
+      console.error('NX_Utils', 'Argument must be String.', str);
+      return false;
+    }
+    return str.replace(/[\u30a1-\u30f6]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60));
   }
 };
 
@@ -54,7 +76,7 @@ export const NX_Utils = {
  * @param {HTMLElement|jQuery|string} target - 変更先の要素（セレクタ可）
  * @param {boolean} [isAppendMode=false] - テキストの場合に追記モードにするか
  */
-export default function bindSync(source, target, isAppendMode = false) {
+export function bindSync(source, target, isAppendMode = false) {
   const $source = $(source);
 
   $source.on('change', () => {
@@ -156,8 +178,15 @@ export async function createZoomMeetingAsync({ topic, startdt, duration = 30 }) 
   if (!endpoint) throw new Error('NX.ENDPOINT.zoomMaker が未定義です。');
 
   try {
-    const data = await $.post(endpoint, { topic, startdt, duration });
-    return typeof data === 'string' ? JSON.parse(data) : data;
+    const response = await $.post(endpoint, { topic, startdt, duration });
+    const data = typeof response === 'string' ? JSON.parse(response) : response;
+
+    if (data.id) {
+      const idStr = String(data.id);
+      data.formattedId = `${idStr.slice(0, 3)} ${idStr.slice(3, 7)} ${idStr.slice(7, 11)}`;
+    }
+
+    return data;
   } catch (error) {
     console.error('Zoom creation error:', error);
     throw new Error('Zoomミーティングの作成に失敗しました。');

@@ -122,12 +122,14 @@ export default class PageFuncT {
 
     try {
       const result = await createZoomMeetingAsync({ topic, startdt, duration: 30 });
-      const meetingID = `${String(result.id).slice(0, 3)} ${String(result.id).slice(3, 7)} ${String(result.id).slice(7, 11)}`;
 
       // 1. 備考欄に貼る用（純粋なZoom情報のみ）
-      const zoomInfoText = ['Zoomミーティングに参加する', result.join_url, `ミーティングID: ${meetingID}`, `パスコード: ${result.password}`].join(
-        '\n'
-      );
+      const zoomInfoText = [
+        'Zoomミーティングに参加する',
+        result.join_url,
+        `ミーティングID: ${result.formattedId}`,
+        `パスコード: ${result.password}`
+      ].join('\n');
 
       // 2. ConsoleBotに表示する用（ステータスメッセージ付き）
       const displayText = `✅ Zoom会議室を作成しました\n\n${zoomInfoText}`;
