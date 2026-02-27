@@ -1,6 +1,5 @@
 ///<reference path="../libraries/jquery-3.4.1.min.js"/>
 ///<reference path="../libraries/jquery-ui.min.js"/>
-///<reference path="../checker.js"/>
 ///<reference path="./closer.js"/>
 ///<reference path="../dts/JQuery.d.ts"/>
 ///<reference path="../dts/jqueryui.d.ts"/>
@@ -9,246 +8,11 @@
 ///<reference path="../nmex-longconst.js"/>
 ///<reference path="../nmext/nmextg.js"/>
 
-/**
- * @external "JQuery.fn"
- */
-
-class Saver_old {
-  /**
-   *
-   * @param {string} localname
-   */
-  constructor(localname) {
-    this.localname = localname;
-  }
-  /**
-   * 全データの取得
-   * @return {Object}
-   */
-  getall() {
-    this.storagecheck();
-    return JSON.parse(localStorage.getItem(this.localname) || '{}');
-  }
-  /**
-   * gets データ取得
-   * @param {Object<string,*>} captionObject {key:data}で、keyのデータを探すがなければdataを返す
-   * @return {Object<string,*>}} Object形式のデータ
-   */
-  gets(captionObject) {
-    var myprofile = this.getall();
-    var result = {};
-    if ($.isPlainObject(captionObject)) {
-      for (var key in captionObject) {
-        result[key] = myprofile[key] == undefined ? captionObject[key] : myprofile[key];
-      }
-    } else {
-      result = { error: 'captionがObjectではありません' };
-      console.log(this.localname + 'は首を吊りました');
-    }
-    return result;
-  }
-  /**
-   * データ取得
-   * @param {Object<string,*>} captionObject {key:data}で、keyのデータを探すがなければdataを返す
-   * @return {*} keyの中身
-   */
-  getone(captionObject) {
-    const gets = this.gets(captionObject);
-    const key = Object.keys(gets)[0];
-    return gets[key];
-  }
-  /**
-   *
-   * @param {Object<string,*>} captionObject 保存するデータ
-   * @returns {boolean} 保存に成功したらtrue,失敗でfalse
-   */
-  save(captionObject) {
-    if (!$.isPlainObject(captionObject)) {
-      console.error('object言ってるやろが！！！');
-      return false;
-    }
-    var myprofile = this.getall();
-    for (var key in captionObject) {
-      myprofile[key] = captionObject[key];
-    }
-    localStorage.setItem(this.localname, JSON.stringify(myprofile));
-    return true;
-  }
-  /**
-   * オブジェクトが入れ子になっていても保存する
-   * 元データ：{data:{a:"123"}}　追加データ：{data:{b:"456"}}　→ {data:{a:"123",b:"456"}}}
-   * @param {Object<string,*>} captionObject 保存するデータ
-   * @returns {Promise<*|boolean>} 保存に成功したら保存したデータを,失敗でfalseを返す
-   */
-  async deepsave(captionObject) {
-    if (!$.isPlainObject(captionObject)) {
-      console.error('object言ってるやろが!!!');
-      return false;
-    }
-    return await localStorageSaverSync(this.localname, captionObject, true);
-  }
-  /**
-   *
-   * @param {Object<string,*>|string} captionObject
-   * @returns
-   */
-  delete(captionObject) {
-    var myprofile = this.getall();
-    if (typeof captionObject === 'object') {
-      for (var key in captionObject) {
-        delete myprofile[key];
-      }
-    } else {
-      delete myprofile[captionObject];
-    }
-    localStorage.setItem(this.localname, JSON.stringify(myprofile));
-    return true;
-  }
-  storagecheck() {
-    if (localStorage.getItem(this.localname) == undefined) {
-      return true;
-    }
-    if (isJSON(localStorage.getItem(this.localname)) == false) {
-      console.warn(this.localname + 'がJSONではありません');
-      return false;
-    }
-    if ($.isPlainObject(JSON.parse(localStorage.getItem(this.localname) || '"')) == false) {
-      console.warn(this.localname + 'がObjectではありません');
-      return false;
-    }
-    return true;
-  }
-  /**
-   *
-   * @param {string} objectcaption
-   * @returns
-   */
-  makesaveinput(objectcaption) {
-    var _this = this;
-    return $(`<input type="text" name="teacher_memo" cd="${objectcaption}">`)
-      .on('change', function() {
-        _this.save({ [objectcaption]: $(this).val() });
-      })
-      .val(_this.getone({ [objectcaption]: '' }));
-  }
-  /**
-   *
-   * @param {string} caption
-   * @param {Array<*>} togglearray
-   */
-  toggle(caption, togglearray) {
-    var one = this.getone({ [caption]: null });
-    var index = togglearray.indexOf(one);
-    this.save({ [caption]: togglearray[(index + 1) % togglearray.length] });
-  }
-  /**
-   *
-   * @param {string} buttontext
-   * @param {string} caption
-   * @param {Array<{title:string,value:string|number}>} toggleObject
-   * @returns {JQuery}
-   */
-  maketogglebutton(buttontext, caption, toggleObject) {
-    const _thisClass = this;
-    return $('<button>', { type: 'button', name: caption })
-      .on('update', function() {
-        const text = toggleObject.filter(one => one.value == _this.getone({ [caption]: null }))[0]?.title;
-        $(this).val(`${buttontext}：${text}`);
-      })
-      .on('click', function() {
-        _thisClass.toggle(
-          caption,
-          toggleObject.map(one => one.value)
-        );
-        $(this).trigger('update');
-      })
-      .trigger('update');
-  }
-}
-
-/**
- * @typedef {Object} Examdata
- * @property {string?} from_dt
- * @property {string?} to_dt
- * @property {boolean?} allinputted
- */
-
-class ExamSaver extends Saver {
-  /**
-   *
-   * @param {string} student_cd
-   * @param {Date} dt
-   * @return {string|null}
-   */
-  getcloseexam_afterdt(student_cd, dt = new Date()) {
-    /**@type {Object<string,Examdata>} */
-    let student_exam = this.getone({ [student_cd]: {} });
-    /**@type {string|null} */
-    var exam = null;
-    for (var key in student_exam) {
-      if (new Date(student_exam[key]?.from_dt).getTime() > dt.getTime()) {
-        if (exam == null) exam = key;
-        else if (new Date(student_exam[key]?.from_dt).getTime() < new Date(student_exams[exam]?.from_dt).getTime()) exam = key;
-      }
-    }
-    return exam;
-  }
-  /**
-   *
-   * @param {string} student_cd
-   * @param {Date} dt
-   * @return {string|null}
-   */
-  getcloseexam_beforedt(student_cd, dt = new Date()) {
-    /**@type {Object<string,Examdata>} */
-    let student_exam = this.getone({ [student_cd]: {} });
-    /**@type {string|null} */
-    var exam = null;
-    for (var key in student_exam) {
-      if (new Date(student_exam[key]?.from_dt).getTime() < dt.getTime()) {
-        if (exam == null) exam = key;
-        else if (new Date(student_exam[key]?.from_dt).getTime() > new Date(student_exams[exam]?.from_dt).getTime()) exam = key;
-      }
-    }
-    return exam;
-  }
-  /**
-   * examに点数が全部入力済みならtrueを、そうでなければfalseを返す
-   * @param {string} student_cd
-   * @param {string} exam
-   * @return {boolean}
-   */
-  getallinputted(student_cd, exam) {
-    /**@type {Object<string,Examdata>} */
-    let student_exam = this.getone({ [student_cd]: {} });
-    console.log(student_cd, student_exam);
-    if (student_exam[exam]?.allinputted == null) return false;
-    return student_exam[exam]?.allinputted;
-  }
-  /**
-   *
-   * @param {string} student_cd
-   * @param {Date} dt
-   * @param {string|null} exams
-   * @return {{exams:string|null,nokori:number|null}}
-   */
-  getnokoridate(student_cd, dt = new Date(), exams = this.getcloseexam_afterdt(student_cd, dt)) {
-    let student_exam = this.getone({
-      [student_cd]: {}
-    });
-    if (exams == null) return { exams: null, nokori: null };
-    let from_dt = new ExDate(student_exam[exams]?.from_dt || null);
-    let nokori = parseInt('' + from_dt.compare(dt).difference / (1000 * 60 * 60 * 24)) + 1;
-    return { exams: exams, nokori: nokori };
-  }
-}
-
 console.log('nmexog');
 //プロファイル保存
 const myprofiles = new Saver('myprofile'); //移行中 core/store.js よりimport
 const memos = new Saver('memotexts');
 const teacher_memos = new Saver('teacher_memotexts');
-const student_exams = new ExamSaver('student_exams');
 
 //グローバル変数
 var dt = new Date();
@@ -2432,7 +2196,7 @@ class NetzButtonsofBase {
       let pathname = $('<a>', { href: url }).prop('pathname');
       buttondata = Object.assign(buttondata, { close: 'on' });
       chrome.runtime.sendMessage({
-        opennetzback: `${pathname}?${$.param(buttondata)}`
+        openTabBack: `${NX.CONST.host}${pathname}?${$.param(buttondata)}`
       });
     } else {
       window.open(`${url}?${$.param(buttondata)}`, thisclass.target);
@@ -3428,12 +3192,96 @@ daychanger.prototype = {
         .change();
   }
 };
+
+/**
+ * テーブルの rowspan / colspan を解析し、DOMに座標属性を付与して2次元配列を返す
+ * @param {HTMLElement|JQuery|string} tableobject
+ * @returns {Array<Array<Object>>} 座標が補正された2次元配列
+ */
+function table2arrayspecial(tableobject) {
+  const $table = $(tableobject);
+
+  // 二重実行の防止
+  if ($table.attr('table2arrayspecial') === 'true') return;
+  $table.attr('table2arrayspecial', 'true');
+
+  const grid = []; // 最終的に返す2次元配列（視覚的な座標と完全一致）
+
+  // テーブルを上から1行ずつ走査
+  $table.find('tr').each(function(rowIndex) {
+    const $tr = $(this);
+    if (!grid[rowIndex]) grid[rowIndex] = [];
+
+    let colIndex = 0; // 現在の行の「空いている列」を探すためのカーソル
+    let trRowMax = rowIndex; // この行に含まれるセルが、最大で何行目までまたがるか
+
+    // td だけでなく th も対象にする（ヘッダー結合対応）
+    $tr.find('td, th').each(function() {
+      const $td = $(this);
+      const rowspan = parseInt($td.attr('rowspan'), 10) || 1;
+      const colspan = parseInt($td.attr('colspan'), 10) || 1;
+
+      // 1. 上の行の rowspan によって「すでに埋まっている列」をスキップする
+      while (grid[rowIndex][colIndex] !== undefined) {
+        colIndex++;
+      }
+
+      // 2. このセルの「実際の見た目上の座標」を確定
+      const rowmax = rowIndex + rowspan - 1;
+      const colmax = colIndex + colspan - 1;
+
+      // 3. 【劇的改善】ここで即座に DOM (td) に属性を書き込む！
+      $td.attr({
+        row: rowIndex,
+        col: colIndex,
+        rowmax: rowmax,
+        colmax: colmax
+      });
+
+      if (rowmax > trRowMax) trRowMax = rowmax;
+
+      // 4. 戻り値(kekka互換) 用のデータオブジェクト
+      const cellData = {
+        text: $td.html(),
+        rowspan: rowspan,
+        colspan: colspan,
+        beforerow: rowIndex,
+        beforecol: colIndex,
+        nowrow: rowIndex,
+        nowcol: colIndex
+      };
+
+      // 5. grid (2次元配列) に自分の陣地を確保する（ダミーデータで埋める）
+      for (let r = 0; r < rowspan; r++) {
+        if (!grid[rowIndex + r]) grid[rowIndex + r] = [];
+
+        for (let c = 0; c < colspan; c++) {
+          if (r === 0 && c === 0) {
+            grid[rowIndex + r][colIndex + c] = cellData; // 左上の実体
+          } else if (r === 0) {
+            grid[rowIndex + r][colIndex + c] = { text: 'colspan', nowrow: rowIndex + r, nowcol: colIndex + c };
+          } else {
+            grid[rowIndex + r][colIndex + c] = { text: 'rowspan', nowrow: rowIndex + r, nowcol: colIndex + c };
+          }
+        }
+      }
+    });
+
+    // 6. tr にも即座に属性を書き込む
+    $tr.attr({
+      row: rowIndex,
+      rowmax: trRowMax
+    });
+  });
+
+  return grid;
+}
 /**
  *
  * @param {JQuery} tableobject
  * @returns
  */
-function table2arrayspecial(tableobject) {
+function table2arrayspecial_old(tableobject) {
   if ($(tableobject).attr('table2arrayspecial') == 'true') return;
   $(tableobject).attr('table2arrayspecial', 'true');
   var kekka = [];
@@ -3482,7 +3330,6 @@ function table2arrayspecial(tableobject) {
       kekka[i][j]['nowcol'] = j;
     }
   }
-  console.log('tablearrayspecial2.kekka', kekka);
   var object;
   var kekkaone = Array.prototype.concat.apply([], kekka);
   //console.log(kekkaone);
@@ -3556,18 +3403,16 @@ function isJSON(arg) {
 
 function student_search(name) {
   chrome.runtime.sendMessage({
-    opennetzback:
-      '/netz/netz1/student_list_head.aspx?syori=' +
-      encodeURIComponent(
-        JSON.stringify([
-          ['dummy'],
-          ['select[name=tenpo_cd]', 'val', ''],
-          ['select[name=jyotai_cb]', 'val', 'all'],
-          ['input[name=student_kt]', 'val', name],
-          ['input[name=b_submit]', 'click'],
-          ['close', 'on']
-        ])
-      )
+    openTabBack: `${NX.CONST.host}/netz/netz1/student_list_head.aspx?syori=${encodeURIComponent(
+      JSON.stringify([
+        ['dummy'],
+        ['select[name=tenpo_cd]', 'val', ''],
+        ['select[name=jyotai_cb]', 'val', 'all'],
+        ['input[name=student_kt]', 'val', name],
+        ['input[name=b_submit]', 'click'],
+        ['close', 'on']
+      ])
+    )}`
   });
 }
 
@@ -3618,7 +3463,7 @@ function doGet(url, dat, callback) {
 //${NX.CONST.host}/tehai/kanren_input.aspx?teacher_cd=130426&student_cd=385556
 function autokanren(student_cd, teacher_cd) {
   chrome.runtime.sendMessage({
-    opennetzback: `/netz/netz1/tehai/kanren_input.aspx?${$.param({
+    openTabBack: `${NX.CONST.host}/netz/netz1/tehai/kanren_input.aspx?${$.param({
       teacher_cd: teacher_cd,
       student_cd: student_cd,
       syori: JSON.stringify([['input[value="　登録　"]', 'click']])

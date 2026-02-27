@@ -844,59 +844,6 @@ $(function() {
           .click()
           .remove();
         break;
-      case '/netz/netz1/tehai/tehai_input.aspx': {
-        /**@type {string} */
-        /*
-        const student_cd = $('input[name=student_cd]').val();
-        const grade = $('td:contains(学年)')
-          .next()
-          .text();
-        const list = {
-          小学生: ['小１', '小２', '小３', '小４', '小５', '小６'],
-          中学生: ['中１', '中２', '中３', '一貫中１', '一貫中２', '一貫中３']
-        };
-        for (let key in list) {
-          if (!list[key].includes(grade)) continue;
-          $('select[name$=kamoku_cb]').each(function() {
-            const $this = $(this);
-            $this.val($this.find(`option:contains(${key})`).val());
-          });
-        }
-
-
-        FUNCTION_O.tehai_input.osusumelist();
-
-        $('input[name^=shido_][name$=vl]').on('change', function() {
-          $(this)
-            .closest('tr')
-            .find('input[name$=_flg]')
-            .prop('checked', $(this).val() != '' && $(this).val() > 0)
-            .trigger('change');
-        });
-
-        $('input[name^=shido_]')
-          .on('change', function() {
-            var sub = getStrBetween($(this).attr('name'), '_', '_');
-            if ($(`input[name$=${sub}_flg]`).prop('checked')) {
-              $(`input[name^=shido_${sub}]`).each(function() {
-                if ($(this).val() != '' || localStorage.getItem('blind') == 'true') $(this).css('background-color', '');
-                else $(this).css('background-color', '#FFCCCC');
-              });
-            } else $(`input[name^=shido_${sub}]`).css('background-color', '');
-          })
-          .trigger('change');
-
-        let osusumekouza = JSON.parse(localStorage.getItem('osusumekouza') || '{}');
-        if (osusumekouza[student_cd] != null) {
-          $('<div/>')
-            .appendTo('body')
-            .text(osusumekouza[student_cd])
-            .css('top', '0px')
-            .css('left', '1000px');
-        }
-                    */
-        break;
-      }
       case '/netz/netz1/kintai/yotei_input.aspx':
         $('table').netztabler(1);
         FUNCTION_O.kintai_yotei_input.ikkatu();
@@ -1145,7 +1092,7 @@ $(function() {
                   syori: JSON.stringify([['#status_cb1', 'click'], ['input[value="　登録　"]', 'click', 'nextpage'], ['close']])
                 };
                 chrome.runtime.sendMessage({
-                  opennetzback: '/netz/netz1/tehai/kanren_input.aspx?' + $.param(send)
+                  openTabBack: `${NX.CONST.host}/netz/netz1/tehai/kanren_input.aspx?${$.param(send)}`
                 });
               });
         });

@@ -9,7 +9,7 @@ export default class PageFuncS {
     this.bot = new ConsoleBot();
   }
   setZoomMaker() {
-    const popmenu = new PopMenu({ id: 'main' }); // 定義済みのmainを取得する
+    const popmenu = new PopMenu({ id: 'main' });
     const student_cd = $('input[name=student_cd]').val();
 
     popmenu.appendItems([

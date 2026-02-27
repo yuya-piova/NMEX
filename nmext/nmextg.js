@@ -1,6 +1,5 @@
 ///<reference path="../libraries/jquery-3.4.1.min.js"/>
 ///<reference path="../libraries/jquery-ui.min.js"/>
-///<reference path="../checker.js"/>
 ///<reference path="../dts/JQuery.d.ts"/>
 ///<reference path="../dts/jqueryui.d.ts"/>
 ///<reference path="../dts/global.d.ts"/>
@@ -400,7 +399,7 @@ class memberInfoClass {
   search(...conditions) {
     const filteredRows = this.NXTable.match(conditions);
     if (filteredRows.length > 1) {
-      console.warn(this.storeName, `Find ${filteredRows} data. Return First Data.`);
+      console.warn(this.storeName, `Find ${filteredRows.length} data. Return First Data.`);
       console.warn(this.storeName, `Given condition ${JSON.stringify(conditions)}.`);
       return this.NXTable.matchFirst(conditions);
     } else if (filteredRows.length == 1) {
@@ -1190,74 +1189,6 @@ class ExDataSaver {
   }
 }
 
-/**
- * PageNote
- * ページごとにメモを残せる
- * PageNoteをインスタンス化するとドラッグ可能なノートが表示される
- * inputでlocalStorageに書き込み
- * 現状ページのlocation.pathnameで特定している
- */
-class PageNote {
-  constructor() {
-    this.identifier;
-    this.data;
-    this.div = $('<div class="netzblind" style="display:flex;flex-direction:column;"></div');
-    this.UI = {
-      head: $('<div>').css({
-        display: 'flex',
-        'justify-content': 'space-between'
-      }),
-      grip: $('<i class="fa-solid fa-grip fa-2x" style="color:#2a5caa;margin:5px;"></i>'),
-      length: $('<span>'),
-      close: $('<i class="fas fa-times fa-2x" style="color:#2a5caa;float:right;margin:5px;"></i>'),
-      input: $('<textarea class="pagenote_textarea nx_scrollbar" rows="30" cols="70" style="flex-basis:auto;"></textarea>')
-    };
-    this.init();
-  }
-  init() {
-    const _this = this;
-    this.identifier = location.pathname;
-    this.data = JSON.parse(localStorage.getItem('pagenote')) || {};
-    this.div
-      .appendTo('body')
-      .css({
-        position: 'fixed',
-        left: '850px',
-        top: '50px',
-        'border-top': 'solid 1px #2a5caa',
-        'background-color': 'white'
-      })
-      .draggable({ handle: '.fa-grip' });
-    this.UI.head
-      .append(this.UI.grip)
-      .append(this.UI.length)
-      .append(this.UI.close)
-      .appendTo(this.div);
-    this.UI.close.on('click', function() {
-      _this.input_close();
-    });
-    this.UI.input
-      .appendTo(this.div)
-      .val(this.data[this.identifier] || '')
-      .on('input', function() {
-        const length = _this.UI.input.val().length;
-        _this.UI.length.text(`${length}文字`);
-        _this.input_write();
-      })
-      .trigger('input');
-  }
-  savetoLS() {
-    localStorage.setItem('pagenote', JSON.stringify(this.data));
-    return this;
-  }
-  input_write() {
-    this.data[this.identifier] = this.UI.input.val();
-    this.savetoLS();
-  }
-  input_close() {
-    this.div.hide();
-  }
-}
 //cliptextのクラスを保持する要素をクリックしたらテキストをクリップボードにコピーする
 //パラメーターclipcontentを持っていればそれを、なければテキストをコピー
 class ClipText {
@@ -1609,7 +1540,7 @@ class AjaxstudentInfoClass {
         syori: JSON.stringify([['input[name="b_submit"]', 'click', 'nextpage'], ['close']])
       };
       chrome.runtime.sendMessage({
-        opennetzbackEx: `${NX.CONST.host}/kanren/shido_kiroku_check.aspx?${$.param(param)}`
+        openTabBack: `${NX.CONST.host}/kanren/shido_kiroku_check.aspx?${$.param(param)}`
       });
     }
     return rtn;
@@ -2267,7 +2198,7 @@ if (true) {
   $(function() {
     switch (location.pathname) {
       case '/netz/netz1/tehai/tehai_list_body.aspx':
-        popmenut_F2.setContentFunction(function() {
+        popmenut_F8.setContentFunction(function() {
           $('<button>', {
             type: 'button',
             text: 'すべて処理済',
@@ -2278,7 +2209,7 @@ if (true) {
                   //prettier-ignore
                   const tehaicd = $(this).attr('name').replace('b_open', '');
                   chrome.runtime.sendMessage({
-                    opennetzbackEx: `${NX.CONST.host}/tehai/tehai_input.aspx?tehai_cd=${tehaicd}&doAction=setDone`
+                    openTabBack: `${NX.CONST.host}/tehai/tehai_input.aspx?tehai_cd=${tehaicd}&doAction=setDone`
                   });
                 });
                 popmenut_F2.closemenu();
@@ -2295,7 +2226,7 @@ if (true) {
                   //prettier-ignore
                   const tehaicd = $(this).attr('name').replace('b_open', '');
                   chrome.runtime.sendMessage({
-                    opennetzbackEx: `${NX.CONST.host}/tehai/tehai_input.aspx?tehai_cd=${tehaicd}&doAction=setDone&forceSubject=true`
+                    openTabBack: `${NX.CONST.host}/tehai/tehai_input.aspx?tehai_cd=${tehaicd}&doAction=setDone&forceSubject=true`
                   });
                 });
                 popmenut_F2.closemenu();
@@ -2312,7 +2243,7 @@ if (true) {
                   //prettier-ignore
                   const tehaicd = $(this).attr('name').replace('b_open', '');
                   chrome.runtime.sendMessage({
-                    opennetzbackEx: `${NX.CONST.host}/tehai/tehai_input.aspx?tehai_cd=${tehaicd}&doAction=setAuto`
+                    openTabBack: `${NX.CONST.host}/tehai/tehai_input.aspx?tehai_cd=${tehaicd}&doAction=setAuto`
                   });
                 });
                 popmenut_F2.closemenu();
@@ -2391,7 +2322,7 @@ if (true) {
             const student_cd = $this.attr('onclick').getStrBetween("'", "'");
             const keyValue = { student_cd, id, opt, txt };
             chrome.runtime.sendMessage({
-              opennetzbackEx: `${NX.CONST.host}/shingaku/student_shingaku_input.aspx?${$.param(keyValue)}`
+              openTabBack: `${NX.CONST.host}/shingaku/student_shingaku_input.aspx?${$.param(keyValue)}`
             });
           });
         });

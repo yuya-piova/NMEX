@@ -1,6 +1,5 @@
 ///<reference path="../libraries/jquery-3.4.1.min.js"/>
 ///<reference path="../libraries/jquery-ui.min.js"/>
-///<reference path="../checker.js"/>
 ///<reference path="../dts/JQuery.d.ts"/>
 ///<reference path="../dts/jqueryui.d.ts"/>
 ///<reference path="../dts/global.d.ts"/>
@@ -265,101 +264,6 @@ const popmenut_F8 = new Popmenumaker('popmenut_F8', 119);
       });
   };
   FUNCTION_T.yotei_input = {};
-  FUNCTION_T.yotei_input.inputsupport = function() {
-    //予定の右クリック→タスクならチェックを付けて登録、それ以外なら■をつけて登録
-    $('input[name=yotei_nm]').on('contextmenu', function() {
-      if ($('select[name=yotei_cb]').val() == '4') {
-        $(this).valPrepend('■');
-        $('input[name=b_submit]').trigger('click');
-      } else if ($('select[name=yotei_cb]').val() == 't') {
-        $('#done_flg').prop('checked', true);
-        $('input[name=b_submit]').trigger('click');
-      }
-      return false;
-    });
-    //場所の右クリック→空欄ならデフォルト教室入力、空欄でないなら登録ボタンを押す
-    $('input[name=basho_nm]').on('contextmenu', function() {
-      if ($(this).val() == '') {
-        $(this).val(myprofiles.getone({ mybasename: '' }));
-      } else {
-        $('input[name=b_submit]').trigger('click');
-      }
-      return false;
-    });
-
-    //半角修正
-    $('input[name=s_tm],input[name=e_tm]').isAllNumeric(false);
-  };
-  FUNCTION_T.yotei_input.togas = function() {
-    if (false && myprofiles.getone({ myname: '' }) == '辰野　由弥') {
-      popmenu.append('Google Calとoutlookに追加', {
-        handler: () => {
-          const startDate = new ExDate($('#input_dt').val() + ' ' + $('#s_tm').val());
-          const endDate = new ExDate($('#input_dt').val() + ' ' + $('#e_tm').val());
-          const duration = $('#e_tm').val() != '' ? (endDate.getTime() - startDate.getTime()) / (1000 * 60) : 30;
-          const startdt = `${startdt.as('yyyy-mm-dd')}T${$('#s_tm').val()}:00`;
-          const topic = `${$('[name=yotei_cb] option:selected').text()}:${$('#basho_nm').val()}`;
-          $.post(
-            'https://script.google.com/macros/s/AKfycbwwG54-D3VbMrrH9p31vQa44vk5MY7piaVhg0NYfoWdXWOCWLlQu3eXbPoVZ16hPd6u5A/exec',
-            { onlymakeschedule: 'true', topic, startdt, duration },
-            window.alert('POST完了')
-          );
-        }
-      });
-    }
-  };
-  FUNCTION_T.yotei_input.addtemplate = function() {
-    const tempUI = {
-      select: $('<select></select>'),
-      updateBtn: $('<button>').text('更新・保存'),
-      deleteBtn: $('<button>').text('削除')
-    };
-    tempUI.select.on('change', function() {
-      const yoteiTemplate = JSON.parse(localStorage.getItem('yoteiTemplate')) || {};
-      const selectedData = yoteiTemplate[$(this).val()] || {};
-      for (let key in selectedData) {
-        $(`[name="${key}"]`).val(selectedData[key]);
-      }
-    });
-    tempUI.updateBtn.on('click', function() {
-      let title = tempUI.select.val();
-      if (title == '') title = prompt('タイトルを入力してください');
-      if (!title) return false;
-      const yoteiTemplate = JSON.parse(localStorage.getItem('yoteiTemplate')) || [];
-      const item = Object.fromEntries(
-        $('input,select,textarea')
-          .map((_, el) => (el.name ? [el.name, $(el).val()] : null))
-          .get()
-          .filter(Boolean)
-      );
-      yoteiTemplate.push(item);
-      localStorage.setItem('yoteiTemplate', JSON.stringify(yoteiTemplate));
-      PX_Toast('保存しました');
-      tempReflesh();
-    });
-    tempUI.deleteBtn.on('click', function() {
-      let index = tempUI.select.val();
-      if (index == '') return false;
-      const yoteiTemplate = JSON.parse(localStorage.getItem('yoteiTemplate')) || [];
-      if (yoteiTemplate[index]) delete yoteiTemplate.splice(index, 1);
-      localStorage.setItem('yoteiTemplate', JSON.stringify(yoteiTemplate));
-      PX_Toast('削除しました');
-      tempReflesh();
-    });
-    function tempReflesh() {
-      const yoteiTemplate = JSON.parse(localStorage.getItem('yoteiTemplate')) || [];
-      tempUI.select.html('<option value="" selected>ーーー</option>');
-      yoteiTemplate.forEach((elm, ind) => {
-        tempUI.select.append(`<option value="${ind}">${elm.name}</option>`);
-      });
-    }
-    popmenuo_ins.setContentFunction(function() {
-      for (let key in tempUI) {
-        tempUI[key].appendTo('body');
-      }
-      tempReflesh();
-    });
-  };
   FUNCTION_T.yotei_input.renzoku = function() {
     //連続登録ボタンを押したら保存
     $('input[name=b_submit2]').on('click', function() {
@@ -393,37 +297,6 @@ const popmenut_F8 = new Popmenumaker('popmenut_F8', 119);
             .val(contentformat + '\n' + nowtext)
             .textarearesizer();
         });
-    });
-  };
-  FUNCTION_T.tehai_input = {};
-  FUNCTION_T.tehai_input.setRange = function() {
-    const tehaiRange = {
-      koshu: {
-        from: new ExDate(Math.max(new Date(NX.VAR.koshu_kikan['開始']), new Date())).as('yyyy/mm/dd'),
-        to: new ExDate(Math.max(new Date(NX.VAR.koshu_kikan['終了']), new Date())).as('yyyy/mm/dd')
-      },
-      tsuika: {
-        from: new ExDate().as('yyyy/mm/dd'),
-        to: new ExDate().aftermonths(1).as('yyyy/mm/dd')
-      },
-      sho: {
-        from: new ExDate().as('yyyy/mm/dd'),
-        to: new ExDate().aftermonths(1).as('yyyy/mm/dd')
-      },
-      kitei: {
-        from: new ExDate().as('yyyy/mm'),
-        to: ''
-      }
-    };
-    ['sho', 'kitei', 'koshu', 'tsuika'].forEach(function(query) {
-      $(`input[name=${query}_vl]`)
-        .on('change', function() {
-          const isNull = $(this).val() == '';
-          $(`input[name=${query}_jk]`).val(isNull ? '' : '45');
-          $(`input[name=${query}_from]`).val(isNull ? '' : tehaiRange[query].from);
-          $(`input[name=${query}_to]`).val(isNull ? '' : tehaiRange[query].to);
-        })
-        .trigger('change');
     });
   };
   FUNCTION_T.shido_furikae_input = {};
@@ -1227,7 +1100,7 @@ const popmenut_F8 = new Popmenumaker('popmenut_F8', 119);
                 if (!($select.attr('name') || '').startsWith('d')) return true;
                 const student_cd = $select.attr('name').replace('d', '');
                 chrome.runtime.sendMessage({
-                  opennetzbackEx: `${NX.CONST.host}/s/student_mendan_input.aspx?nendo_season_cb=${inputNendo}${inputSeason_cb}&student_cd=${student_cd}&mode=autoChange&teacher_cd=${teacher_cd}&mendan_jk=${inputLength}`
+                  openTabBack: `${NX.CONST.host}/s/student_mendan_input.aspx?nendo_season_cb=${inputNendo}${inputSeason_cb}&student_cd=${student_cd}&mode=autoChange&teacher_cd=${teacher_cd}&mendan_jk=${inputLength}`
                 });
               });
             }
@@ -1253,7 +1126,7 @@ const popmenut_F8 = new Popmenumaker('popmenut_F8', 119);
               if (!($select.attr('name') || '').startsWith('d')) return true;
               const student_cd = $select.attr('name').replace('d', '');
               chrome.runtime.sendMessage({
-                opennetzbackEx: `${NX.CONST.host}/s/student_mendan_input.aspx?nendo_season_cb=${inputNendo}${inputSeason_cb}&student_cd=${student_cd}&mode=autoChange&mendan_status_cb=d&bikou_nm=月謝固定&mendan_tm=9:00&mendan_dt=2025/10/01&mendan_jk=30`
+                openTabBack: `${NX.CONST.host}/s/student_mendan_input.aspx?nendo_season_cb=${inputNendo}${inputSeason_cb}&student_cd=${student_cd}&mode=autoChange&mendan_status_cb=d&bikou_nm=月謝固定&mendan_tm=9:00&mendan_dt=2025/10/01&mendan_jk=30`
               });
             });
           }
@@ -2260,7 +2133,7 @@ const popmenut_F8 = new Popmenumaker('popmenut_F8', 119);
           const targetUrl = $(this).attr('contextbackurl') || $(this).attr('url') || null;
           if (targetUrl)
             chrome.runtime.sendMessage({
-              opennetzbackEx: targetUrl
+              openTabBack: targetUrl
             });
           return false;
         });

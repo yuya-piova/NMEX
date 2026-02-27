@@ -550,3 +550,10 @@ class NXTable {
     return this;
   }
 }
+
+//console.log('NXTable');
+// ⚠️ 過渡期用のハック：従来のスクリプト（importが使えないファイル）からもアクセスできるようにしておく
+//if (typeof window !== 'undefined') {
+//  console.log('NXTable');
+//  window.NXTable = NXTable;
+//}

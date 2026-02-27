@@ -74,4 +74,138 @@ export default class PageFuncSchedule {
       if (msgDiv) msgDiv.remove();
     }, 5000);
   }
+  scheduleResisterSupport() {
+    const $basho_nm = $('input[name=basho_nm]');
+    const $b_submit = $('input[name=b_submit]');
+
+    // 予定の右クリック→チェックを付けて登録
+    $('input[name=yotei_nm]').on('contextmenu', () => {
+      $('#done_flg').prop('checked', true);
+      $b_submit.trigger('click');
+      return false;
+    });
+
+    // 場所の右クリック→空欄ならデフォルト教室入力、空欄でないなら登録ボタンを押す
+    $basho_nm.on('contextmenu', () => {
+      if ($basho_nm.val()) {
+        $basho_nm.val();
+      } else {
+        $b_submit.trigger('click');
+      }
+
+      return false;
+    });
+  }
+  scheduleResisterTemplate() {
+    const popmenu = new PopMenu({ id: 'main' });
+
+    // 1. UIの構築 (1回だけ生成する)
+    const $templateDiv = $('<div>').css({
+      position: 'fixed',
+      bottom: '20px',
+      right: '20px',
+      background: '#fff',
+      border: '1px solid #ccc',
+      padding: '10px',
+      zIndex: 9999,
+      boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+      display: 'none' // 初期状態は非表示
+    });
+
+    const $select = $('<select>').css({ width: '150px', marginRight: '5px' });
+    const $addBtn = $('<button>').text('追加');
+    const $deleteBtn = $('<button>').text('削除');
+    const $closeBtn = $('<button>')
+      .text('×')
+      .css({ marginLeft: '10px' });
+
+    $templateDiv.append($select, $addBtn, $deleteBtn, $closeBtn).appendTo('body');
+
+    // 2. セレクトボックスを最新のLocalStorageから再描画する関数
+    const renderSelect = () => {
+      $select.empty().append('<option value="" selected>ーーー</option>');
+      const templates = JSON.parse(localStorage.getItem('yoteiTemplate')) || [];
+      templates.forEach((elm, ind) => {
+        $select.append(`<option value="${ind}">${elm.name || elm.yotei_nm || '名称未設定'}</option>`);
+      });
+    };
+
+    // 3. メニューからの呼び出し
+    popmenu.appendItems([
+      {
+        text: 'テンプレートを表示',
+        handler: () => {
+          renderSelect();
+          $templateDiv.show();
+        }
+      }
+    ]);
+
+    // 4. イベント処理: 閉じる
+    $closeBtn.on('click', () => {
+      $templateDiv.hide();
+    });
+
+    // 5. イベント処理: 選択してフォームに反映
+    $select.on('change', function() {
+      const index = $(this).val();
+      if (index === '') return; // ーーー が選ばれたら何もしない
+
+      const templates = JSON.parse(localStorage.getItem('yoteiTemplate')) || [];
+      const template = templates[index] || {};
+
+      for (const [key, val] of Object.entries(template)) {
+        if (key === 'name') continue; // テンプレート名自身はフォームに入れない
+
+        // 値をセットしつつ、changeイベントを発火させて関連するJSも動かす
+        $(`[name="${key}"]`)
+          .val(val)
+          .trigger('change');
+      }
+    });
+
+    // 6. イベント処理: 現在の入力を追加
+    $addBtn.on('click', () => {
+      const template = {};
+      const keys = ['s_tm', 'e_tm', 'yotei_cb', 'yotei_nm', 'basho_nm'];
+
+      keys.forEach(key => {
+        const val = $(`[name="${key}"]`).val();
+        if (val !== '') template[key] = val;
+      });
+
+      if (Object.keys(template).length === 0) {
+        alert('保存する項目が入力されていません。');
+        return;
+      }
+
+      // テンプレート名を入力させる
+      const defaultName = template.yotei_nm || '新しいテンプレート';
+      const templateName = prompt('テンプレート名を入力してください', defaultName);
+      if (!templateName) return; // キャンセル時は保存しない
+
+      template.name = templateName;
+
+      const templates = JSON.parse(localStorage.getItem('yoteiTemplate')) || [];
+      templates.push(template);
+      localStorage.setItem('yoteiTemplate', JSON.stringify(templates));
+
+      renderSelect(); // セレクトボックスを即座に更新
+      $select.val(templates.length - 1); // 今追加したものを選択状態にする
+    });
+
+    // 7. イベント処理: 選択中のものを削除
+    $deleteBtn.on('click', () => {
+      const targetIndex = $select.val();
+      if (targetIndex === '') return;
+
+      if (!confirm('選択中のテンプレートを削除してもよろしいですか？')) return;
+
+      const templates = JSON.parse(localStorage.getItem('yoteiTemplate')) || [];
+      templates.splice(targetIndex, 1);
+      localStorage.setItem('yoteiTemplate', JSON.stringify(templates));
+
+      renderSelect(); // セレクトボックスを即座に更新
+    });
+  }
 }

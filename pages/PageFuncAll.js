@@ -1,5 +1,6 @@
 import PopMenu from '../core/PopMenu.js';
 import { myprofile } from '../core/store.js';
+import Tabler from '../core/Tabler.js';
 
 export default class PageFuncAll {
   constructor() {
@@ -224,23 +225,13 @@ export default class PageFuncAll {
       },
       { text: '$("input,select").remove()', type: 'common', handler: () => $('input,select').remove() },
       { text: '$("br").remove()', type: 'common', handler: () => $('br').remove() },
-      { text: '$("table").netztabler()', type: 'common', handler: () => $('table').netztabler() },
+      { text: '$("table").tabler()', type: 'common', handler: () => $('table').tabler() },
       '<hr>'
     ];
     const basemanButton = $('<button>', {
       type: 'button',
       text: 'BaseMan(b)'
     }).setshortcutkey('b');
-    const pageNoteButton = $('<button>', {
-      type: 'button',
-      text: 'PageNote(p)',
-      on: {
-        click: function() {
-          new PageNote();
-          popmenut_F8.closemenu();
-        }
-      }
-    }).setshortcutkey('p');
     const tablerButton = $('<button>', {
       type: 'button',
       text: 'tablerアイコン表示',

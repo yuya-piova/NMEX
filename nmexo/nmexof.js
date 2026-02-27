@@ -294,21 +294,6 @@ FUNCTION_O.index_head.reminderbutton = function() {
 
 FUNCTION_O.index_menu = {};
 FUNCTION_O.index_menu.reloder = function() {
-  /*
-  //上を更新
-  setInterval(function() {
-    top.index_h.location.href = `${NX.CONST.host}/index_head.aspx`;
-  }, 1000 * 60);
-  //問合せ更新
-  setInterval(function() {
-    if (new Date().getHours() > 8 && new Date().getHours() < 23 && myprofiles.getone({ nonotification: 1 }) == false) {
-      chrome.runtime.sendMessage({
-        opennetzback: '/netz/netz1/toiawase_list_body.aspx?newcheck=on&close=on&tenpo_cd=m&input_dt1=' + dateslash(dt)
-      });
-    }
-  }, 5 * 1000 * 60);
-  */
-
   //CheckerJSを走らせる
   CheckerJS.timerSet();
 };

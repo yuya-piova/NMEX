@@ -1,6 +1,5 @@
 ///<reference path="../libraries/jquery-3.4.1.min.js"/>
 ///<reference path="../libraries/jquery-ui.min.js"/>
-///<reference path="../checker.js"/>
 ///<reference path="../dts/JQuery.d.ts"/>
 ///<reference path="../dts/jqueryui.d.ts"/>
 ///<reference path="../dts/global.d.ts"/>
@@ -52,85 +51,6 @@ $(function() {
         $('body').before('<style>@media print {input{display:none;} size} @page {size: 420mm 297mm;}</style>');
         //教室名が送られてきたらタイトルに教室名を載せる
         if (getparameter('basename')) $('title').text(`ブース表${getparameter('basename')}`);
-        break;
-      case '/netz/netz1/kanren/booth_list_print.aspx':
-        //A4タテで印刷
-        $('body').before('<style>@page {size: 210mm 297mm;}</style>');
-        const paramMode = NX.SEARCHPARAMS.get('mode');
-        switch (paramMode) {
-          case 'lecture':
-            deleteExercise();
-            break;
-          case 'exercise':
-            deleteLecture();
-            break;
-        }
-        popmenu.appendItems([
-          { text: 'リーダー講師なし削除', handler: () => deleteNoLeader() },
-          {
-            text: '指導のみ',
-            handler: () => {
-              deleteNoLeader();
-              deleteExercise();
-            }
-          },
-          {
-            text: '演習のみ',
-            handler: () => {
-              deleteNoLeader();
-              deleteLecture();
-            }
-          },
-          { text: '演習番号削除', handler: () => deteleExerNumber() }
-        ]);
-
-        function deleteNoLeader() {
-          $('tr:gt(0)').each(function() {
-            const $tr = $(this);
-            const td4 = $tr.findTdGetTxt(4);
-            const isNoLeader = td4 == 'なし';
-            if (isNoLeader) $tr.remove();
-          });
-        }
-        function deleteExercise() {
-          $('tr:gt(0)').each(function() {
-            const $tr = $(this);
-            const td4 = $tr.findTdGetTxt(4);
-            const td6 = $tr.findTdGetTxt(6);
-            const isExercise = td4 == '演習' && td6 == '(※未手配)';
-            const isVisit = td4 == '来校';
-            if (isExercise || isVisit) $tr.remove();
-          });
-        }
-        function deleteLecture() {
-          $('tr:gt(0)').each(function() {
-            const $tr = $(this);
-            const td3 = $tr.findTdGetTxt(3);
-            const td4 = $tr.findTdGetTxt(4);
-            const td6 = $tr.findTdGetTxt(6);
-            const isLecture = td4 == '指導';
-            const is1on1 = td4 == '1on1';
-            const isExerTeacher = td4 == '演習' && td6 != '(※未手配)';
-            const isOpen = td4 == '開閉校';
-            const isLeaderTeacher = td3 == '講師Ｍ担当' || td3.indexOf('号令講師') != -1;
-            if (isLecture || is1on1 || isExerTeacher || isLeaderTeacher || isOpen) $tr.remove();
-          });
-        }
-        function deteleExerNumber() {
-          $('tr:gt(0)').each(function() {
-            const $tr = $(this);
-            const td4 = $tr.findTdGetTxt(4);
-            const td5 = $tr.findTdGetTxt(5);
-            const isExerOpen = td4 == '演習' || td4 == '開閉校';
-            const is1on1 = td4 == '1on1';
-            const isGroup = td5.indexOf('進学教室') != -1;
-            if (isExerOpen || is1on1 || isGroup)
-              $tr
-                .find('td')
-                .eq(3)
-                .text('');
-          });
-        }
         break;
       case '/netz/netz1/shingaku/kouza_enshu_shido_input_save.aspx':
         $('[name=b_close]').trigger('click');
@@ -223,12 +143,6 @@ $(function() {
         window.close();
         break;
       case '/netz/netz1/schedule/yotei_input.aspx':
-        //予定表のその他と訪問をタスクとして利用
-        FUNCTION_T.yotei_input.inputsupport();
-        //予定表 → goole calendar → outlook
-        FUNCTION_T.yotei_input.togas();
-        //テンプレート機能
-        FUNCTION_T.yotei_input.addtemplate();
         //連続登録の機能不全対策
         FUNCTION_T.yotei_input.renzoku();
 
@@ -669,39 +583,6 @@ $(function() {
         }).appendTo('.shibo');
         break;
       //●●●●●●●●●●●●●●●●●●●●●●●●●●●●Genre：講師関連
-      case '/netz/netz1/kanren/shido_leader_input.aspx':
-        //リーダー講師設定
-        popmenu.appendItems([{ text: '号令講師自動設定', handler: () => setAnnounceCoach() }]);
-
-        function setAnnounceCoach() {
-          $('select[name^=teacher_cd]').each(function() {
-            const $select = $(this);
-            //講師ミーティング担当は”なし”に。name同じ。。。
-            if ($select.attr('name') == 'teacher_cd0') {
-              $select.val('000000');
-              return true;
-            }
-            //講師番号が若い順に並び替え
-            $select
-              .find('option')
-              .sort(function(a, b) {
-                return parseInt($(a).val()) - parseInt($(b).val());
-              })
-              .appendTo($select);
-            //一旦なしに変更（問題ないが並び替えると見た目だけ変わってしまう）
-            $select.val('000000');
-            //最も上にある◎に設定
-            $select.find('option').each(function() {
-              const $option = $(this);
-              if ($option.text().indexOf('◎') != -1) {
-                $select.val($option.val());
-                return false;
-              }
-            });
-          });
-        }
-
-        break;
       case '/netz/netz1/t/worktime_daily_list.aspx':
         $.fn.isAllEmpty = function(startIndex = 0, endIndex = -1) {
           const cells = $(this)
@@ -988,7 +869,7 @@ $(function() {
               .attr('onclick')
               .getStrBetween("'", "'");
             chrome.runtime.sendMessage({
-              opennetzbackEx: `${NX.CONST.host}/kanren/shido_yotei_edit.aspx?id=${shido_id}&autoClean=true`
+              openTabBack: `${NX.CONST.host}/kanren/shido_yotei_edit.aspx?id=${shido_id}&autoClean=true`
             });
             return false;
           });
@@ -1184,7 +1065,7 @@ $(function() {
         $('[value="登録"]').on('contextmenu', function() {
           if (params) {
             chrome.runtime.sendMessage({
-              opennetzbackEx: `${NX.CONST.host}/tehai/shido_edit_list.aspx?${params}`
+              openTabBack: `${NX.CONST.host}/tehai/shido_edit_list.aspx?${params}`
             });
           }
           $(this).trigger('click');
@@ -1372,138 +1253,6 @@ $(function() {
             $('[name=input2_dt]').val(NX.DT.Koshu_END.slash);
           });
         break;
-      case '/netz/netz1/kanren/booth_list.aspx':
-        //報告済チェックボタンの右クリックかスワイプで、すべてCHし登録
-        $('#allcheck')
-          .on('contextmenu', () => {
-            checkAndRegist();
-            return false;
-          })
-          .swipe('全チェック', () => checkAndRegist());
-
-        function checkAndRegist() {
-          $('input[name="kekka_cb"]').prop('checked', true);
-          $('input[name=kekka_update]').trigger('click');
-        }
-
-        popmenu.appendItems([
-          {
-            text: 'Diverse登録画面を開く',
-            handler: () => {
-              const tableHead = $('table').getTableHead();
-              const eqDiverse = tableHead['科目'] || 10;
-              const eqStudentName = tableHead['生徒名'] || 8;
-              const DiverseList = [
-                ...new Set(
-                  $('tr')
-                    .map(function() {
-                      // 科目のテキストに"Diverse"が含まれているかチェック
-                      //prettier-ignore
-                      if ($(this).findTdGetTxt(eqDiverse).includes('Diverse')) {
-                          return $(this).find('td').eq(eqStudentName).find('a').text().trim();
-                        }
-                      return null;
-                    })
-                    .get()
-                )
-              ];
-
-              //遷移先のロードを待って反映
-              const diverseWindow = window.open(NX.URL.diverse);
-              setTimeout(() => {
-                diverseWindow.postMessage(DiverseList, NX.URL.diverse);
-              }, 3000);
-            }
-          }
-        ]);
-        break;
-      case '/netz/netz1/tehai/tehai_input.aspx': {
-        const { doAction, forceSubject } = getparameter();
-        //数値だけの入力、オートコンプリートオフ
-        $('input[name$=_vl]').isAllNumeric();
-        $('input').offAutocomplete();
-
-        //自動入力（整形＆エラー回避）
-        //回数空欄の場合は時間と期間を削除
-        FUNCTION_T.tehai_input.setRange();
-
-        //回数が空欄か0でチェックが入っていたら外す
-        ['kok', 'sha', 'sug', 'rik', 'eig'].forEach(sub => {
-          $(`input[name=shido_${sub}]`)
-            .on('input', function() {
-              const count = $(this).val();
-              if (count == '' || count == '0') $(`[name=shido_${sub}_flg]`).prop('checked', false);
-            })
-            .trigger('input');
-        });
-
-        //科目強制であれば、合計値をすべて国語に割り振る
-        if (forceSubject == 'true') applyToSubject();
-
-        switch (doAction) {
-          case 'setAuto':
-            //自動処理に変える
-            $('select[name=jyotai_cb]').val(2);
-            $('input[name=b_submit]').trigger('click');
-            break;
-          case 'setDone':
-            //完了に変える
-            $('select[name=jyotai_cb]').val(5);
-            $('input[name=b_submit]').trigger('click');
-            break;
-        }
-
-        const student_cd = $('input[name=student_cd').val();
-        const iframe = new IframeMakerEx({ x: 1100, y: 10, draggable: true });
-
-        popmenu.appendItems([
-          {
-            text: '手配中にして登録',
-            handler: () => {
-              applyToSubject();
-              $('select[name=jyotai_cb]').val('1');
-              $('input[name=b_submit]').trigger('click');
-            }
-          },
-          {
-            text: '手配済にして登録',
-            handler: () => {
-              applyToSubject();
-              $('select[name=jyotai_cb]').val('5');
-              $('input[name=b_submit]').trigger('click');
-            }
-          },
-          { text: 'プロファイル', handler: () => iframe.loadUrl(`${NX.CONST.host}/s/student_profile_input.aspx?student_cd=${student_cd}`) },
-          { text: '契約情報', handler: () => iframe.loadUrl(`${NX.CONST.host}/k/student_keiyaku_data.aspx?student_cd=${student_cd}`) }
-        ]);
-
-        function applyToSubject(sub = 'kok') {
-          const applyedSum = ['kok', 'sha', 'sug', 'rik', 'eig'].reduce((acc, cur) => {
-            const val = parseInt($(`input[name=shido_${cur}_vl]`).val()) || 0;
-            return acc + val;
-          }, 0);
-          //合計算出
-          const sum = ['sho', 'kitei', 'tsuika', 'koshu'].reduce((acc, cur) => {
-            const val = parseInt($(`input[name=${cur}_vl]`).val()) || 0;
-            return acc + val;
-          }, 0);
-
-          //すでに適正なら終了
-          if (applyedSum == sum) return true;
-
-          //一旦科目クリア
-          ['kok', 'sha', 'sug', 'rik', 'eig'].forEach(cur => {
-            $(`input[name=shido_${cur}_vl]`).val('');
-            $(`[name=shido_${cur}_flg]`).prop('checked', false);
-          });
-
-          //特定科目に適用
-          $(`[name=shido_${sub}_flg]`).prop('checked', true);
-          $(`[name=shido_${sub}_vl]`).val(sum);
-        }
-
-        break;
-      }
       case '/netz/netz1/tehai/shido2_input_sp_check.aspx':
         //手配入力画面でマスターを使う
         FUNCTION_T.shido2_input_sp_check.setmaster();
@@ -1773,7 +1522,7 @@ $(function() {
                   const params = { ...commonData, ...addData };
                   setTimeout(() => {
                     chrome.runtime.sendMessage({
-                      opennetzbackEx: `${NX.CONST.host}/shingaku/kouza_enshu_shido_input.aspx?${$.param(params)}`
+                      openTabBack: `${NX.CONST.host}/shingaku/kouza_enshu_shido_input.aspx?${$.param(params)}`
                     });
                   }, index * 2000);
                 });
@@ -2279,7 +2028,7 @@ $(function() {
                   .parents('tr')
                   .remove();
                 chrome.runtime.sendMessage({
-                  opennetzbackEx: `${NX.CONST.host}/todo/todo_input.aspx?setState=F&doSave=true&id=${taskid}`
+                  openTabBack: `${NX.CONST.host}/todo/todo_input.aspx?setState=F&doSave=true&id=${taskid}`
                 });
               });
             });
@@ -2392,12 +2141,12 @@ $(function() {
               if (delay) {
                 setTimeout(function() {
                   chrome.runtime.sendMessage({
-                    opennetzbackEx: url
+                    openTabBack: url
                   });
                 }, index * 1000);
               } else {
                 chrome.runtime.sendMessage({
-                  opennetzbackEx: url
+                  openTabBack: url
                 });
               }
 

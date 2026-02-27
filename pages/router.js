@@ -1,21 +1,39 @@
 import PageFuncAll from './PageFuncAll.js';
+import PageFuncTehai from './PageFuncTehai.js';
 import PageFuncS from './PageFuncS.js';
 import PageFuncT from './PageFuncT.js';
 import PageFuncSchedule from './PageFuncSchedule.js';
+import PageFuncKanren from './PageFuncKanren.js';
 import PageFuncTenpoYotei from './PageFuncTenpoYotei.js';
 import PageFuncToiawases from './PageFuncToiawases.js';
 import PopMenu from '../core/PopMenu.js';
 import MemberLinker from '../core/features/MemberLinker.js';
 import { myprofile } from '../core/store.js';
+import Tabler from '../core/Tabler.js';
+import { NX_Utils } from '../core/utils.js';
+
+// ---------------------------------------------------------
+// Global変数作成
+// ---------------------------------------------------------
+$.fn.tabler = function(headnum = 0) {
+  return this.each(function() {
+    // 既にインスタンス化されていればスキップ、もしくは取得する設計にもできます
+    if (!$(this).data('tabler')) {
+      const instance = new Tabler(this, headnum);
+      $(this).data('tabler', instance);
+    }
+  });
+};
 
 $(function() {
-  console.log('PageFunction.js');
   /* ---------------------------------------------------*/
   /* 常に働く機能
   /* ---------------------------------------------------*/
 
   // ドメインチェック
   if (location.hostname != 'menu.edu-netz.com' && location.hostname != 'menu2.edu-netz.com') return;
+
+  console.log('PageFunction.js for edu-netz');
 
   /* ---------------------------------------------------*/
   /* スペシャルモードで働く機能
@@ -28,8 +46,10 @@ $(function() {
   }
 
   const pageFuncAll = new PageFuncAll();
+  const pageFuncTehai = new PageFuncTehai();
   const pageFuncS = new PageFuncS();
   const pageFuncSchedule = new PageFuncSchedule();
+  const pageFuncKanren = new PageFuncKanren();
   const pageFuncToiawases = new PageFuncToiawases();
   const pageFuncT = new PageFuncT();
 
@@ -105,6 +125,17 @@ $(function() {
     case '/netz/netz1/tehai/kanren_input_save.aspx':
       // 関連登録画面開いたら即送信
       $('form[name=form1]')['0'].submit();
+      break;
+
+    case '/netz/netz1/tehai/tehai_input.aspx':
+      // 自動入力
+      pageFuncTehai.setTehaiAutomation();
+
+      // 手配期間修正（整形＆エラー回避）＆回数空欄の場合は時間と期間を削除
+      pageFuncTehai.setTehaiRange();
+
+      // popmenu
+
       break;
 
     /* ---------------------------------------------------*/
@@ -251,6 +282,44 @@ $(function() {
       $('[name=b_submit]').swipe('通常予定画面', () => {
         window.location.href = `${NX.CONST.host}/schedule/yotei.aspx`;
       });
+      break;
+    case '/netz/netz1/schedule/yotei_input.aspx':
+      // 予定の右クリック→チェックを付けて登録
+      // 場所の右クリック→空欄ならデフォルト教室入力、空欄でないなら登録ボタンを押す
+      pageFuncSchedule.scheduleResisterSupport();
+
+      // 予定表のテンプレート機能
+      pageFuncSchedule.scheduleResisterTemplate();
+
+      //半角修正
+      $('input[name=s_tm],input[name=e_tm]').isAllNumeric(false);
+      break;
+
+    /* ---------------------------------------------------*/
+    /* PageFuncKanren
+    /* ---------------------------------------------------*/
+
+    case '/netz/netz1/kanren/shido_leader_input.aspx':
+      // リーダー講師設定
+      pageFuncKanren.setLeaderTeacher();
+      break;
+
+    case '/netz/netz1/kanren/booth_list_print.aspx':
+      // A4タテで印刷
+      $('body').before('<style>@page {size: 210mm 297mm;}</style>');
+
+      // 指導予定整形
+      pageFuncKanren.prettierLectureList();
+      break;
+
+    case '/netz/netz1/kanren/booth_list.aspx':
+      // 報告済チェックボタンの右クリックかスワイプで、すべてCHし登録
+      pageFuncKanren.lectureAllCheck();
+
+      // Diverse登録画面を開いてデータを送る
+      pageFuncKanren.sendingDiverse();
+
+      break;
 
     /* ---------------------------------------------------*/
     /* PageFunc Directs
@@ -305,4 +374,42 @@ $(function() {
       });
       break;
   }
+});
+
+/* ---------------------------------------------------*/
+/* Diverse LMS
+/* ---------------------------------------------------*/
+
+$(function() {
+  // ドメインチェック
+  if (location.hostname != 'lms2.s-diverse.com') return;
+
+  console.log('PageFunction.js for s-diverse');
+
+  const popmenu = new PopMenu({
+    id: 'main',
+    keyCode: 113,
+    showFloatingButton: true
+  });
+
+  window.addEventListener('message', function(event) {
+    // 送信元を確認
+    if (event.origin === 'https://menu.edu-netz.com' || event.origin === 'https://menu2.edu-netz.com') {
+      popmenu.staticItems = [];
+      popmenu.appendItems([
+        {
+          text: 'ブース表から出欠登録',
+          handler: () => {
+            event.data.forEach(student => {
+              $(`tr:contains("${student.replace('　', ' ')}")`)
+                .find('.chakra-checkbox')
+                .trigger('click');
+            });
+          }
+        }
+      ]);
+
+      console.log('popmenu', popmenu);
+    }
+  });
 });
