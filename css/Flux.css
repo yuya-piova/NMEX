@@ -1,0 +1,159 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   0. Flux Theme Variables (ここでデザインを一括管理)
+   ========================================================================== */
+:root {
+  /* Colors */
+  --fx-primary: #0056b3;
+  --fx-primary-hover: #07488d;
+  --fx-danger: #dc3545;
+  --fx-danger-hover: #c82333;
+  --fx-surface: #ffffff;
+  --fx-background: #f4f7f9;
+  --fx-border: #eeeeee;
+  --fx-text-main: #333333;
+  --fx-text-muted: #999999;
+
+  /* Border Radius */
+  --fx-rounded-sm: 4px;
+  --fx-rounded-md: 8px;
+  --fx-rounded-full: 9999px;
+
+  /* Shadows */
+  --fx-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --fx-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  /* Spacing (必要に応じて増やす) */
+  --fx-space-2: 8px;
+  --fx-space-3: 12px;
+  --fx-space-4: 16px;
+
+  /* Fonts */
+  --fx-font-sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Arial, sans-serif;
+}
+
+/* ==========================================================================
+   1. Tailwind-like Utility Classes (ユーティリティ)
+   ========================================================================== */
+/* Layout & Flexbox */
+.fx-flex {
+  display: flex;
+}
+.fx-flex-col {
+  flex-direction: column;
+}
+.fx-items-center {
+  align-items: center;
+}
+.fx-justify-between {
+  justify-content: space-between;
+}
+.fx-justify-center {
+  justify-content: center;
+}
+.fx-gap-2 {
+  gap: var(--fx-space-2);
+}
+.fx-gap-3 {
+  gap: var(--fx-space-3);
+}
+
+/* Spacing (Padding/Margin) */
+.fx-p-3 {
+  padding: var(--fx-space-3);
+}
+.fx-px-3 {
+  padding-left: var(--fx-space-3);
+  padding-right: var(--fx-space-3);
+}
+.fx-py-2 {
+  padding-top: var(--fx-space-2);
+  padding-bottom: var(--fx-space-2);
+}
+.fx-mb-2 {
+  margin-bottom: var(--fx-space-2);
+}
+
+/* Typography */
+.fx-text-sm {
+  font-size: 0.85rem;
+}
+.fx-text-base {
+  font-size: 0.95rem;
+}
+.fx-font-bold {
+  font-weight: bold;
+}
+.fx-text-main {
+  color: var(--fx-text-main);
+}
+.fx-text-muted {
+  color: var(--fx-text-muted);
+}
+
+/* ==========================================================================
+   2. Component Classes (よく使う組み合わせはコンポーネント化)
+   ========================================================================== */
+/* Flux Card (ポップアップやウィジェットの枠) */
+.flux-card {
+  background-color: var(--fx-surface);
+  border: 1px solid var(--fx-border);
+  border-top: 3px solid var(--fx-primary);
+  border-radius: var(--fx-rounded-md);
+  box-shadow: var(--fx-shadow-md);
+  font-family: var(--fx-font-sans);
+}
+
+/* Flux Buttons */
+.flux-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--fx-rounded-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+  color: #fff;
+}
+.flux-btn-primary {
+  background-color: var(--fx-primary);
+}
+.flux-btn-primary:hover {
+  background-color: var(--fx-primary-hover);
+}
+
+.flux-btn-danger {
+  background-color: var(--fx-danger);
+}
+.flux-btn-danger:hover {
+  background-color: var(--fx-danger-hover);
+}
+
+/* Flux Close Icon Button */
+.flux-btn-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--fx-text-muted);
+  width: 24px;
+  height: 24px;
+  border-radius: var(--fx-rounded-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+.flux-btn-close:hover {
+  color: var(--fx-primary);
+  background-color: #f0f8ff;
+}
+
+/* Flux Input/Select */
+.flux-input {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: var(--fx-rounded-sm);
+  font-size: 0.9rem;
+  color: var(--fx-text-main);
+}

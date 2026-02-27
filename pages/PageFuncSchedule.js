@@ -99,27 +99,35 @@ export default class PageFuncSchedule {
   scheduleResisterTemplate() {
     const popmenu = new PopMenu({ id: 'main' });
 
-    // 1. UIの構築 (1回だけ生成する)
-    const $templateDiv = $('<div>').css({
+    // 1. UIの構築 (ユーティリティクラスとコンポーネントクラスを活用)
+    const $templateDiv = $('<div>', {
+      class: 'flux-card fx-flex fx-flex-col fx-gap-2 fx-p-3'
+    }).css({
       position: 'fixed',
       bottom: '20px',
       right: '20px',
-      background: '#fff',
-      border: '1px solid #ccc',
-      padding: '10px',
       zIndex: 9999,
-      boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-      display: 'none' // 初期状態は非表示
+      display: 'none'
     });
 
-    const $select = $('<select>').css({ width: '150px', marginRight: '5px' });
-    const $addBtn = $('<button>').text('追加');
-    const $deleteBtn = $('<button>').text('削除');
-    const $closeBtn = $('<button>')
-      .text('×')
-      .css({ marginLeft: '10px' });
+    // ヘッダー部分
+    const $header = $('<div>', {
+      class: 'fx-flex fx-items-center fx-justify-between fx-mb-2',
+      css: { borderBottom: '1px solid var(--fx-border)', paddingBottom: '8px' }
+    });
 
-    $templateDiv.append($select, $addBtn, $deleteBtn, $closeBtn).appendTo('body');
+    const $title = $('<strong>', { class: 'fx-text-base fx-text-main' }).text('予定テンプレート');
+    const $closeBtn = $('<button>', { class: 'flux-btn-close' }).html('&#10005;');
+    $header.append($title, $closeBtn);
+
+    // コントロール部分
+    const $controls = $('<div>', { class: 'fx-flex fx-items-center fx-gap-2' });
+    const $select = $('<select>', { class: 'flux-input', css: { width: '160px' } });
+    const $addBtn = $('<button>', { class: 'flux-btn flux-btn-primary' }).text('追加');
+    const $deleteBtn = $('<button>', { class: 'flux-btn flux-btn-danger' }).text('削除');
+
+    $controls.append($select, $addBtn, $deleteBtn);
+    $templateDiv.append($header, $controls).appendTo('body');
 
     // 2. セレクトボックスを最新のLocalStorageから再描画する関数
     const renderSelect = () => {
@@ -136,7 +144,8 @@ export default class PageFuncSchedule {
         text: 'テンプレートを表示',
         handler: () => {
           renderSelect();
-          $templateDiv.show();
+          // flexレイアウトを維持したまま表示する
+          $templateDiv.css('display', 'flex');
         }
       }
     ]);
@@ -149,15 +158,13 @@ export default class PageFuncSchedule {
     // 5. イベント処理: 選択してフォームに反映
     $select.on('change', function() {
       const index = $(this).val();
-      if (index === '') return; // ーーー が選ばれたら何もしない
+      if (index === '') return;
 
       const templates = JSON.parse(localStorage.getItem('yoteiTemplate')) || [];
       const template = templates[index] || {};
 
       for (const [key, val] of Object.entries(template)) {
-        if (key === 'name') continue; // テンプレート名自身はフォームに入れない
-
-        // 値をセットしつつ、changeイベントを発火させて関連するJSも動かす
+        if (key === 'name') continue;
         $(`[name="${key}"]`)
           .val(val)
           .trigger('change');
@@ -179,10 +186,9 @@ export default class PageFuncSchedule {
         return;
       }
 
-      // テンプレート名を入力させる
       const defaultName = template.yotei_nm || '新しいテンプレート';
       const templateName = prompt('テンプレート名を入力してください', defaultName);
-      if (!templateName) return; // キャンセル時は保存しない
+      if (!templateName) return;
 
       template.name = templateName;
 
@@ -190,8 +196,8 @@ export default class PageFuncSchedule {
       templates.push(template);
       localStorage.setItem('yoteiTemplate', JSON.stringify(templates));
 
-      renderSelect(); // セレクトボックスを即座に更新
-      $select.val(templates.length - 1); // 今追加したものを選択状態にする
+      renderSelect();
+      $select.val(templates.length - 1);
     });
 
     // 7. イベント処理: 選択中のものを削除
@@ -205,7 +211,7 @@ export default class PageFuncSchedule {
       templates.splice(targetIndex, 1);
       localStorage.setItem('yoteiTemplate', JSON.stringify(templates));
 
-      renderSelect(); // セレクトボックスを即座に更新
+      renderSelect();
     });
   }
 }
