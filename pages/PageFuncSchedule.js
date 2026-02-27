@@ -101,7 +101,7 @@ export default class PageFuncSchedule {
 
     // 1. UIの構築 (ユーティリティクラスとコンポーネントクラスを活用)
     const $templateDiv = $('<div>', {
-      class: 'flux-card fx-flex fx-flex-col fx-gap-2 fx-p-3'
+      class: 'flux-card flux-flex flux-flex-col flux-gap-2 flux-p-3'
     }).css({
       position: 'fixed',
       bottom: '20px',
@@ -112,16 +112,16 @@ export default class PageFuncSchedule {
 
     // ヘッダー部分
     const $header = $('<div>', {
-      class: 'fx-flex fx-items-center fx-justify-between fx-mb-2',
-      css: { borderBottom: '1px solid var(--fx-border)', paddingBottom: '8px' }
+      class: 'flux-flex flux-items-center flux-justify-between flux-mb-2',
+      css: { borderBottom: '1px solid var(--flux-border)', paddingBottom: '8px' }
     });
 
-    const $title = $('<strong>', { class: 'fx-text-base fx-text-main' }).text('予定テンプレート');
+    const $title = $('<strong>', { class: 'flux-text-base flux-text-main' }).text('予定テンプレート');
     const $closeBtn = $('<button>', { class: 'flux-btn-close' }).html('&#10005;');
     $header.append($title, $closeBtn);
 
     // コントロール部分
-    const $controls = $('<div>', { class: 'fx-flex fx-items-center fx-gap-2' });
+    const $controls = $('<div>', { class: 'flux-flex flux-items-center flux-gap-2' });
     const $select = $('<select>', { class: 'flux-input', css: { width: '160px' } });
     const $addBtn = $('<button>', { class: 'flux-btn flux-btn-primary' }).text('追加');
     const $deleteBtn = $('<button>', { class: 'flux-btn flux-btn-danger' }).text('削除');

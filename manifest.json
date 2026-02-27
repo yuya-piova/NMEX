@@ -61,6 +61,7 @@
         "flux/css/*.css",
         "core/*.js",
         "core/features/*.js",
+        "css/*.css",
         "pages/*.js",
         "parsers/*.js",
         "templates.html"

@@ -1,159 +1,288 @@
 @charset "UTF-8";
 
 /* ==========================================================================
-   0. Flux Theme Variables (ここでデザインを一括管理)
+   0. Flux Theme Variables
    ========================================================================== */
 :root {
-  /* Colors */
-  --fx-primary: #0056b3;
-  --fx-primary-hover: #07488d;
-  --fx-danger: #dc3545;
-  --fx-danger-hover: #c82333;
-  --fx-surface: #ffffff;
-  --fx-background: #f4f7f9;
-  --fx-border: #eeeeee;
-  --fx-text-main: #333333;
-  --fx-text-muted: #999999;
+  --flux-primary: #0056b3;
+  --flux-primary-hover: #07488d;
+  --flux-danger: #dc3545;
+  --flux-danger-hover: #c82333;
+  --flux-warning: #ffc107;
+  --flux-warning-hover: #e0a800;
+  --flux-success: #28a745;
+  --flux-secondary: #6c757d;
+  --flux-secondary-hover: #5a6268;
 
-  /* Border Radius */
-  --fx-rounded-sm: 4px;
-  --fx-rounded-md: 8px;
-  --fx-rounded-full: 9999px;
+  --flux-surface: #ffffff;
+  --flux-background: #f4f7f9;
+  --flux-border: #eeeeee;
 
-  /* Shadows */
-  --fx-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --fx-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --flux-text-main: #333333;
+  --flux-text-muted: #999999;
 
-  /* Spacing (必要に応じて増やす) */
-  --fx-space-2: 8px;
-  --fx-space-3: 12px;
-  --fx-space-4: 16px;
+  --flux-rounded-sm: 4px;
+  --flux-rounded-md: 8px;
+  --flux-rounded-full: 9999px;
 
-  /* Fonts */
-  --fx-font-sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Arial, sans-serif;
+  --flux-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --flux-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  --flux-font-sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Arial, sans-serif;
 }
 
 /* ==========================================================================
-   1. Tailwind-like Utility Classes (ユーティリティ)
+   1. Utility Classes
    ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 /* Layout & Flexbox */
-.fx-flex {
+.flux-flex {
   display: flex;
 }
-.fx-flex-col {
+.flux-flex-col {
   flex-direction: column;
 }
-.fx-items-center {
+.flux-items-center {
   align-items: center;
 }
-.fx-justify-between {
+.flux-justify-between {
   justify-content: space-between;
 }
-.fx-justify-center {
+.flux-justify-center {
   justify-content: center;
 }
-.fx-gap-2 {
-  gap: var(--fx-space-2);
+.flux-gap-2 {
+  gap: var(--flux-space-2);
 }
-.fx-gap-3 {
-  gap: var(--fx-space-3);
+.flux-gap-3 {
+  gap: var(--flux-space-3);
 }
 
 /* Spacing (Padding/Margin) */
-.fx-p-3 {
-  padding: var(--fx-space-3);
+.flux-p-3 {
+  padding: var(--flux-space-3);
 }
-.fx-px-3 {
-  padding-left: var(--fx-space-3);
-  padding-right: var(--fx-space-3);
+.flux-px-3 {
+  padding-left: var(--flux-space-3);
+  padding-right: var(--flux-space-3);
 }
-.fx-py-2 {
-  padding-top: var(--fx-space-2);
-  padding-bottom: var(--fx-space-2);
+.flux-py-2 {
+  padding-top: var(--flux-space-2);
+  padding-bottom: var(--flux-space-2);
 }
-.fx-mb-2 {
-  margin-bottom: var(--fx-space-2);
+.flux-mb-2 {
+  margin-bottom: var(--flux-space-2);
 }
 
 /* Typography */
-.fx-text-sm {
+.flux-text-sm {
   font-size: 0.85rem;
 }
-.fx-text-base {
+.flux-text-base {
   font-size: 0.95rem;
 }
-.fx-font-bold {
+.flux-font-bold {
   font-weight: bold;
 }
-.fx-text-main {
-  color: var(--fx-text-main);
+.flux-text-main {
+  color: var(--flux-text-main);
 }
-.fx-text-muted {
-  color: var(--fx-text-muted);
+.flux-text-muted {
+  color: var(--flux-text-muted);
+}
+
+/* スクロールバー非表示ユーティリティ */
+.flux-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.flux-no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* ==========================================================================
-   2. Component Classes (よく使う組み合わせはコンポーネント化)
+   2. Components
    ========================================================================== */
-/* Flux Card (ポップアップやウィジェットの枠) */
+/* --- Card --- */
 .flux-card {
-  background-color: var(--fx-surface);
-  border: 1px solid var(--fx-border);
-  border-top: 3px solid var(--fx-primary);
-  border-radius: var(--fx-rounded-md);
-  box-shadow: var(--fx-shadow-md);
-  font-family: var(--fx-font-sans);
+  background-color: var(--flux-surface);
+  border-radius: var(--flux-rounded-md);
+  box-shadow: var(--flux-shadow-sm); /* 少し影を控えめに統一 */
+  border-top: 3px solid var(--flux-primary);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.flux-card-header {
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--flux-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--flux-surface);
+}
+.flux-card-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--flux-text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.flux-card-body {
+  padding: 0;
+  flex-grow: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Flux Buttons */
+/* --- Buttons --- */
 .flux-btn {
-  padding: 6px 12px;
+  padding: 8px 16px;
   border: none;
-  border-radius: var(--fx-rounded-sm);
+  border-radius: var(--flux-rounded-sm);
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   transition: background 0.2s;
   color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .flux-btn-primary {
-  background-color: var(--fx-primary);
+  background-color: var(--flux-primary);
 }
 .flux-btn-primary:hover {
-  background-color: var(--fx-primary-hover);
+  background-color: var(--flux-primary-hover);
 }
-
+.flux-btn-secondary {
+  background-color: var(--flux-secondary);
+}
+.flux-btn-secondary:hover {
+  background-color: var(--flux-secondary-hover);
+}
 .flux-btn-danger {
-  background-color: var(--fx-danger);
+  background-color: var(--flux-danger);
 }
 .flux-btn-danger:hover {
-  background-color: var(--fx-danger-hover);
+  background-color: var(--flux-danger-hover);
+}
+.flux-btn-warning {
+  background-color: var(--flux-warning);
+  color: #333;
+}
+.flux-btn-warning:hover {
+  background-color: var(--flux-warning-hover);
 }
 
-/* Flux Close Icon Button */
-.flux-btn-close {
+/* Icon Button */
+.flux-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--flux-text-muted);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+}
+.flux-btn-icon:hover {
+  color: var(--flux-primary);
+  background-color: #f0f8ff;
+}
+
+/* --- Forms --- */
+.flux-input {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: var(--flux-rounded-sm);
+  font-size: 0.9rem;
+  color: var(--flux-text-main);
+}
+
+/* --- Status Chips --- */
+.flux-status-chip {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.flux-status-open {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+.flux-status-pre {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+.flux-status-closed {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* Empty State */
+.flux-empty-state {
+  padding: 20px;
+  text-align: center;
+  color: #aaa;
+}
+
+/* --- Icon Link & Check Buttons (Task等で使用) --- */
+
+/* チェックボタン (タスク完了用など) */
+.flux-btn-check {
   background: none;
   border: none;
   cursor: pointer;
   color: var(--fx-text-muted);
-  width: 24px;
-  height: 24px;
-  border-radius: var(--fx-rounded-full);
+  font-size: 1.2rem;
+  padding: 2px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  transition: all 0.2s;
+  transition: color 0.2s;
 }
-.flux-btn-close:hover {
-  color: var(--fx-primary);
-  background-color: #f0f8ff;
+.flux-btn-check:hover {
+  color: var(--fx-success);
 }
 
-/* Flux Input/Select */
-.flux-input {
-  padding: 6px 10px;
-  border: 1px solid #ccc;
+/* リンクアイコン (生徒連絡用など) */
+.flux-icon-link {
+  color: var(--fx-text-muted);
+  font-size: 1rem;
+  padding: 5px;
   border-radius: var(--fx-rounded-sm);
-  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.flux-icon-link:hover {
+  background-color: var(--fx-border);
+  color: var(--fx-primary);
+}
+
+/* テキストリンク */
+.flux-link {
   color: var(--fx-text-main);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.flux-link:hover {
+  color: var(--fx-primary);
+  text-decoration: underline;
 }

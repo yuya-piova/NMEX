@@ -18,7 +18,6 @@
   --radius-rough: 10px;
 }
 /*カラースキームに対応させる*/
-i.fa-solid,
 .colorScheme {
   --mainColor: initial;
   color: var(--mainColor);

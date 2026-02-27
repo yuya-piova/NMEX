@@ -129,11 +129,17 @@ export class Flux {
       </div>
     `;
 
-    // CSSの適用 (manifest.jsonでCSSファイルを読み込むのが正攻法ですが、JSで当てる場合)
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = chrome.runtime.getURL('flux/css/flux.css');
-    document.head.appendChild(link);
+    // 1. 共通ユーティリティ・コンポーネントの読み込み
+    const linkCommon = document.createElement('link');
+    linkCommon.rel = 'stylesheet';
+    linkCommon.href = chrome.runtime.getURL('css/Flux.css');
+    document.head.appendChild(linkCommon);
+
+    // 2. ダッシュボード専用レイアウトの読み込み
+    const linkApp = document.createElement('link');
+    linkApp.rel = 'stylesheet';
+    linkApp.href = chrome.runtime.getURL('flux/css/dashboard.css');
+    document.head.appendChild(linkApp);
 
     const svgIcon = `
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
