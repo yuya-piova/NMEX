@@ -28,86 +28,15 @@
   --flux-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --flux-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
 
+  --flux-space-2: 8px;
+  --flux-space-3: 12px;
+  --flux-space-4: 16px;
+
   --flux-font-sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Arial, sans-serif;
 }
 
 /* ==========================================================================
-   1. Utility Classes
-   ========================================================================== */
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-/* Layout & Flexbox */
-.flux-flex {
-  display: flex;
-}
-.flux-flex-col {
-  flex-direction: column;
-}
-.flux-items-center {
-  align-items: center;
-}
-.flux-justify-between {
-  justify-content: space-between;
-}
-.flux-justify-center {
-  justify-content: center;
-}
-.flux-gap-2 {
-  gap: var(--flux-space-2);
-}
-.flux-gap-3 {
-  gap: var(--flux-space-3);
-}
-
-/* Spacing (Padding/Margin) */
-.flux-p-3 {
-  padding: var(--flux-space-3);
-}
-.flux-px-3 {
-  padding-left: var(--flux-space-3);
-  padding-right: var(--flux-space-3);
-}
-.flux-py-2 {
-  padding-top: var(--flux-space-2);
-  padding-bottom: var(--flux-space-2);
-}
-.flux-mb-2 {
-  margin-bottom: var(--flux-space-2);
-}
-
-/* Typography */
-.flux-text-sm {
-  font-size: 0.85rem;
-}
-.flux-text-base {
-  font-size: 0.95rem;
-}
-.flux-font-bold {
-  font-weight: bold;
-}
-.flux-text-main {
-  color: var(--flux-text-main);
-}
-.flux-text-muted {
-  color: var(--flux-text-muted);
-}
-
-/* スクロールバー非表示ユーティリティ */
-.flux-no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.flux-no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* ==========================================================================
-   2. Components
+   1. Components
    ========================================================================== */
 /* --- Card --- */
 .flux-card {
@@ -285,4 +214,81 @@
 .flux-link:hover {
   color: var(--fx-primary);
   text-decoration: underline;
+}
+/* ==========================================================================
+   1. Utility Classes
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Layout & Flexbox */
+.flux-flex {
+  display: flex;
+}
+.flux-flex-col {
+  flex-direction: column;
+}
+.flux-flex-row {
+  flex-direction: row;
+}
+.flux-items-center {
+  align-items: center;
+}
+.flux-justify-between {
+  justify-content: space-between;
+}
+.flux-justify-center {
+  justify-content: center;
+}
+.flux-gap-2 {
+  gap: var(--flux-space-2);
+}
+.flux-gap-3 {
+  gap: var(--flux-space-3);
+}
+
+/* Spacing (Padding/Margin) */
+.flux-p-3 {
+  padding: var(--flux-space-3);
+}
+.flux-px-3 {
+  padding-left: var(--flux-space-3);
+  padding-right: var(--flux-space-3);
+}
+.flux-py-2 {
+  padding-top: var(--flux-space-2);
+  padding-bottom: var(--flux-space-2);
+}
+.flux-mb-2 {
+  margin-bottom: var(--flux-space-2);
+}
+
+/* Typography */
+.flux-text-sm {
+  font-size: 0.85rem;
+}
+.flux-text-base {
+  font-size: 0.95rem;
+}
+.flux-font-bold {
+  font-weight: bold;
+}
+.flux-text-main {
+  color: var(--flux-text-main);
+}
+.flux-text-muted {
+  color: var(--flux-text-muted);
+}
+
+/* スクロールバー非表示ユーティリティ */
+.flux-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.flux-no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

@@ -1,5 +1,6 @@
 // pages/PageFuncS.js
 import { NX_Utils, createZoomMeetingAsync } from '../core/utils.js';
+import { toast } from '../core/components/FluxToast.js';
 import PopMenu from '../core/PopMenu.js';
 import ConsoleBot from '../core/components/ConsoleBot.js';
 
@@ -18,7 +19,7 @@ export default class PageFuncS {
         handler: () => {
           const data = this._extractData();
           if (!data.dateObj) {
-            PX_Toast('エラー: 面接日時が正しく入力されていません。');
+            toast.error('エラー: 面接日時が正しく入力されていません');
             return;
           }
 

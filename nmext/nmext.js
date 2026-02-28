@@ -207,43 +207,6 @@ $(function() {
         }
 
         break;
-      case '/netz/netz1/u/yosandata.aspx':
-        popmenut_F8.setContentFunction(function() {
-          $('<button>', {
-            type: 'button',
-            text: '取得',
-            on: {
-              click: async () => {
-                $('hr')
-                  .next('div')
-                  .remove();
-                $('table').remove();
-                //const tenpo_cd = $('select[name=tenpo_cd]').val();
-                const ymlist = ['2025/04', '2025/05', '2025/06', '2025/07', '2025/08'];
-                const unitList = ['b3401', 'b3403', 'b3302', 'b3303', 'b3701'];
-                const resultNXT = new NXTable();
-                for (const tenpo_cd of unitList) {
-                  for (const yyyymm of ymlist) {
-                    await $.get(`${NX.CONST.host}/u/yosandata.aspx?tenpo_cd=${tenpo_cd}&shido_ng=${yyyymm}`, function(data) {
-                      //$(`<h3>年月：${yyyymm}</h3>`).appendTo('body');
-                      const table = $(data).find('table');
-                      //table.appendTo('body');
-                      const nxtable = $NX(table)
-                        .makeNXTable()
-                        .transpose()
-                        .appendColumn(['ユニット', '年月'], () => [tenpo_cd, yyyymm], 0)
-                        .deleteColumns('title');
-                      resultNXT.merge(nxtable, true);
-                    });
-                  }
-                }
-
-                resultNXT.export('table').appendTo('body');
-              }
-            }
-          }).appendTo(this);
-        });
-        break;
       case '/netz/netz1/s/student_renraku_list.aspx': {
         const student_cd = $('[name=student_cd]').val();
 
@@ -273,18 +236,7 @@ $(function() {
       }
       //●●●●●●●●●●●●●●●●●●●●●●●●●●●●Genre：現生徒面談関連
       case '/netz/netz1/kanren/enshu_check_list.aspx':
-        const { mode } = getparameter();
-        if (mode == 'onlyDiverse') onlyDiverse();
         popmenut_F8.setContentFunction(function() {
-          $('<button>', {
-            text: 'Diverseのみ',
-            on: {
-              click: () => {
-                onlyDiverse();
-                popmenut_F8.closemenu();
-              }
-            }
-          }).appendTo(this);
           $('<button>', {
             text: '保存',
             on: {
@@ -313,16 +265,6 @@ $(function() {
             }
           }).appendTo(this);
         });
-        function onlyDiverse() {
-          $('tr:gt(0)').each(function() {
-            if (
-              !$(this)
-                .findTdGetTxt(3)
-                .includes('Diverse')
-            )
-              $(this).remove();
-          });
-        }
         break;
       case '/netz/netz1/s/koshu_gakunen_shukei.aspx':
         const parentDoc = parent.teian_list_head.document;

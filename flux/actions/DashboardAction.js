@@ -1,5 +1,6 @@
 //import { SnapData } from '../../core/SnapData.js';
 //import { NXTable } from '../../core/NXTable.js';
+import { toast } from '../../core/components/FluxToast.js';
 
 export const DashboardActions = {
   // 教室開校状況の取得
@@ -27,7 +28,7 @@ export const DashboardActions = {
       // 3. データを抽出してオブジェクト化
       const unitStatus = targetBases.map(base => {
         const status = openNXTable.xlookup(base.name, '教室', '状態');
-        const pcCheck = openNXTable.xlookup(base.name, '教室', 5); // 5列目がPCチェック欄と仮定
+        const pcCheck = openNXTable.xlookup(base.name, '教室', 5);
 
         // 開校ページのURL生成
         // 本日の日付を取得 (ExDate利用)
@@ -176,8 +177,7 @@ export const DashboardActions = {
       errorTasks: newErrors
     });
 
-    // (任意) PX_Toast が使えるなら表示
-    if (typeof PX_Toast === 'function') PX_Toast('タスクを完了にしました');
+    toast.success('タスクを完了にしました');
   },
   /**
    * エラータスク（期限切れ、設定ミスなど）の取得
@@ -802,7 +802,9 @@ export const DashboardActions = {
     const dataMap = {};
     targets.forEach(t => (dataMap[t] = {}));
 
-    if (typeof PX_Toast === 'function' && force) PX_Toast('データ取得中...', 'Processing');
+    console.log('売上データ取得中');
+    console.log(toast);
+    toast.info('売上データ取得中...');
 
     try {
       await Promise.all(
@@ -859,10 +861,10 @@ export const DashboardActions = {
         }
       });
 
-      if (typeof PX_Toast === 'function' && force) PX_Toast('データ取得完了');
+      toast.success('売上データ更新完了');
     } catch (e) {
       console.error('Block Sales Fetch Error:', e);
-      if (typeof PX_Toast === 'function') PX_Toast('取得エラー', 'error');
+      toast.error('取得エラー');
     }
   },
   /**
@@ -871,7 +873,7 @@ export const DashboardActions = {
   async fetchStudentCounts(commit, state, { year, baseCd, subject, force }) {
     console.log(`Fetch Student Counts: Year=${year}, Base=${baseCd}, Subject=${subject}`);
 
-    if (typeof PX_Toast === 'function') PX_Toast('データ取得ロジックは未実装です', 'Processing');
+    toast.warning('データ取得ロジックは未実装です');
 
     // とりあえず更新時刻だけ更新してStateに入れる
     commit({
@@ -889,7 +891,7 @@ export const DashboardActions = {
    */
   async fetchDiverseData(commit, state, { ym, force }) {
     console.log(`Fetch Diverse Data: ${ym}`);
-    if (typeof PX_Toast === 'function' && force) PX_Toast('Diverseデータ取得中...', 'Processing');
+    toast.info('Diverseデータ取得中...');
 
     try {
       // 1. 現状データの取得
@@ -937,15 +939,15 @@ export const DashboardActions = {
         }
       });
 
-      if (typeof PX_Toast === 'function' && force) PX_Toast('Diverse更新完了');
+      toast.success('Diverse更新完了');
     } catch (e) {
       console.error('Fetch Diverse Error:', e);
-      if (typeof PX_Toast === 'function') PX_Toast('取得エラー', 'error');
+      toast.error('取得エラー');
     }
   },
   async fetchMiscStats(commit, state, force) {
     try {
-      if (typeof PX_Toast === 'function' && force) PX_Toast('講座データ取得中...', 'Processing');
+      toast.info('講座データ取得中...');
 
       // NX.VAR.nendo が未定義の場合のガード
       const nendo = 2026; //typeof NX !== 'undefined' && NX.VAR ? NX.VAR.nendo : new Date().getFullYear();
@@ -1004,10 +1006,10 @@ export const DashboardActions = {
         }
       });
 
-      if (typeof PX_Toast === 'function' && force) PX_Toast('講座データ更新完了');
+      toast.success('講座データ更新完了');
     } catch (e) {
       console.error('Fetch MiscStats Error:', e);
-      if (typeof PX_Toast === 'function' && force) PX_Toast('取得エラー', 'error');
+      toast.error('取得エラー');
     }
   }
 };

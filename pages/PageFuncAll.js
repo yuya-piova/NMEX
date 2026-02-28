@@ -1,5 +1,6 @@
 import PopMenu from '../core/PopMenu.js';
 import { myprofile } from '../core/store.js';
+import { toast } from '../core/components/FluxToast.js';
 import Tabler from '../core/Tabler.js';
 
 export default class PageFuncAll {
@@ -190,11 +191,12 @@ export default class PageFuncAll {
           switch (choice) {
             case 'csv':
               navigator.clipboard.writeText(NMEX_Utils.tableToCSV(table, '\t'));
-              PX_Toast('CSVコピー完了');
+              toast.success('CSVコピー完了');
+
               break;
             case 'markdown':
               navigator.clipboard.writeText(NMEX_Utils.tableToMarkdown(table));
-              PX_Toast('Markdownコピー完了');
+              toast.success('Markdownコピー完了');
               break;
           }
         }

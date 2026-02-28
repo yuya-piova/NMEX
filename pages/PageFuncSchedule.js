@@ -2,6 +2,7 @@
 import ScheduleParser from '../parsers/ScheduleParser.js';
 import CalendarSync from '../core/CalendarSync.js';
 import PopMenu from '../core/PopMenu.js';
+import { toast } from '../core/components/FluxToast.js';
 
 export default class PageFuncSchedule {
   constructor() {
@@ -99,9 +100,10 @@ export default class PageFuncSchedule {
   scheduleResisterTemplate() {
     const popmenu = new PopMenu({ id: 'main' });
 
-    // 1. UIの構築 (ユーティリティクラスとコンポーネントクラスを活用)
+    // 1. UIの構築 (Fluxのコンポーネントクラスを活用)
+    // .flux-card を使えば、角丸・影・上部の青ボーダーが自動で適用されます
     const $templateDiv = $('<div>', {
-      class: 'flux-card flux-flex flux-flex-col flux-gap-2 flux-p-3'
+      class: 'flux-card'
     }).css({
       position: 'fixed',
       bottom: '20px',
@@ -110,18 +112,18 @@ export default class PageFuncSchedule {
       display: 'none'
     });
 
-    // ヘッダー部分
-    const $header = $('<div>', {
-      class: 'flux-flex flux-items-center flux-justify-between flux-mb-2',
-      css: { borderBottom: '1px solid var(--flux-border)', paddingBottom: '8px' }
-    });
+    // ヘッダー部分 (.flux-card-header を使用)
+    const $header = $('<div>', { class: 'flux-card-header' });
+    const $title = $('<h3>').text('予定テンプレート');
+    const $closeBtn = $('<button>', { class: 'flux-btn-icon' }).html('&#10005;');
 
-    const $title = $('<strong>', { class: 'flux-text-base flux-text-main' }).text('予定テンプレート');
-    const $closeBtn = $('<button>', { class: 'flux-btn-close' }).html('&#10005;');
     $header.append($title, $closeBtn);
 
-    // コントロール部分
-    const $controls = $('<div>', { class: 'flux-flex flux-items-center flux-gap-2' });
+    // コントロール部分 (.flux-card-body をベースにユーティリティクラスでレイアウト)
+    const $controls = $('<div>', {
+      class: 'flux-card-body flux-p-3 flux-flex flux-flex-row flux-items-center flux-gap-2'
+    });
+
     const $select = $('<select>', { class: 'flux-input', css: { width: '160px' } });
     const $addBtn = $('<button>', { class: 'flux-btn flux-btn-primary' }).text('追加');
     const $deleteBtn = $('<button>', { class: 'flux-btn flux-btn-danger' }).text('削除');
@@ -144,8 +146,14 @@ export default class PageFuncSchedule {
         text: 'テンプレートを表示',
         handler: () => {
           renderSelect();
-          // flexレイアウトを維持したまま表示する
+          // flux-card は display: flex を持っているため flex で表示する
           $templateDiv.css('display', 'flex');
+        }
+      },
+      {
+        text: 'とーすと',
+        handler: () => {
+          toast.success('表示！');
         }
       }
     ]);
