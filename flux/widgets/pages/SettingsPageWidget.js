@@ -12,7 +12,7 @@ export class SettingsPageWidget extends Widget {
         </div>
       </div>
 
-      <div class="flux-table-container flux-manage-container" style="padding: 15px;">
+      <div class="flux-table-container">
         <table class="flux-table-full">
           <thead>
             <tr>

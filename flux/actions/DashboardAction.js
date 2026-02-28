@@ -165,7 +165,7 @@ export const DashboardActions = {
     // 完了処理 (拡張機能のメッセージング機能を使ってバックグラウンドで処理させる)
     // nmextf.js の実装に倣い、完了フラグ(setState=F)を送信
     chrome.runtime.sendMessage({
-      opennetzbackEx: `${NX.CONST.host}/todo/todo_input.aspx?setState=F&doSave=true&id=${taskId}`
+      openTabBack: `${NX.CONST.host}/todo/todo_input.aspx?setState=F&doSave=true&id=${taskId}`
     });
 
     // 画面上から即座に消すために、現在のStateから該当タスクを除外して更新
@@ -269,7 +269,7 @@ export const DashboardActions = {
 
     for (const id of taskIds) {
       chrome.runtime.sendMessage({
-        opennetzbackEx: `${NX.CONST.host}/todo/todo_input.aspx?doAction=autoClose&id=${id}`
+        openTabBack: `${NX.CONST.host}/todo/todo_input.aspx?doAction=autoClose&id=${id}`
       });
     }
 
@@ -285,7 +285,7 @@ export const DashboardActions = {
 
     for (const id of taskIds) {
       chrome.runtime.sendMessage({
-        opennetzbackEx: `${NX.CONST.host}/todo/todo_input.aspx?setState=C&doAction=autoClose&id=${id}`
+        openTabBack: `${NX.CONST.host}/todo/todo_input.aspx?setState=C&doAction=autoClose&id=${id}`
       });
     }
     const newErrors = (state.errorTasks || []).filter(t => !taskIds.includes(t.id));

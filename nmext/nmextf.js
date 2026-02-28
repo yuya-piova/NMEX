@@ -899,11 +899,6 @@ const popmenut_F8 = new Popmenumaker('popmenut_F8', 119);
     }).insertAfter(rawBtn);
     rawBtn.hide();
   };
-  FUNCTION_T.start_input_kintai = {};
-  FUNCTION_T.start_input_kintai.auto = function() {
-    $('#netsu0,#nodo0,#seki0,#zutsu0,#okan0,#hakike0').prop('checked', true);
-    $('#cb_w').prop('checked', true);
-  };
   FUNCTION_T.student_studyplan_list = function() {
     const studentcd = $('input[name=student_cd]').val();
     const studentname = $(`td:contains("${studentcd}")`)
@@ -2153,34 +2148,6 @@ const popmenut_F8 = new Popmenumaker('popmenut_F8', 119);
       }
     }
     const DM = new DashMan();
-  };
-  FUNCTION_T.index_test = {};
-  FUNCTION_T.index_test.analysis = function() {
-    if (NX.SEARCHPARAMS.get('mode') != 'analysis') return false;
-    //テスト問題のページを分析ページに　→　保留中（ダッシュボード上で運用）
-    const $body = $('body');
-    $body
-      .html('')
-      .addClass('pxdb_main')
-      .append('<h2>分析</h2>');
-    //CSSでこのページだけスクロールバーを細く
-    $('body').before(`<style>
-          ::-webkit-scrollbar {
-            width: 10px;
-          }
-          ::-webkit-scrollbar-track {
-            background: #fff;
-            border: none;
-            border-radius: 10px;
-            box-shadow: inset 0 0 2px #777;
-          }
-          ::-webkit-scrollbar-thumb {
-            background: #ccc;
-            border-radius: 10px;
-            box-shadow: none;
-          }</style>`);
-    //タイトルの変更
-    $('title').text('分析');
   };
   FUNCTION_T.booth_select_head = {};
   FUNCTION_T.booth_select_head.CTXboothopen = function() {

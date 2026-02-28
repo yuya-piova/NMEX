@@ -1097,33 +1097,6 @@ $(function() {
         const shido_date = new ExDate().setDateTry(null, shido_date_str.slice(0, 2), shido_date_str.slice(3, 5)).aftermonths(-1);
         $('title').text(`${shido_date.as('mm/dd')}_${student_name}_1ON1記録入力`);
         break;
-      case '/netz/netz1/kanren/student_shido_kiroku_list.aspx':
-      case '/netz/netz1/kanren/teacher_shido_kiroku_list.aspx':
-        $('input[type="button"][value="1on1結果入力"]').on('contextmenu', function() {
-          const shido_id = $(this)
-            .attr('onclick')
-            .getStrBetween("'", "'");
-          window.open(`${NX.CONST.host}/ai/1on1_input.aspx?shido_id=${shido_id}`);
-          return false;
-        });
-        popmenu.appendItems([
-          {
-            text: '講師コメント一覧',
-            handler: () => {
-              $('tr').each(async function(e) {
-                const shido_id = ($(this).attr('id') || '').replace('td', '');
-                const done = $(this).find('input').length > 0;
-                let text = e != 0 && !done ? '' : '講師コメント';
-                if (e != 0 && shido_id != '' && done) {
-                  const ajx = await $.get(`${NX.CONST.host}/kanren/shido_kiroku_input2.aspx?shido_id=${shido_id}`);
-                  text = ($(ajx).find('#comment,#etc') || $('<input></input>')).val();
-                }
-                $(this).append(`<td width="500">${text}</td>`);
-              });
-            }
-          }
-        ]);
-        break;
       //トークで生徒名を選択できるようにする
       case '/netz/netz1/talk/talkmenu.aspx':
         $('#talk_title')
@@ -1248,11 +1221,6 @@ $(function() {
 
         //指導時間picker
         $('input[name=shido_tm_hn]').netztimepicker(true);
-        //ブース番号picker
-        // prettier-ignore
-        $('input[name=booth_no]')
-            .offAutocomplete()
-            .netzpicker([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]);
 
         //指導時間のpickerと教科名に備考をswipeで仕込む
         FUNCTION_T.shido_yotei_edit.inputsupport();
@@ -1538,10 +1506,6 @@ $(function() {
           }
         });
         break;
-      case '/netz/netz1/tenpo_input.aspx':
-        //autoOpenだったら開店をクリック（ダッシュボードから開く場合）
-        if (NX.SEARCHPARAMS.get('mode') == 'autoOpen') $('input[value="開店報告をする"]').trigger('click');
-        break;
       case '/netz/netz1/s/student_tanto_list.aspx':
         //student_linker設置
         $('.ch_student').each(function() {
@@ -1753,163 +1717,6 @@ $(function() {
           return false;
         });
         break;
-      case '/netz/netz1/todo/todo_input.aspx': {
-        const start_dt = $('#start_dt');
-        const end_dt = $('#end_dt');
-        const kigen_dt = $('#kigen_dt');
-        const kigen_tm = $('#kigen_tm');
-        const jyotai_cb = $('select[name=jyotai_cb]');
-        const $checklist_flgs = $('input[name^=checklist_flg]');
-        const $progress_vl = $('#progress_vl');
-        //パラメーターを持ってきてたら自動処理する
-        let { setStart, setEnd, setDeadLine, setTime, doSave, setState, doAction } = getparameter();
-        switch (doAction) {
-          case 'autoClose':
-            const nextTue = new ExDate().nextday('火').as('yyyy/mm/dd');
-            const hasDeadLine = kigen_dt.val() != '';
-            const [nowStart, nowEnd, nowKigen] = [start_dt.val(), end_dt.val(), kigen_dt.val()];
-            const dtslash = new ExDate().afterdays(-1).as('yyyy/mm/dd');
-            if (hasDeadLine) {
-              //終了日が空欄なら、終了日＝最終期限
-              setEnd = nowEnd != '' ? nowEnd : nowKigen;
-              //開始日が空欄なら、開始日＝終了日or最終期限、今日の早い方
-              if (nowStart == '') setStart = new ExDate(Math.min(new Date(nowKigen), new Date(setEnd), new Date())).as('yyyy/mm/dd');
-            } else {
-              if (nowEnd == '') {
-                //空欄ならすべて今日、もしくは開始日
-                setStart = nowStart != '' ? nowStart : dtslash;
-                setEnd = setStart;
-                setDeadLine = setStart;
-              } else {
-                //終了日があれば、開始日は本日か終了日の早い方、期限は終了日
-                setStart = new ExDate(Math.min(new Date(nowEnd), new ExDate())).as('yyyy/mm/dd');
-                setDeadLine = nowEnd;
-              }
-            }
-            if (kigen_tm.val() == '00:00' || kigen_tm.val() == '') setTime = '21:00';
-            $('#kigen_flg').prop('checked', false);
-            doSave = true;
-            break;
-        }
-        //状態を変更する
-        const allowedState = ['F', 'X', 'D', 'C'];
-        if (allowedState.includes(setState || '')) jyotai_cb.val(setState);
-        //完了なら全チェックを入れる
-        if (setState == 'F') {
-          $checklist_flgs.prop('checked', true);
-          $progress_vl.val(100);
-        }
-        //開始日を変更する
-        if (setStart) start_dt.val(setStart);
-        //終了日を変更する
-        if (setEnd) end_dt.val(setEnd);
-        //期限を変更する
-        if (setDeadLine) kigen_dt.val(setDeadLine);
-        //時間を変更する
-        if (setTime) kigen_tm.val(setTime);
-        //保存する
-        if (doSave) ajaxsend();
-
-        function ajaxsend() {
-          $.ajax({
-            type: 'POST',
-            url: './todo_input_save_ajax.aspx',
-            dataType: 'text',
-            cache: false,
-            data: $('form').serialize()
-          })
-            .done(
-              // 取得成功時
-              function(data) {
-                if (data.split(',')[0] == 'ok') window.close();
-              }
-            )
-            .fail(function() {
-              alert('エラーが発生しました');
-            });
-        }
-
-        // CH項目機能
-        $checklist_flgs.on('contextmenu', function() {
-          $(this).prop('checked', !this.checked);
-          const checks = $checklist_flgs.length;
-          const dones = $('input[type=checkbox][name^=checklist_flg]:checked').length;
-          $('#progress_vl').val(Math.floor((dones / checks) * 100));
-          jyotai_cb.val(dones == checks ? 'F' : 'D');
-          return false;
-        });
-
-        popmenu.appendItems([
-          {
-            text: '完了',
-            handler: () => {
-              jyotai_cb.val('F');
-              $checklist_flgs.prop('checked', true);
-              $progress_vl.val(100);
-              $('#b_submit').trigger('click');
-            }
-          }
-        ]);
-        popmenut_F8.setContentFunction(function() {
-          $('<button>', {
-            type: 'button',
-            text: '講師一覧を取得',
-            on: {
-              click: async () => {
-                const tenpo_cd = prompt('校舎cdを入力してください', myprofiles.getone({ mybase: '3416' }));
-                if (!tenpo_cd) return;
-                try {
-                  const html = await $.get(`${NX.CONST.host}/t/teacher_list_body.aspx?jyotai_cb=1&main_tenpo_cd=${tenpo_cd}`);
-                  const $rows = $(html).find('tr');
-                  const existingCount = $('.FlexTextarea').length;
-
-                  $rows.each(function(index) {
-                    if (index === 0) return;
-
-                    const teacherName = $(this).findTdGetTxt(2);
-                    if (index - 1 >= existingCount) {
-                      $('input.add').trigger('click');
-                    }
-
-                    const $textarea = $('.FlexTextarea__textarea').eq(index - 1);
-                    const $dummy = $('.FlexTextarea__dummy').eq(index - 1);
-
-                    $textarea.val(teacherName);
-                    $dummy.text(teacherName);
-                  });
-                } catch (err) {
-                  PX_Toast('講師データの取得に失敗しました', { type: 'error' });
-                }
-              }
-            }
-          }).appendTo(this);
-        });
-        $('#start_dt,#end_dt,#kigen_dt').offAutocomplete();
-        $('#start_dt').on('contextmenu', function() {
-          $(this).val(new ExDate().as('yyyy/mm/dd'));
-          return false;
-        });
-        $('#end_dt,#kigen_dt')
-          .on('contextmenu', function() {
-            $(this).val(new ExDate().as('yyyy/mm/dd'));
-            return false;
-          })
-          .on('change', function() {
-            const thisval = $(this).val();
-            end_dt.val(thisval);
-            kigen_dt.val(thisval);
-          });
-        $(document).on('contextmenu', '#cd_select', function() {
-          $(this).emppicker();
-        });
-        //初期設定
-        if (kigen_tm.val() == '00:00') kigen_tm.val('21:00');
-
-        //テンプレート
-        $('input[name=base_id]').netzpicker([['終了調整', 80323]]);
-
-        break;
-      }
       case '/netz/netz1/todo/todo_tenpo_list.aspx':
       case '/netz/netz1/todo/todo_list.aspx':
         //日付のオートコンプリートをOFFにする
@@ -2159,14 +1966,6 @@ $(function() {
         //メンテナンスのページをダッシュボードに
         FUNCTION_T.index_system.dashboard();
         break;
-      case '/netz/netz1/index_test.aspx':
-        //テスト問題のページを分析ページに
-        FUNCTION_T.index_test.analysis();
-        break;
-      case '/netz/netz1/t/health_check_input.aspx':
-        //出社時報告
-        FUNCTION_T.start_input_kintai.auto();
-        break;
       case '/netz/netz1/kintai/start_input_kintai.aspx':
         //健康チェック
         FUNCTION_T.start_input_kintai.auto();
@@ -2177,7 +1976,6 @@ $(function() {
         });
         break;
       case '/netz/netz1/s/schedule_input_check.aspx':
-        //予定表をタスクマネージャーとして使う
         FUNCTION_T.schedule_input_check.inputsupport();
         break;
     }

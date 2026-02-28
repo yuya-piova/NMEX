@@ -4,6 +4,7 @@ import PageFuncS from './PageFuncS.js';
 import PageFuncT from './PageFuncT.js';
 import PageFuncSchedule from './PageFuncSchedule.js';
 import PageFuncKanren from './PageFuncKanren.js';
+import PageFuncTodo from './PageFuncTodo.js';
 import PageFuncTenpoYotei from './PageFuncTenpoYotei.js';
 import PageFuncToiawases from './PageFuncToiawases.js';
 import PopMenu from '../core/PopMenu.js';
@@ -50,6 +51,7 @@ $(function() {
   const pageFuncS = new PageFuncS();
   const pageFuncSchedule = new PageFuncSchedule();
   const pageFuncKanren = new PageFuncKanren();
+  const pageFuncTodo = new PageFuncTodo();
   const pageFuncToiawases = new PageFuncToiawases();
   const pageFuncT = new PageFuncT();
 
@@ -162,19 +164,19 @@ $(function() {
       $('input[name=b_reload]').setshortcutkey('Enter');
       break;
     case '/netz/netz1/s/student_mendan_input.aspx': {
-      //履歴チェックは外す
+      // 履歴チェックは外す
       $('#edt_cb').prop('checked', false);
 
-      //曜日を表示
+      // 曜日を表示
       $('input[name=mendan_dt]').setweekday();
 
-      //pickerをセット
+      // pickerをセット
       $('#mendan_tm').netztimepicker(false);
 
-      //自動処理があれば先に完了させる
+      // 自動処理があれば先に完了させる
       const { mode, teacher_cd, mendan_jk, mendan_status_cb, bikou_nm, mendan_dt, mendan_tm } = getparameter();
       if (mode == 'autoChange') {
-        //teacher_cdを持っていれば面談担当者を変更する
+        // teacher_cdを持っていれば面談担当者を変更する
         if ($NX(teacher_cd).isHexaNumber()) $('[name=tanto_cd]').val(teacher_cd);
         if ([50, 70, 100].indexOf(mendan_jk)) $('select[name=mendan_jk]').val(mendan_jk);
         if (['0', '1', '9', 'd', 'h'].indexOf(mendan_status_cb)) $('select[name=mendan_status_cb]').val(mendan_status_cb);
@@ -185,12 +187,12 @@ $(function() {
         $('[name=b_submit]').trigger('click');
       }
 
-      //zoom会議室作成をする
+      // zoom会議室作成をする
       pageFuncS.setZoomMaker();
       break;
     }
     case '/netz/netz1/s/student_mailsend_input.aspx':
-      //パラメータCH
+      // パラメータCH
       pageFuncS.mailSendChParam();
       break;
 
@@ -205,15 +207,20 @@ $(function() {
       });
       break;
     case '/netz/netz1/t/teacher_toroku_input.aspx':
-      //zoomメール作成（要URL作成＆特記事項に入力）
+      // zoomメール作成（要URL作成＆特記事項に入力）
       pageFuncT.makeZoomMail();
-      //電話番号や名前、メアドの整形セット
+      // 電話番号や名前、メアドの整形セット
       pageFuncT.detailPrettier();
-      //右クリックで広島に
+      // 右クリックで広島に
       $('select[name=area_cd]').on('contextmenu', function() {
         $(this).val(['g']);
         return false;
       });
+      break;
+    case '/netz/netz1/t/health_check_input.aspx':
+      // 自動で健康チェック
+      $('#netsu0,#nodo0,#seki0,#zutsu0,#okan0,#hakike0').prop('checked', true);
+      $('#cb_w').prop('checked', true);
       break;
 
     /* ---------------------------------------------------*/
@@ -291,7 +298,7 @@ $(function() {
       // 予定表のテンプレート機能
       pageFuncSchedule.scheduleResisterTemplate();
 
-      //半角修正
+      // 半角修正
       $('input[name=s_tm],input[name=e_tm]').isAllNumeric(false);
       break;
 
@@ -318,6 +325,54 @@ $(function() {
 
       // Diverse登録画面を開いてデータを送る
       pageFuncKanren.sendingDiverse();
+
+      break;
+
+    case '/netz/netz1/kanren/student_shido_kiroku_list.aspx':
+    case '/netz/netz1/kanren/teacher_shido_kiroku_list.aspx':
+      // 指導報告一覧に講師コメントを表示
+      popmenu.appendItems([
+        {
+          text: '講師コメント一覧',
+          handler: () => {
+            $('tr').each(async function(e) {
+              const shido_id = ($(this).attr('id') || '').replace('td', '');
+              const done = $(this).find('input').length > 0;
+              let text = e != 0 && !done ? '' : '講師コメント';
+              if (e != 0 && shido_id != '' && done) {
+                const ajx = await $.get(`${NX.CONST.host}/kanren/shido_kiroku_input2.aspx?shido_id=${shido_id}`);
+                text = ($(ajx).find('#comment,#etc') || $('<input></input>')).val();
+              }
+              $(this).append(`<td width="500">${text}</td>`);
+            });
+          }
+        }
+      ]);
+      break;
+
+    /* ---------------------------------------------------*/
+    /* PageFuncTodo
+    /* ---------------------------------------------------*/
+
+    case '/netz/netz1/todo/todo_input.aspx':
+      // パラメーターで自動処理
+      pageFuncTodo.inputAutomation();
+
+      // チェック右クリックで自動計算
+      pageFuncTodo.inputCalcRate;
+
+      // Popmenu （完了、講師一覧取得）
+      pageFuncTodo.inputSetPopmenu();
+
+      // 社員ピッカーセット
+      $(document).on('contextmenu', '#cd_select', function() {
+        $(this).emppicker();
+      });
+      // テンプレートセット
+      $('input[name=base_id]').netzpicker([['終了調整', 80323]]);
+      // 初期設定
+      if (kigen_tm.val() == '00:00') kigen_tm.val('21:00');
+      $('#start_dt,#end_dt,#kigen_dt').offAutocomplete();
 
       break;
 
@@ -372,6 +427,10 @@ $(function() {
         $('input[name=input_dt11]').val(dateslash(window.dt));
         $('input[name=input_dt12]').val('');
       });
+      break;
+    case '/netz/netz1/tenpo_input.aspx':
+      //autoOpenだったら開店をクリック（ダッシュボードから開く場合）
+      if (NX_Utils.getPageParams('mode') == 'autoOpen') $('input[value="開店報告をする"]').trigger('click');
       break;
   }
 });
