@@ -97,13 +97,15 @@ export default class PageFuncTodo {
   }
   inputCalcRate() {
     const $checklist_flgs = $('input[name^=checklist_flg]');
+    const $progress_vl = $('#progress_vl');
+    const $jyotai_cb = $('[name=jyotai_cb]');
     // CH項目機能
     $checklist_flgs.on('contextmenu', function() {
       $(this).prop('checked', !this.checked);
       const checks = $checklist_flgs.length;
-      const dones = $('input[type=checkbox][name^=checklist_flg]:checked').length;
-      $('#progress_vl').val(Math.floor((dones / checks) * 100));
-      jyotai_cb.val(dones == checks ? 'F' : 'D');
+      const dones = $('input[name^=checklist_flg]:checked').length;
+      $progress_vl.val(Math.floor((dones / checks) * 100));
+      $('[name=jyotai_cb]').val(dones == checks ? 'F' : 'D');
       return false;
     });
   }
@@ -113,11 +115,13 @@ export default class PageFuncTodo {
       {
         text: '完了',
         handler: () => {
-          jyotai_cb.val('F');
-          $checklist_flgs.prop('checked', true);
-          $progress_vl.val(100);
+          $('[name=jyotai_cb]').val('F');
+          $('input[name^=checklist_flg]').prop('checked', true);
+          $('#progress_vl').val(100);
           $('#b_submit').trigger('click');
-        },
+        }
+      },
+      {
         text: '講師一覧を取得',
         handler: async () => {
           const tenpo_cd = prompt('校舎cdを入力してください', myprofile.get('mybase', '3416'));

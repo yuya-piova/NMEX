@@ -74,6 +74,11 @@ export const NX_Utils = {
     const allParams = Object.fromEntries(params);
 
     return pal === undefined ? allParams : allParams[pal];
+  },
+  openTabBack: url => {
+    chrome.runtime.sendMessage({
+      openTabBack: url
+    });
   }
 };
 

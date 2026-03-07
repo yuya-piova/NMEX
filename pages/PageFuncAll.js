@@ -2,10 +2,12 @@ import PopMenu from '../core/PopMenu.js';
 import { myprofile } from '../core/store.js';
 import { toast } from '../core/components/FluxToast.js';
 import Tabler from '../core/Tabler.js';
+import { BaseMan } from '../core/features/BaseMan.js';
 
 export default class PageFuncAll {
   constructor() {
     this.path = location.pathname;
+    this.baseman = new BaseMan();
   }
 
   applyAreaMode() {
@@ -243,7 +245,7 @@ export default class PageFuncAll {
         }
       }
     });
-    popmenu.append(basemanButton, { type: 'common', handler: () => new BaseMan().show() }).appendItems(popButtons);
+    popmenu.append(basemanButton, { type: 'common', handler: () => this.baseman.show() }).appendItems(popButtons);
   }
   infoSave() {
     const [elemName, storageName] = {

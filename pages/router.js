@@ -136,10 +136,35 @@ $(function() {
       // 手配期間修正（整形＆エラー回避）＆回数空欄の場合は時間と期間を削除
       pageFuncTehai.setTehaiRange();
 
-      // popmenu
-
       break;
-
+    case '/netz/netz1/tehai/tehai_kanren_list.aspx':
+      popmenu.append('終了ボタンを表示', {
+        handler: () => {
+          $('input[value="修正"]').each(function() {
+            const $btn = $(this);
+            const editID = $btn.attr('onclick').getStrBetween("'", "'");
+            $('<button>', {
+              type: 'button',
+              text: '終了',
+              on: { click: () => NX_Utils.openTabBack(`${NX.CONST.host}/tehai/kanren_input.aspx?kanren_cd=${editID}&mode=close`) }
+            }).insertAfter($btn);
+          });
+        }
+      });
+      break;
+    case '/netz/netz1/tehai/kanren_input.aspx':
+      // 自動終了
+      const { mode } = NX_Utils.getPageParams();
+      if (mode == 'close') {
+        const delBtn = $('[name=b_del]');
+        if (delBtn.attr('disabled') == 'false') {
+          delBtn.trigger('click');
+        } else {
+          $('input[name=status_cb]').val(1);
+          $('input[onclick="　登録　"]').trigger('click');
+        }
+      }
+      break;
     /* ---------------------------------------------------*/
     /* PageFuncS
     /* ---------------------------------------------------*/
@@ -359,7 +384,7 @@ $(function() {
       pageFuncTodo.inputAutomation();
 
       // チェック右クリックで自動計算
-      pageFuncTodo.inputCalcRate;
+      pageFuncTodo.inputCalcRate();
 
       // Popmenu （完了、講師一覧取得）
       pageFuncTodo.inputSetPopmenu();
@@ -371,7 +396,8 @@ $(function() {
       // テンプレートセット
       $('input[name=base_id]').netzpicker([['終了調整', 80323]]);
       // 初期設定
-      if (kigen_tm.val() == '00:00') kigen_tm.val('21:00');
+
+      if (['', '00:00'].includes($('#kigen_dt').val())) $('#kigen_dt').val('21:00');
       $('#start_dt,#end_dt,#kigen_dt').offAutocomplete();
 
       break;

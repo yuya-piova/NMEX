@@ -1,0 +1,161 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   Flux PopMenu Styles (Flux-popmenu.css)
+   依存: Flux.css の変数 (--flux-*) を使用します
+   ========================================================================== */
+
+:root {
+  /* * PopMenuのカラーレイヤーをFluxの変数にマッピング 
+   * (Flux.cssに無い色はフォールバックで定義)
+   */
+  --popmenu-common: var(--flux-primary, #0056b3);
+  --popmenu-page: var(--flux-accent, #9b59b6); /* 紫系のアクセント */
+  --popmenu-danger: var(--flux-danger, #dc3545);
+  --popmenu-default: var(--flux-text-main, #333333);
+  --popmenu-bg-hover: var(--flux-background, #f4f7f9);
+
+  /* UI基礎部品のマッピング */
+  --popmenu-border: var(--flux-border, #eeeeee);
+  --popmenu-surface: var(--flux-surface, #ffffff);
+  --popmenu-shadow: var(--flux-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.15));
+  --popmenu-radius: var(--flux-rounded-md, 8px);
+  --popmenu-font: var(--flux-font-sans, sans-serif);
+}
+
+/* メニュー本体のコンテナ */
+.popmenu-container {
+  position: absolute;
+  z-index: 10000;
+  background-color: var(--popmenu-surface);
+  border: 1px solid var(--popmenu-border);
+  border-radius: var(--popmenu-radius);
+  box-shadow: var(--popmenu-shadow);
+  padding: var(--flux-space-2, 8px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 180px;
+  max-width: 320px;
+  font-family: var(--popmenu-font);
+}
+
+/* メニュー内の各アイテム（ボタン）の基本スタイル */
+.popmenu-item {
+  appearance: none;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent; /* レイヤー判別用のアクセント線 */
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 0.9rem; /* Fluxの標準サイズに合わせる */
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 0 var(--flux-rounded-sm, 4px) var(--flux-rounded-sm, 4px) 0;
+  color: var(--popmenu-default);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  /* ★追加: アイコン（iタグ）とテキストを綺麗に並べるためのFlex設定 */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* アイコン自体の幅を固定して、テキストの開始位置を揃える */
+.popmenu-item i {
+  width: 16px;
+  text-align: center;
+}
+
+/* --- レイヤー別の配色設定 --- */
+
+/* 1. 全ページ共通 (Common) */
+.popmenu-type-common {
+  color: var(--popmenu-common) !important;
+  border-left-color: var(--popmenu-common) !important;
+}
+.popmenu-type-common:hover {
+  /* ホバー時はプライマリカラーを10%の透明度で敷く (Flux風) */
+  background-color: rgba(0, 86, 179, 0.1) !important;
+}
+
+/* 2. ページ独自 (Page) */
+.popmenu-type-page {
+  color: var(--popmenu-page) !important;
+  border-left-color: var(--popmenu-page) !important;
+}
+.popmenu-type-page:hover {
+  background-color: rgba(155, 89, 182, 0.1) !important;
+}
+
+/* 3. 警告・重要 (Danger) */
+.popmenu-type-danger {
+  color: var(--popmenu-danger) !important;
+  border-left-color: var(--popmenu-danger) !important;
+}
+.popmenu-type-danger:hover {
+  background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+/* 4. 標準 (Default) */
+.popmenu-type-default:hover {
+  background-color: var(--popmenu-bg-hover);
+}
+
+/* --- 特殊要素のスタイル --- */
+
+/* 区切り線 (hr) */
+.popmenu-container hr {
+  border: 0;
+  border-top: 1px solid var(--popmenu-border);
+  margin: 6px -8px; /* コンテナの端まで線を引く */
+  width: calc(100% + 16px);
+}
+
+/* タブレット・端末用フローティングボタン */
+.popmenu-floating-trigger {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  z-index: 9999;
+  width: 44px;
+  height: 44px;
+  /* FluxのPrimaryカラーを使用 */
+  background-color: var(--popmenu-common);
+  color: var(--popmenu-surface);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--popmenu-shadow);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.popmenu-floating-trigger:active {
+  transform: scale(0.85);
+}
+
+.popmenu-floating-trigger i {
+  font-size: 20px;
+  font-style: inherit !important;
+}
+
+.popmenu-floating-trigger i::before {
+  content: '\f142'; /* 縦の三点リーダー */
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+}
+
+/* =========================================
+   印刷用設定
+   ========================================= */
+@media print {
+  .popmenu-floating-trigger,
+  .popmenu-container {
+    display: none !important;
+  }
+}

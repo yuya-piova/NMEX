@@ -1072,31 +1072,6 @@ $(function() {
             .attr('student_cd', student_cd);
         });
         break;
-      case '/netz/netz1/tehai/tehai_kanren_list.aspx':
-        $('table tr').each(function(e) {
-          var td = $('<td></td>').appendTo(this);
-          if (e != 0)
-            $('<input type="button" value="終了">')
-              .appendTo(td)
-              .on('click', function() {
-                var dataid = getStrBetween(
-                  $(this)
-                    .closest('tr')
-                    .find('input[name=b_edit]')
-                    .attr('onclick'),
-                  "'",
-                  "'"
-                );
-                var send = {
-                  kanren_cd: dataid,
-                  syori: JSON.stringify([['#status_cb1', 'click'], ['input[value="　登録　"]', 'click', 'nextpage'], ['close']])
-                };
-                chrome.runtime.sendMessage({
-                  openTabBack: `${NX.CONST.host}/netz/netz1/tehai/kanren_input.aspx?${$.param(send)}`
-                });
-              });
-        });
-        break;
       case '/netz/netz1/k/keiyaku_list_head.aspx':
         $('input[name=b_submit]').setshortcutkey('Enter');
         const from_dt = $('input[name=input_dt1]');

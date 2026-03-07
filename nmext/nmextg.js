@@ -493,6 +493,7 @@ class TheTXT {
  * @example
  * PX_Toast('Something went wrong...', { type: 'error' });
  */
+
 function PX_Toast(toasttext, option = {}) {
   if (!toasttext) {
     console.warn('PX_Toast: toasttext is required');
@@ -895,134 +896,6 @@ class EmployMan {
 
   close() {
     this.uiElements.wrapper.style.display = 'none';
-  }
-}
-class BaseMan {
-  constructor() {
-    this.NXDatabase = new NXBase();
-    this.uiElements = {};
-    this.initUI();
-    this.addEventListener();
-    this.enableDrag();
-  }
-  initUI() {
-    this.uiElements.wrapper = document.createElement('div');
-    this.uiElements.wrapper.classList.add('BaseManUI');
-    document.body.appendChild(this.uiElements.wrapper);
-    notScroll(this.uiElements.wrapper);
-
-    this.uiElements.header = document.createElement('div');
-    this.uiElements.header.classList.add('BM_header');
-    this.uiElements.wrapper.appendChild(this.uiElements.header);
-
-    this.uiElements.searchIcon = document.createElement('i');
-    this.uiElements.searchIcon.classList.add('fa-solid', 'fa-magnifying-glass');
-    this.uiElements.searchIcon.setAttribute('title', 'selectorより取得');
-    this.uiElements.searchIcon.addEventListener('click', () => {
-      const selectedOption = document.querySelector('select[name=tenpo_cd] option:checked');
-      const searchValue = selectedOption ? selectedOption.textContent : '';
-      this.uiElements.searchBox.value = searchValue;
-      this.uiElements.searchBox.dispatchEvent(new Event('input'));
-    });
-    this.uiElements.header.appendChild(this.uiElements.searchIcon);
-
-    this.uiElements.searchBox = document.createElement('input');
-    this.uiElements.searchBox.type = 'text';
-    this.uiElements.searchBox.placeholder = '教室・ユニット・ブロック・cd';
-    this.uiElements.searchBox.addEventListener('input', () => this.updateSearchResults());
-    this.uiElements.header.appendChild(this.uiElements.searchBox);
-
-    this.uiElements.resultTable = document.createElement('table');
-    this.uiElements.wrapper.appendChild(this.uiElements.resultTable);
-  }
-
-  enableDrag() {
-    let offsetX = 0,
-      offsetY = 0,
-      isDragging = false;
-
-    this.uiElements.header.style.cursor = 'grab';
-    this.uiElements.header.addEventListener('pointerdown', event => {
-      isDragging = true;
-      offsetX = event.clientX - this.uiElements.wrapper.offsetLeft;
-      offsetY = event.clientY - this.uiElements.wrapper.offsetTop;
-      this.uiElements.header.style.cursor = 'grabbing';
-    });
-
-    window.addEventListener('pointermove', event => {
-      if (!isDragging) return;
-      event.preventDefault();
-      this.uiElements.wrapper.style.left = `${event.clientX - offsetX}px`;
-      this.uiElements.wrapper.style.top = `${event.clientY - offsetY}px`;
-    });
-
-    window.addEventListener('pointerup', () => {
-      isDragging = false;
-    });
-  }
-
-  updateSearchResults() {
-    this.uiElements.resultTable.innerHTML = '';
-    const query = this.uiElements.searchBox.value.trim();
-
-    //検索
-    if (!query) return;
-    this.NXDatabase.include(query);
-    //閉校教室は除く
-    this.NXDatabase.searchNXT.filterByCondition(['closed', '']);
-
-    const head = this.NXDatabase.rawNXT.head;
-    this.NXDatabase.searchNXT.body.forEach(row => {
-      const pickedData = extractByHead(row, head, ['basecd', 'unitname', 'unitcd', 'basename']);
-      const rowElement = this.uiElements.resultTable.insertRow();
-      const links = `<td><i class="fa-solid fa-circle-info links" title="教室基本情報" cd="${pickedData.basecd}"></i></td><td><i class="fa-solid fa-calendar-days links" title="教室予定" cd="${pickedData.basecd}"></i></td><td><i class="fa-solid fa-door-open links" title="開校予定" cd="${pickedData.basecd}"></i></td>`;
-      rowElement.innerHTML = `<td class="cliptext" style="min-width:3.5rem">${pickedData.basecd}</td><td class="badge cliptext noicon offout" clipcontent="${pickedData.unitcd}" title="${pickedData.unitcd}">${pickedData.unitname}</td><td class="cliptext noicon">${pickedData.basename}</td><td class="full">${links}</td>`;
-    });
-
-    function extractByHead(row, head, pick) {
-      return pick.reduce((acc, key) => {
-        const index = head.indexOf(key);
-        if (index !== -1) {
-          acc[key] = row[index];
-        }
-        return acc;
-      }, {});
-    }
-  }
-
-  show() {
-    this.uiElements.wrapper.style.display = 'block';
-    this.uiElements.searchBox.focus();
-  }
-
-  close() {
-    this.uiElements.wrapper.style.display = 'none';
-  }
-
-  addEventListener() {
-    document.addEventListener('click', event => {
-      const target = event.target.closest('.links'); // `.links` クラスを持つ要素を探す
-      if (!target) return;
-
-      const tenpoCd = target.getAttribute('cd');
-      let url = null;
-
-      switch (target.getAttribute('title')) {
-        case '教室基本情報':
-          url = `${NX.CONST.host}/tenpo/tenpo_info_list.aspx?tenpo_cd=${tenpoCd}`;
-          break;
-        case '教室予定':
-          url = `${NX.CONST.host}/schedule/yotei.aspx?tenpo_cd=${tenpoCd}`;
-          break;
-        case '開校予定':
-          url = `${NX.CONST.host}/tenpo_yotei.aspx?tenpo_cd=${tenpoCd}&input_f_dt=${new ExDate().as(
-            'yyyy/mm/dd'
-          )}&input_t_dt=${new ExDate().aftermonths(1).as('yyyy/mm/dd')}`;
-          break;
-      }
-
-      if (url) window.open(url, '_blank');
-    });
   }
 }
 

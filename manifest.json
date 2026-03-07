@@ -13,7 +13,7 @@
         "http://iptel.edu-netz.com/*",
         "https://lms2.s-diverse.com/*"
       ],
-      "css": ["libraries/jquery-ui.min.css", "css/Flux.css", "css/PopMenu.css", "nmexo/nmcsso.css", "nmext/nmcsst.css"],
+      "css": ["libraries/jquery-ui.min.css", "css/Flux.css", "css/Flux-Popmenu.css", "nmexo/nmcsso.css", "nmext/nmcsst.css"],
       "js": [
         "libraries/jquery-3.4.1.min.js",
         "libraries/jquery-ui.min.js",

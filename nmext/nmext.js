@@ -1906,6 +1906,9 @@ $(function() {
           }
         });
         break;
+      case '/netz/netz1/text/contents_list.aspx':
+        $('table').studentLinker(1);
+        break;
       //●●●●●●●●●●●●●●●●●●●●●●●●●●●●Genre：出社関連
       case '/netz/netz1/kintai/yotei_input.aspx':
         //出社予定の一括入力
@@ -1967,8 +1970,8 @@ $(function() {
         FUNCTION_T.index_system.dashboard();
         break;
       case '/netz/netz1/kintai/start_input_kintai.aspx':
-        //健康チェック
-        FUNCTION_T.start_input_kintai.auto();
+        // 自動で健康チェック
+        $('#netsu0,#nodo0,#seki0,#zutsu0,#okan0,#hakike0').prop('checked', true);
         //勤怠入力せずにトップメニューに行く
         $('h2').on('contextmenu', function() {
           location.href = `${NX.CONST.host}/index1.html`;

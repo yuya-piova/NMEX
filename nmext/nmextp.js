@@ -302,7 +302,7 @@ $(function() {
         '13:00-21:20': 'B',
         '08:30-17:00': '模'
       };
-      popmenut_F2.setContentFunction(function() {
+      popmenut_F8.setContentFunction(function() {
         $('<button>', {
           type: 'button',
           text: '勤怠チェック',
