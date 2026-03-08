@@ -12,6 +12,7 @@ import MemberLinker from '../core/features/MemberLinker.js';
 import { myprofile } from '../core/store.js';
 import Tabler from '../core/Tabler.js';
 import { NX_Utils } from '../core/utils.js';
+import EmployMan from '../core/components/EmployMan.js';
 
 // ---------------------------------------------------------
 // Global変数作成
@@ -24,6 +25,22 @@ $.fn.tabler = function(headnum = 0) {
       $(this).data('tabler', instance);
     }
   });
+};
+$.fn.emppicker = function(options = {}) {
+  // ブラウザのオートコンプリートをオフにする
+  this.attr('autocomplete', 'off');
+
+  this.on('contextmenu', function(e) {
+    e.preventDefault(); // デフォルトの右クリックメニューを無効化
+
+    const $this = $(this);
+    const offset = $this.offset();
+    offset.top += $this.outerHeight(); // 要素の真下に表示する
+
+    new EmployMan(this, offset, options.multiple).show();
+  });
+
+  return this;
 };
 
 $(function() {
@@ -164,6 +181,12 @@ $(function() {
           $('input[onclick="　登録　"]').trigger('click');
         }
       }
+      break;
+
+    case '/netz/netz1/tehai/shido_edit_list.aspx':
+      // ブース組システムによる文字列修正
+      pageFuncTehai.setShidoEditPrettify();
+
       break;
     /* ---------------------------------------------------*/
     /* PageFuncS

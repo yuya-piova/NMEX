@@ -317,29 +317,6 @@ const popmenut_F8 = new Popmenumaker('popmenut_F8', 119);
   FUNCTION_T.shido_edit_list = {};
   FUNCTION_T.shido_edit_list.F2menu = function() {
     popmenut_F8.setContentFunction(function() {
-      //自動ブース組による文字列修正
-      $('<button>', {
-        type: 'button',
-        text: '[↑][↓]学年種削除',
-        class: 'nx offsecondary',
-        on: {
-          click: function() {
-            $('[name^=bikou_nm]').each(function() {
-              const $this = $(this);
-              const beforeVal = $this.val();
-              $this
-                .valReplace('[ ↑ ]')
-                .valReplace('[ ↓ ]')
-                .valReplace('△')
-                .valRegexReplace(/^.*?：/)
-                .valReplace('(', '（')
-                .valReplace(')', '）');
-              if ($this.val() != beforeVal) $this.addClass('inputselectchange');
-            });
-            popmenut_F8.closemenu();
-          }
-        }
-      }).appendTo(this);
       $('<button>', {
         type: 'button',
         text: '補助常時表示ON',

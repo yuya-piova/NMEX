@@ -119,4 +119,27 @@ export default class PageFuncTehai {
         .trigger('change');
     });
   }
+  setShidoEditPrettify() {
+    const popmenu = new PopMenu({ id: 'main' });
+
+    popmenu.appendItems([
+      {
+        text: '[↑][↓]学年種削除',
+        handler: () => {
+          $('[name^=bikou_nm]').each(function() {
+            const $this = $(this);
+            const beforeVal = $this.val();
+            $this
+              .valReplace('[ ↑ ]')
+              .valReplace('[ ↓ ]')
+              .valReplace('△')
+              .valRegexReplace(/^.*?：/)
+              .valReplace('(', '（')
+              .valReplace(')', '）');
+            if ($this.val() != beforeVal) $this.addClass('inputselectchange');
+          });
+        }
+      }
+    ]);
+  }
 }
