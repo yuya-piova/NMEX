@@ -84,6 +84,8 @@ $(function() {
   pageFuncAll.checkboxClickHelper();
   // 教室名右クリックでプロファイルに設定した教室にする
   pageFuncAll.tenpoClicker();
+  // EmpPickerをセット
+  pageFuncAll.setEmpPicker();
 
   // popmenu
   const popmenu = new PopMenu({
@@ -91,43 +93,9 @@ $(function() {
     keyCode: 113,
     showFloatingButton: true
   });
-  window.addEventListener('keydown', async e => {
-    if (e.keyCode === popmenu.keyCode) {
-      // 1. 前回の動的ボタンをクリア
-      popmenu.clearDynamic();
 
-      // 2. 選択テキストを取得
-      const selectedText = window
-        .getSelection()
-        .toString()
-        .trim();
-
-      if (selectedText !== '') {
-        // 3. StudentInfoを使って検索 (core/StudentInfo.js を使用)
-        // 事前に初期化済みの studentInfoManager インスタンスがあると想定
-        const students = new studentInfoClass().search(['生徒名', selectedText]); //studentInfoManager.search(selectedText);
-
-        if (students) {
-          //.length > 0
-          //const student = students[0]; // 最初の候補
-          const student_cd = students['生徒NO'];
-          const student_name = students['生徒名'];
-
-          // 4. 動的ボタンとして追加 (レイヤー色を 'page' = 紫に設定)
-          popmenu.appendDynamic(`連絡事項 (${student_name})`, {
-            type: 'page',
-            handler: () => {
-              window.open(`${NX.CONST.host}/s/student_renraku_list.aspx?student_cd=${student_cd}`);
-            }
-          });
-        }
-      }
-
-      // 5. メニューを表示
-      const pos = typeof getMousePosition === 'function' ? getMousePosition() : { x: e.pageX, y: e.pageY };
-      popmenu.show(pos.x, pos.y);
-    }
-  });
+  // 生徒名を選択している場合にPopmenuに反映
+  pageFuncAll.popmenuStudentResolver();
 
   // memberLinker
   const memberLinker = new MemberLinker();
@@ -520,4 +488,12 @@ $(function() {
       console.log('popmenu', popmenu);
     }
   });
+
+  // 組織を変更するリンクボタンを作成
+  const groupTransitionMenus = [
+    ['🔗 広島', 'A002007'],
+    ['🔗 体験教室', 'A002999']
+  ].map(([text, groupid]) => ({ text, handler: () => (window.location.href = `https://lms2.s-diverse.com/coach/${groupid}/students-status`) }));
+
+  popmenu.appendItems(groupTransitionMenus);
 });

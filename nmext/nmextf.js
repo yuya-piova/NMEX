@@ -26,37 +26,6 @@ const popmenut_F8 = new Popmenumaker('popmenut_F8', 119);
   console.log('走る走るFUNCTION_Tたち');
   FUNCTION_T.general = {};
 
-  FUNCTION_T.general.EMP_Picker = function() {
-    switch (location.pathname) {
-      case '/netz/netz1/s/student_tanto_input.aspx':
-        $('#shain_cd').each(function() {
-          $(this).emppicker();
-        });
-        break;
-      case '/netz/netz1/s/student_tanto_list.aspx':
-      case '/netz/netz1/student_list_head.aspx':
-      case '/netz/netz1/s/teian_list_head.aspx':
-      case '/netz/netz1/s/student_renraku_head.aspx':
-        $('#tanto_cd').each(function() {
-          $(this).emppicker();
-        });
-        break;
-      //以降複数系
-      //エリア予定
-      case '/netz/netz1/schedule/yotei2.aspx':
-        $('textarea[name=select_cd]').emppicker({ multiple: true });
-        break;
-      //開校予定
-      case '/netz/netz1/tenpo_yotei.aspx':
-        $('[id^=duty],[id^=open_tanto],[id^=close_tanto]').each(function() {
-          $(this).emppicker({ multiple: true });
-        });
-        break;
-      case '/netz/netz1/shingaku/shingaku_hokoku_list_head.aspx':
-        $('[name=teacher_cd]').emppicker();
-        break;
-    }
-  };
   FUNCTION_T.general.capsescaper = function() {
     var capscount = 0;
     window.addEventListener(

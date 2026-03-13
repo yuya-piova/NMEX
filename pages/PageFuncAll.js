@@ -206,7 +206,7 @@ export default class PageFuncAll {
     });
   }
   setPopMenu() {
-    const popmenu = new PopMenu({ id: 'main' }); // 定義済みのmainを取得する
+    const popmenu = new PopMenu({ id: 'main' });
 
     const popButtons = [
       {
@@ -246,6 +246,46 @@ export default class PageFuncAll {
       }
     });
     popmenu.append(basemanButton, { type: 'common', handler: () => this.baseman.show() }).appendItems(popButtons);
+  }
+  popmenuStudentResolver() {
+    const popmenu = new PopMenu({ id: 'main' });
+    window.addEventListener('keydown', async e => {
+      if (e.keyCode === popmenu.keyCode) {
+        // 1. 前回の動的ボタンをクリア
+        popmenu.clearDynamic();
+
+        // 2. 選択テキストを取得
+        const selectedText = window
+          .getSelection()
+          .toString()
+          .trim();
+
+        if (selectedText !== '') {
+          // 3. StudentInfoを使って検索 (core/StudentInfo.js を使用)
+          // 事前に初期化済みの studentInfoManager インスタンスがあると想定
+          const students = new studentInfoClass().search(['生徒名', selectedText]); //studentInfoManager.search(selectedText);
+
+          if (students) {
+            //.length > 0
+            //const student = students[0]; // 最初の候補
+            const student_cd = students['生徒NO'];
+            const student_name = students['生徒名'];
+
+            // 4. 動的ボタンとして追加 (レイヤー色を 'page' = 紫に設定)
+            popmenu.appendDynamic(`連絡事項 (${student_name})`, {
+              type: 'page',
+              handler: () => {
+                window.open(`${NX.CONST.host}/s/student_renraku_list.aspx?student_cd=${student_cd}`);
+              }
+            });
+          }
+        }
+
+        // 5. メニューを表示
+        const pos = typeof getMousePosition === 'function' ? getMousePosition() : { x: e.pageX, y: e.pageY };
+        popmenu.show(pos.x, pos.y);
+      }
+    });
   }
   infoSave() {
     const [elemName, storageName] = {
@@ -332,5 +372,36 @@ export default class PageFuncAll {
         // optionにホバーした際に値をtitleとして表示する
         $(this).attr('title', $(this).val());
       });
+  }
+  setEmpPicker() {
+    switch (this.path) {
+      case '/netz/netz1/s/student_tanto_input.aspx':
+        $('#shain_cd').each(function() {
+          $(this).emppicker();
+        });
+        break;
+      case '/netz/netz1/s/student_tanto_list.aspx':
+      case '/netz/netz1/student_list_head.aspx':
+      case '/netz/netz1/s/teian_list_head.aspx':
+      case '/netz/netz1/s/student_renraku_head.aspx':
+        $('#tanto_cd').each(function() {
+          $(this).emppicker();
+        });
+        break;
+      //以降複数系
+      //エリア予定
+      case '/netz/netz1/schedule/yotei2.aspx':
+        $('textarea[name=select_cd]').emppicker({ multiple: true });
+        break;
+      //開校予定
+      case '/netz/netz1/tenpo_yotei.aspx':
+        $('[id^=duty],[id^=open_tanto],[id^=close_tanto]').each(function() {
+          $(this).emppicker({ multiple: true });
+        });
+        break;
+      case '/netz/netz1/shingaku/shingaku_hokoku_list_head.aspx':
+        $('[name=teacher_cd]').emppicker();
+        break;
+    }
   }
 }

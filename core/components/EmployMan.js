@@ -125,7 +125,12 @@ export default class EmployMan {
     this.selectedValues = values;
     this.triggerElement.value = this.selectedValues.join(',');
 
-    // 紐づいているイベントを発火させる
+    // 1. ネイティブな change イベントを作成して発火（これが一番確実）
+    const nativeEvent = new Event('change', { bubbles: true, cancelable: true });
+    this.triggerElement.dispatchEvent(nativeEvent);
+
+    // 2. 念のため jQuery の trigger も呼んでおく（jQuery依存のスクリプト対策）
+    // ※ ネイティブ発火だけで動く場合は消しても構いません
     $(this.triggerElement).trigger('change');
 
     // 複数選択でなければ即座に閉じる

@@ -25,8 +25,6 @@ $(function() {
 
     //生徒名を右クリックして生徒メニューを表示
     FUNCTION_T.general.SLM();
-    //社員ピッカーのセット
-    FUNCTION_T.general.EMP_Picker();
     //講師cdのinput要素にswipeを付与
     FUNCTION_T.general.teacherSwipe();
     //ここからページ別発火
@@ -1287,6 +1285,9 @@ $(function() {
               .find('input:disabled')
               .prop('disabled', false);
           });
+        $('input[name=b_submit]:disabled').on('dblclick', function() {
+          $(this).prop('disabled', false);
+        });
         popmenut_F8.setContentFunction(function() {
           $('<button>', {
             type: 'button',
