@@ -352,13 +352,13 @@ body {
 
 .flux-table-full th,
 .flux-table-full td {
-  padding: 12px 15px;
+  padding: 10px;
   text-align: left;
   border-bottom: 1px solid var(--flux-border, #eeeeee);
   vertical-align: middle;
 }
 
-.flux-page-fixed .flux-table-full thead th {
+.flux-table-full thead th {
   position: sticky;
   top: 0;
   z-index: 10;
@@ -366,10 +366,28 @@ body {
   font-weight: bold;
   color: #555;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  width: 80px;
 }
 
 .flux-table-full tbody tr:hover {
   background-color: #f1f8ff;
+}
+
+.flux-table-full .flux-cell-total {
+  font-weight: bold;
+  background-color: #f0f8ff;
+}
+.flux-table-full tfoot td {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background-color: #f0f8ff;
+  border-top: 2px solid #ddd;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.flux-table-full .text-right {
+  text-align: right;
 }
 
 .flux-cell-icon,

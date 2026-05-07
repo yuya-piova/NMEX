@@ -24,13 +24,14 @@ export class BlockSalesPageWidget extends Widget {
     for (let m = 1; m <= 3; m++) monthLabels.push(`${m}月`);
 
     // テーブルヘッダー生成
-    const thHtml = monthLabels.map(m => `<th>${m}</th>`).join('');
+    const thHtml = monthLabels.map(m => `<th style="min-width: 120px;">${m}</th>`).join('');
 
     // テーブルボディ生成
     const trHtml = data
-      .map(row => {
+      .map((row, i) => {
+        const isLastRow = i === data.length - 1;
         // 科目名
-        let html = `<tr><td class="flux-cell-head">${row.category}</td>`;
+        let html = `${isLastRow ? '<tfoot><tr>' : '<tr>'}<td class="flux-cell-head">${row.category}</td>`;
         // 各月の値
         html += monthLabels
           .map(m => {
@@ -39,7 +40,7 @@ export class BlockSalesPageWidget extends Widget {
           })
           .join('');
         // 合計列
-        html += `<td class="flux-cell-total text-right">${row.total.toLocaleString()}</td></tr>`;
+        html += `<td class="flux-cell-total text-right">${row.total.toLocaleString()}</td>${isLastRow ? '</tr></tfoot>' : '</tr>'}`;
         return html;
       })
       .join('');
@@ -69,12 +70,12 @@ export class BlockSalesPageWidget extends Widget {
         </div>
 
         <div class="flux-table-container" style="flex:1; overflow:auto; margin-top:10px;">
-          <table class="flux-table-full flux-table-sales dblcopytable">
+          <table class="flux-table-full dblcopytable"> <!-- flux-table-sales -->
             <thead>
               <tr>
-                <th style="min-width:120px;">科目</th>
+                <th style="min-width:150px;">科目</th>
                 ${thHtml}
-                <th style="min-width:80px; background:#f0f8ff;">合計</th>
+                <th style="min-width:100px; background:#f0f8ff;">合計</th>
               </tr>
             </thead>
             <tbody>

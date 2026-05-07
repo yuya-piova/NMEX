@@ -782,10 +782,13 @@ export const DashboardActions = {
    * ブロック売上データの取得
    */
   async fetchBlockSales(commit, state, { year, baseCd, force } = {}) {
+    console.log(`Fetch Block Sales: Year=${year}, Base=${baseCd}, Force=${force}`);
     const d = new Date();
-    year = year || d.getMonth() < 3 ? d.getFullYear() - 1 : d.getFullYear();
-    baseCd = baseCd || 'a5031';
+    if (!year) year = d.getMonth() < 3 ? d.getFullYear() - 1 : d.getFullYear();
+    if (!baseCd) baseCd = 'a5031';
+
     const targetYear = parseInt(year);
+
     // [キャッシュ確認]
     // 強制更新(force)でなく、かつStateに同じ条件のデータがあれば、何もしない(return)
     if (!force && state.blockSales && state.blockSales.year === targetYear && state.blockSales.baseCd === baseCd) {
@@ -802,8 +805,6 @@ export const DashboardActions = {
     const dataMap = {};
     targets.forEach(t => (dataMap[t] = {}));
 
-    console.log('売上データ取得中');
-    console.log(toast);
     toast.info('売上データ取得中...');
 
     try {
@@ -944,6 +945,139 @@ export const DashboardActions = {
       console.error('Fetch Diverse Error:', e);
       toast.error('取得エラー');
     }
+  },
+  async fetchGoalData(commit, state, { ym, force }) {
+    console.log(`Fetch Goal Data: ${ym}`);
+    toast.info('目標データ取得中...');
+    const resultsNXT = new NXTable(NX.GOAL.myblockNXT);
+    try {
+      const groupCd = 'a5031';
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1, 12, 0, 0); // 今月の1日12:00:00にしておく（当日集計の際に午前中は前月扱いになるのを防ぐため）
+      const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      const formatDate = d =>
+        d
+          .toISOString()
+          .split('T')[0]
+          .replace(/-/g, '/');
+      const makeQuery = params =>
+        Object.entries(params)
+          .map(([k, v]) => `${k}=${v}`) // encodeURIComponent(v)
+          .join('&');
+
+      // 契約数
+      const contractParams = {
+        tenpo_cd: groupCd,
+        input_dt1: formatDate(firstDay),
+        input_dt2: formatDate(today),
+        tenpo_cb: 1,
+        cancel_cb: 1,
+        keiyaku_cb: 'b',
+        kanri_cb: 1,
+        week_vl: 4,
+        sort_cb: 1,
+        tax_cb: 0,
+        gakunen_cb: '',
+        kiteigessya_cb: '',
+        nyukai_cb: ''
+      };
+
+      const contractUrl = `${NX.CONST.host}/k/keiyaku_list_body.aspx?${makeQuery(contractParams)}`;
+      const contractSnap = await SnapData.quickFetch({ url: contractUrl, force, storeName: 'Flux_Goal', key: 'contract' });
+      const contractNXT = contractSnap
+        .getAsNXTable()
+        .analyze('教室', ['教室', 'count', '契約'])
+        .filter('教室', cell => cell != '教室' && cell != '合計');
+      resultsNXT.merge(contractNXT, '教室');
+
+      // 解約数
+      const cancelParams = {
+        tenpo_cd: groupCd,
+        disp_cb: 0,
+        input_dt1: '',
+        input_dt2: '',
+        kaiyaku_cb: '',
+        status_cb: 7,
+        end_dt: new ExDate().aftermonths(1).as('yyyy/mm'),
+        sort_cb: 1
+      };
+      const cancelUrl = `${NX.CONST.host}/k/kaiyaku_list_body.aspx?${makeQuery(cancelParams)}`;
+      const cancelSnap = await SnapData.quickFetch({ url: cancelUrl, force, storeName: 'Flux_Goal', key: 'cancel' });
+      const cancelNXT = cancelSnap
+        .getAsNXTable()
+        .analyze('教室', ['教室', 'count', '解約'])
+        .filter('教室', cell => cell != '教室' && cell != '');
+      resultsNXT.merge(cancelNXT, '教室');
+
+      // 生徒数
+      const studentsUrl = `${NX.CONST.host}/u/gessya_tenpo.aspx?gakunen_cb=&hyoji_cb=1&tenpo_cd=${groupCd}&shido_ng=${new ExDate()
+        .aftermonths(2)
+        .as('yyyy/mm')}`;
+      const studentsSnap = await SnapData.quickFetch({ url: studentsUrl, force, noCache: true });
+      const $studentsTable = studentsSnap.getAsJQuery('table');
+      $studentsTable
+        .find('tr')
+        .eq(1)
+        .remove();
+      const studentsNXT = $NX($studentsTable)
+        .makeNXTable()
+        .filter('校舎', cell => cell != '校舎' && cell != '合計' && cell != '伊島１F' && cell != '◆中四国Ｂ')
+        .pickColumns(['校舎', '合計(月謝発生生徒数)_1']);
+      studentsNXT.head = ['教室', '生徒数'];
+      studentsNXT.rebuildIndices();
+      resultsNXT.merge(studentsNXT, '教室');
+
+      // 講師数
+      const teacherUrl = `${NX.CONST.host}/t/teacher_shukei.aspx?tenpo_cd=${groupCd}`;
+      const teacherSnap = await SnapData.quickFetch({ url: teacherUrl, force, storeName: 'Flux_Goal', key: 'teacher' });
+      const teacherNXT = teacherSnap
+        .getAsNXTable()
+        .filter('教室', cell => cell != '教室' && cell != '合計')
+        .pickColumns(['教室', '講師数']);
+      resultsNXT.merge(teacherNXT, '教室');
+
+      // 講師登録数
+      const teacherRegUrl = `${NX.CONST.host}/t/teacher_toroku_list_body.aspx?input1_dt1=${formatDate(firstDay)}&input1_dt2=${formatDate(
+        today
+      )}&saiyo_cb=`;
+      console.log('講師登録数URL:', teacherRegUrl);
+      const teacherRegSnap = await SnapData.quickFetch({ url: teacherRegUrl, force, storeName: 'Flux_Goal', key: 'teacherReg' });
+      const teacherRegNXT = teacherRegSnap
+        .getAsNXTable()
+        .filter('エリア', cell => ['広島', '岡山', '香川'].includes(cell) && cell != 'エリア')
+        .analyze('エリア', ['エリア', 'count', '講師登録数']);
+      teacherRegNXT.head = ['教室', '講師登録数'];
+      teacherRegNXT.rebuildIndices();
+      resultsNXT.merge(teacherRegNXT, '教室');
+
+      // 月内案件数
+      const casesParams = {
+        input_dt11: formatDate(today),
+        input_dt12: formatDate(lastDay),
+        tenpo_cd: groupCd,
+        jyotai_cb: 'n',
+        matter_flg: 1
+      };
+      const casesUrl = `${NX.CONST.host}/toiawase_list_body.aspx?${makeQuery(casesParams)}`;
+      const casesSnap = await SnapData.quickFetch({ url: casesUrl, force, storeName: 'Flux_Goal', key: 'cases' });
+      const casesNXT = casesSnap
+        .getAsNXTable()
+        .analyze('校舎', ['校舎', 'count', '案件数'])
+        .filter('校舎', cell => cell != '校舎');
+      casesNXT.head = ['教室', '案件数'];
+      casesNXT.rebuildIndices();
+      resultsNXT.merge(casesNXT, '教室');
+    } catch (e) {
+      console.error('Fetch Goal Error:', e);
+      toast.error('取得エラー');
+    }
+
+    commit({
+      goalData: {
+        resultsNXT,
+        updatedAt: new Date().toLocaleTimeString()
+      }
+    });
   },
   async fetchMiscStats(commit, state, force) {
     try {

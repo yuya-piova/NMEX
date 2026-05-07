@@ -42,7 +42,7 @@ export class UnitWidget extends Widget {
     this.root.innerHTML = `
       <div class="flux-card">
         <div class="flux-card-header">
-            <h3><i class="fa-solid fa-shop"></i> 担当教室状況</h3>
+            <h3><i class="fa-solid fa-shop"></i> My Units</h3>
             <button class="flux-btn-icon reload-btn"><i class="fa-solid fa-rotate"></i></button>
         </div>
         <div class="flux-card-body">

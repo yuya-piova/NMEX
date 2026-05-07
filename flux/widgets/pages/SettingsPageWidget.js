@@ -16,9 +16,10 @@ export class SettingsPageWidget extends Widget {
         <table class="flux-table-full">
           <thead>
             <tr>
-              <th style="width: 200px;">Key</th>
-              <th>Value</th>
+              <th style="width: 300px;">Key</th>
+              <th style="width: 300px;">Value</th>
               <th style="width: 80px;">Delete</th>
+              <th style="width: auto;"></th>
             </tr>
           </thead>
           <tbody id="flux-settings-tbody">
@@ -102,6 +103,7 @@ export class SettingsPageWidget extends Widget {
             <i class="fa-solid fa-trash-can"></i>
           </button>
         </td>
+        <td></td>
       `;
         tbody.appendChild(tr);
       });

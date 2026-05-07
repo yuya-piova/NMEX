@@ -290,34 +290,6 @@ $(function() {
       }
       break;
     }
-    //勤怠管理メニュー
-    case '/portal/Kintai/ShusshaYoteiView':
-      const timeParse = {
-        '13:00-22:00': '木',
-        '14:00-22:00': '通常',
-        '10:40-21:20': '土/C',
-        '10:40-18:40': '日',
-        '09:00-17:00': 'フレンド',
-        '10:40-19:00': 'A',
-        '13:00-21:20': 'B',
-        '08:30-17:00': '模'
-      };
-      popmenut_F8.setContentFunction(function() {
-        $('<button>', {
-          type: 'button',
-          text: '勤怠チェック',
-          on: {
-            click: () => {
-              $('td.day').each(function() {
-                const $td = $(this);
-                const innerText = $td.text();
-                $td.text(`${timeParse[innerText] || innerText}`);
-              });
-            }
-          }
-        }).appendTo(this);
-      });
-      break;
     //ブース組
     case '/portal/Booth/EditTehai121':
       $(document).on('contextmenu', '.student-info', function() {

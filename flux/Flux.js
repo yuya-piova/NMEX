@@ -12,8 +12,8 @@ import { DashboardActions } from './actions/DashboardAction.js';
 import { NotificationWidget } from './widgets/features/NotificationWidget.js';
 import { StatsWidget } from './widgets/features/StatsWidget.js';
 import { BlockSalesPageWidget } from './widgets/pages/BlockSalesPageWidget.js';
-import { StudentCountPageWidget } from './widgets/pages/StudentCountPageWidget.js';
 import { DiversePageWidget } from './widgets/pages/DiversePageWidget.js';
+import { GoalReportWidget } from './widgets/pages/GoalReportWidget.js';
 import { SettingsPageWidget } from './widgets/pages/SettingsPageWidget.js';
 import { ToolsPageWidget } from './widgets/pages/ToolsPageWidget.js';
 
@@ -32,7 +32,8 @@ export class Flux {
       cancelCount: '-',
       blockSales: null,
       studentCounts: null,
-      diverseData: null
+      diverseData: null,
+      goalData: null
     });
 
     // 2. Widgetのインスタンス化
@@ -47,8 +48,8 @@ export class Flux {
       asCoachPage: new AsCoachPageWidget(this.core),
       managementPage: new ManagementPageWidget(this.core),
       blockSalesPage: new BlockSalesPageWidget(this.core),
-      studentCountPage: new StudentCountPageWidget(this.core),
       diversePage: new DiversePageWidget(this.core),
+      goalReportPage: new GoalReportWidget(this.core),
       settingsPage: new SettingsPageWidget(this.core),
       toolsPage: new ToolsPageWidget(this.core)
     };
@@ -73,8 +74,8 @@ export class Flux {
     this.createPageContainer(contentArea, 'Tasks', 'flux-page-fixed');
     this.createPageContainer(contentArea, 'AsCoach', 'flux-page-fixed');
     this.createPageContainer(contentArea, 'BlockSales', 'flux-page-fixed');
-    this.createPageContainer(contentArea, 'StudentCount', 'flux-page-fixed');
     this.createPageContainer(contentArea, 'Diverse', 'flux-page-fixed');
+    this.createPageContainer(contentArea, 'GoalReport', 'flux-page-fixed');
     this.createPageContainer(contentArea, 'Settings', 'flux-page-fixed');
     this.createPageContainer(contentArea, 'Tools', 'flux-page-fixed');
 
@@ -88,8 +89,8 @@ export class Flux {
     this.widgets.asCoachPage.mount('#page-AsCoach');
     this.widgets.managementPage.mount('#page-Management');
     this.widgets.blockSalesPage.mount('#page-BlockSales');
-    this.widgets.studentCountPage.mount('#page-StudentCount');
     this.widgets.diversePage.mount('#page-Diverse');
+    this.widgets.goalReportPage.mount('#page-GoalReport');
     this.widgets.settingsPage.mount('#page-Settings');
     this.widgets.toolsPage.mount('#page-Tools');
 

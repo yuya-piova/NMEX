@@ -95,6 +95,7 @@ export default class PageFuncAll {
       case '/netz/netz1/shingaku/shingaku_hokoku_list_head.aspx':
       case '/netz/netz1/k/kaiyaku_list_head.aspx':
       case '/netz/netz1/t/teacher_toroku_list_head.aspx':
+      case '/netz/netz1/s/schedule_mail_input.aspx':
         $('[name^=input_dt1],[name^=input_dt2],[name^=input1_dt],[name^=input2_dt]').datepicker(getFrameResizeConfig('340,*', defaultRows));
         break;
 

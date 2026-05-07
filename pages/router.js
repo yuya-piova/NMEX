@@ -43,6 +43,13 @@ $.fn.emppicker = function(options = {}) {
   return this;
 };
 
+// popmenu
+const popmenu = new PopMenu({
+  id: 'main',
+  keyCode: 113,
+  showFloatingButton: true
+});
+
 $(function() {
   /* ---------------------------------------------------*/
   /* 常に働く機能
@@ -86,13 +93,6 @@ $(function() {
   pageFuncAll.tenpoClicker();
   // EmpPickerをセット
   pageFuncAll.setEmpPicker();
-
-  // popmenu
-  const popmenu = new PopMenu({
-    id: 'main',
-    keyCode: 113,
-    showFloatingButton: true
-  });
 
   // 生徒名を選択している場合にPopmenuに反映
   pageFuncAll.popmenuStudentResolver();
@@ -399,6 +399,36 @@ $(function() {
 
     case '/netz/netz1/tenpo_yotei.aspx':
       popmenu.appendItems([{ text: 'テンプレート', handler: () => new PageFuncTenpoYotei().init() }]);
+      popmenut_F8.setContentFunction(function() {
+        $('<button>', {
+          type: 'button',
+          text: 'メール送付用',
+          on: {
+            click: () => {
+              let summaryText = '';
+
+              $('[name^=kyuko_flg]').each(function() {
+                const $tr = $(this).closest('tr');
+                const dayText = $tr.findTdGetTxt(0);
+
+                if ($(this).prop('checked')) {
+                  summaryText += `\n${dayText}　休校日`;
+                } else {
+                  const openTime = $tr.find('[name^=open_tm]').val() || '';
+                  const closeTime = $tr.find('[name^=close_tm]').val() || '';
+                  summaryText += `\n${dayText}　${openTime}～${closeTime}`;
+                }
+              });
+
+              $('<textarea>', {
+                text: summaryText.trim()
+              }).appendTo('body');
+
+              popmenut_F8.closemenu();
+            }
+          }
+        }).appendTo(this);
+      });
       break;
 
     case '/netz/netz1/toiawase_input.aspx': {
@@ -453,6 +483,43 @@ $(function() {
 });
 
 /* ---------------------------------------------------*/
+/* Portal
+/* ---------------------------------------------------*/
+
+$(function() {
+  // ドメインチェック
+  if (location.hostname != 'portal.edu-netz.com') return;
+
+  switch (location.pathname) {
+    case '/portal/Kintai/ShusshaYoteiView':
+      popmenu.appendItems([
+        {
+          text: 'スケジュールチェック',
+          handler: () => {
+            const timeParse = {
+              '13:00-22:00': '木/B',
+              '14:00-22:00': '通常',
+              '10:40-21:20': '土/C',
+              '10:40-18:40': '日',
+              '09:00-17:00': 'フレンド',
+              '10:40-19:00': 'A',
+              '13:00-21:20': 'B',
+              '10:30-19:30': 'A',
+              '08:30-17:00': '模'
+            };
+            $('td.day').each(function() {
+              const $td = $(this);
+              const innerText = $td.text();
+              $td.text(`${timeParse[innerText] || innerText}`);
+            });
+          }
+        }
+      ]);
+      break;
+  }
+});
+
+/* ---------------------------------------------------*/
 /* Diverse LMS
 /* ---------------------------------------------------*/
 
@@ -462,17 +529,11 @@ $(function() {
 
   console.log('PageFunction.js for s-diverse');
 
-  const popmenu = new PopMenu({
-    id: 'main',
-    keyCode: 113,
-    showFloatingButton: true
-  });
-
   window.addEventListener('message', function(event) {
     // 送信元を確認
     if (event.origin === 'https://menu.edu-netz.com' || event.origin === 'https://menu2.edu-netz.com') {
-      popmenu.staticItems = [];
       popmenu.appendItems([
+        '<hr>',
         {
           text: 'ブース表から出欠登録',
           handler: () => {
@@ -492,8 +553,12 @@ $(function() {
   // 組織を変更するリンクボタンを作成
   const groupTransitionMenus = [
     ['🔗 広島', 'A002007'],
+    ['🔗 NALU Campus', 'A002101'],
     ['🔗 体験教室', 'A002999']
-  ].map(([text, groupid]) => ({ text, handler: () => (window.location.href = `https://lms2.s-diverse.com/coach/${groupid}/students-status`) }));
+  ].map(([text, groupid]) => ({
+    text,
+    handler: () => (window.location.href = `https://lms2.s-diverse.com/coach/${groupid}/students-status`)
+  }));
 
   popmenu.appendItems(groupTransitionMenus);
 });

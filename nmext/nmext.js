@@ -1171,33 +1171,34 @@ $(function() {
         FUNCTION_T.shido2_input_sp_check.setmaster();
         break;
       case '/netz/netz1/kanren/shido_yotei_input.aspx':
-        const student_cd = $(document)
-          .find('input[name=student_cd]')
-          .val();
+        {
+          const student_cd = $(document)
+            .find('input[name=student_cd]')
+            .val();
 
-        //relpop
-        $('input[name=kanren]').on('contextmenu', function() {
-          relpop(student_cd);
-          return false;
-        });
+          //relpop
+          $('input[name=kanren]').on('contextmenu', function() {
+            relpop(student_cd);
+            return false;
+          });
 
-        //時間入力のサポート
-        $('input[name=shido_tm_h],input[name=shido_tm_m]')
-          .offAutocomplete()
-          .isAllNumeric(false)
-          .netztimepicker(true, 'input[name=shido_tm_h]', 'input[name=shido_tm_m]');
+          //時間入力のサポート
+          $('input[name=shido_tm_h],input[name=shido_tm_m]')
+            .offAutocomplete()
+            .isAllNumeric(false)
+            .netztimepicker(true, 'input[name=shido_tm_h]', 'input[name=shido_tm_m]');
 
-        //追加指導予定のデフォルトは45分
-        $('input[name=shido_jikan]').val(45);
+          //追加指導予定のデフォルトは45分
+          $('input[name=shido_jikan]').val(45);
 
-        //適切に入っていなければ登録ボタンを押せなくする
-        FUNCTION_T.shido_yotei_input.validation();
+          //適切に入っていなければ登録ボタンを押せなくする
+          FUNCTION_T.shido_yotei_input.validation();
 
-        //曜日をクリックしたら一括設定
-        FUNCTION_T.shido_yotei_input.tracer();
+          //曜日をクリックしたら一括設定
+          FUNCTION_T.shido_yotei_input.tracer();
 
-        FUNCTION_T.shido_yotei_input.F2menu();
-
+          FUNCTION_T.shido_yotei_input.F2menu();
+        }
         break;
       case '/netz/netz1/kanren/shido_yotei_edit.aspx': {
         //autoCleanモードだったら不要文字種を消す
@@ -1285,9 +1286,7 @@ $(function() {
               .find('input:disabled')
               .prop('disabled', false);
           });
-        $('input[name=b_submit]:disabled').on('dblclick', function() {
-          $(this).prop('disabled', false);
-        });
+        $('input[name=b_submit]:disabled').prop('disabled', false);
         popmenut_F8.setContentFunction(function() {
           $('<button>', {
             type: 'button',
@@ -1561,38 +1560,6 @@ $(function() {
         });
         break;
       case '/netz/netz1/tenpo_yotei.aspx':
-        /*
-        //開校予定一括入力
-        const basedTable = $('table');
-        const templateTable = $('<table>', {
-          border: '1',
-          cellpadding: '1',
-          cellspacing: '1',
-          style: 'border-collapse: collapse'
-        }).appendTo('body');
-        //prettier-ignore
-        basedTable.find('tr').eq(1).clone().appendTo(templateTable);
-
-        //３行目を基準に週の行を作る
-        const basedTr = basedTable.find('tr').eq(2);
-        ['月', '火', '水', '木', '金', '土', '日'].forEach(date => {
-          const tr = basedTr.clone();
-          tr.find('td')
-            .eq(0)
-            .text(date);
-          tr.find('input').each(function() {
-            $(this)
-              .removeAttr('name title id')
-              .addClass('template')
-              .data('date', date)
-              .prop('checked', false)
-              .val('');
-          });
-          tr.appendTo(templateTable);
-        });
-        //つくりかけ。name消したらトレーシングできなかった、、、
-        */
-
         popmenut_F8.setContentFunction(function() {
           $('<button>', {
             type: 'button',

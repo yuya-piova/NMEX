@@ -6,9 +6,9 @@ import { DashboardActions } from '../../actions/DashboardAction.js';
 export class DiversePageWidget extends Widget {
   constructor(core) {
     super(core);
-    // 初期設定 (2026/04固定とのことですが、変更可能なようにStateで管理)
+    // 初期設定
     this.state = {
-      targetYm: '2026/04'
+      targetYm: new ExDate().aftermonths(1).as('yyyy/mm')
     };
   }
 
@@ -66,16 +66,17 @@ export class DiversePageWidget extends Widget {
         </div>
 
         <div class="flux-table-container" style="flex:1; overflow:auto; margin-top:10px;">
-          <table class="flux-table-full flux-table-sales dblcopytable">
+          <table class="flux-table-full dblcopytable">  <!-- flux-table-sales -->
             <thead>
               <tr>
-                <th>校舎</th>
+                <th style="width: 150px;">校舎</th>
                 <th>対面</th>
-                <th>３月月謝</th>
-                <th>３月サービス</th>
+                <th style="width: 100px;">３月月謝</th>
+                <th style="width: 150px;">３月サービス</th>
                 <th>目標</th>
                 <th>現状</th>
                 <th>差異</th>
+                <th style="width:auto;"> </th>
               </tr>
             </thead>
             <tbody>
@@ -91,6 +92,7 @@ export class DiversePageWidget extends Widget {
                  <td class="text-right ${totalDiff < 0 ? 'flux-text-danger' : 'flux-text-success'}">
                     ${totalDiff > 0 ? '+' : ''}${totalDiff.toLocaleString()}
                  </td>
+                 <td style="width:auto;"></td>
                </tr>
             </tfoot>
           </table>
